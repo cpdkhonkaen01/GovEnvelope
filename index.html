@@ -323,7 +323,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
         <div class="form-grid three">
           <label class="form-field"><span>ตำแหน่งตราครุฑ</span><select name="garudaPlacement"><option value="left">ด้านซ้ายของหน่วยงาน</option><option value="above">ด้านบนหน่วยงาน</option></select></label>
           <label class="form-field"><span>ขนาดตราครุฑ (มม. · มาตรฐาน 15)</span><input name="garudaSizeMm" type="number" min="8" max="30" step="1" /></label>
-          <label class="form-field"><span>ขนาดตัวอักษร (พอยต์)</span><input name="senderFontPt" type="number" min="7" max="16" step="0.5" /></label>
+          <label class="form-field"><span>ขนาดฟอนต์ข้อมูลผู้ส่ง (พอยต์)</span><input name="senderFontPt" type="number" min="7" max="20" step="0.5" /><small>ปรับพร้อมกันทั้งชื่อหน่วยงาน ที่อยู่ และเลขที่หนังสือ</small></label>
         </div>
         <div class="form-grid three">
           <label class="form-field"><span>ระยะจากขอบบน (มม.)</span><input name="senderTopMm" type="number" min="0" max="40" step="1" /></label>
@@ -413,7 +413,7 @@ const state = {
     senderTopMm: clampNumber(savedSettings.senderTopMm ?? defaults.senderTopMm, 0, 40, 6),
     senderLeftMm: clampNumber(savedSettings.senderLeftMm ?? defaults.senderLeftMm, 0, 60, 14),
     senderTextOffsetMm: clampNumber(savedSettings.senderTextOffsetMm ?? defaults.senderTextOffsetMm, 0, 30, 10),
-    senderFontPt: clampNumber(savedSettings.senderFontPt ?? defaults.senderFontPt, 7, 16, 9.5),
+    senderFontPt: clampNumber(savedSettings.senderFontPt ?? defaults.senderFontPt, 7, 20, 9.5),
     postagePermitText: savedSettings.postagePermitText || defaults.postagePermitText || "ชำระค่าฝากส่งเป็นรายเดือน\nใบอนุญาตเลขที่ xx/xxx\nไปรษณีย์เดชาวุธ",
     postagePermitTopMm: clampNumber(savedSettings.postagePermitTopMm ?? defaults.postagePermitTopMm, 0, 40, 7),
     postagePermitRightMm: clampNumber(savedSettings.postagePermitRightMm ?? defaults.postagePermitRightMm, 0, 60, 8),
@@ -802,7 +802,7 @@ function handleSenderSubmit(event) {
   state.settings.senderTopMm = clampNumber(values.senderTopMm, 0, 40, 6);
   state.settings.senderLeftMm = clampNumber(values.senderLeftMm, 0, 60, 14);
   state.settings.senderTextOffsetMm = clampNumber(values.senderTextOffsetMm, 0, 30, 10);
-  state.settings.senderFontPt = clampNumber(values.senderFontPt, 7, 16, 9.5);
+  state.settings.senderFontPt = clampNumber(values.senderFontPt, 7, 20, 9.5);
   persistSettings();
   renderSummary();
   closeSenderSettings();
@@ -953,7 +953,7 @@ function printEnvelopes() {
   const senderTopMm = clampNumber(state.settings.senderTopMm, 0, 40, 6);
   const senderLeftMm = clampNumber(state.settings.senderLeftMm, 0, 60, 14);
   const senderTextOffsetMm = clampNumber(state.settings.senderTextOffsetMm, 0, 30, 10);
-  const senderFontPt = clampNumber(state.settings.senderFontPt, 7, 16, 9.5);
+  const senderFontPt = clampNumber(state.settings.senderFontPt, 7, 20, 9.5);
   const garudaSizeMm = clampNumber(state.settings.garudaSizeMm, 8, 30, 15);
   const postagePermitTopMm = clampNumber(state.settings.postagePermitTopMm, 0, 40, 7);
   const postagePermitRightMm = clampNumber(state.settings.postagePermitRightMm, 0, 60, 8);
