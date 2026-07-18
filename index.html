@@ -69,7 +69,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .notice i{width:8px;height:8px;flex:0 0 auto;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px var(--green-soft)}
 
 .content-grid{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:18px;align-items:start}
-.directory-card,.print-card,.steps-card{border:1px solid var(--line);background:#fff;box-shadow:0 10px 32px rgba(31,46,79,.045)}
+.directory-card,.print-card{border:1px solid var(--line);background:#fff;box-shadow:0 10px 32px rgba(31,46,79,.045)}
 .directory-card{overflow:hidden;border-radius:23px}
 .section-title{display:flex;align-items:end;justify-content:space-between;gap:16px;padding:25px 26px 15px}
 .section-title h2,.print-card h2,dialog h2{margin:0;letter-spacing:-.025em}
@@ -119,18 +119,6 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--blue)}
 .print-card>button{display:flex;align-items:center;justify-content:space-between;width:100%;height:45px;margin-top:11px;padding:0 14px;border:0;border-radius:11px;background:#fff;color:var(--blue-deep);font-size:10px;font-weight:900}
 .print-card>.sender-settings-button{justify-content:center;border:1px solid rgba(255,255,255,.32);background:rgba(255,255,255,.08);color:#fff}
 .print-card>.sender-settings-button:hover{background:rgba(255,255,255,.15)}
-.steps-card{padding:21px;border-radius:23px}
-.steps-title{padding-bottom:13px;border-bottom:1px solid #edf0f5}
-.steps-title strong,.steps-title small{display:block}
-.steps-title strong{font-size:12px}
-.steps-title small{color:#98a2b3;font-size:9px}
-.steps-card ol{display:grid;gap:13px;margin:16px 0 0;padding:0;list-style:none}
-.steps-card li{display:flex;align-items:center;gap:11px}
-.steps-card li>b{display:grid;width:29px;height:29px;place-items:center;border:1px solid #e1e6ee;border-radius:9px;background:#f8f9fc;color:#8993a4;font-size:10px}
-.steps-card li.done>b{border-color:#c9ebdf;background:var(--green-soft);color:#13805d}
-.steps-card li strong,.steps-card li small{display:block}
-.steps-card li strong{font-size:9px}
-.steps-card li small{color:#98a2b3;font-size:8px}
 footer{display:flex;justify-content:space-between;width:min(1440px,92vw);margin:auto;padding:22px 0 30px;border-top:1px solid var(--line);color:#98a2b3;font-size:9px}
 
 dialog{width:min(860px,calc(100% - 32px));max-height:calc(100vh - 40px);padding:34px;border:0;border-radius:24px;box-shadow:0 30px 90px rgba(17,26,48,.3)}
@@ -164,17 +152,27 @@ dialog hr{height:1px;margin:20px 0 4px;border:0;background:#edf0f5}
 
 /* โหมดอ่านง่าย เหมาะสำหรับผู้ใช้งานสูงอายุ */
 body{font-size:16px}
+.topbar{min-height:88px;padding:0 2.5vw}
+.brand-mark{width:50px;height:50px;font-size:25px}
 .brand strong{font-size:18px}
 .brand small{font-size:13px}
 .status-pill{padding:11px 16px;font-size:14px}
+.workspace{width:min(2000px,96vw);padding:22px 0 44px}
+.hero{min-height:300px;border-radius:24px}
+.hero-copy{padding:36px 48px}
+.hero h1{font-size:clamp(38px,3vw,52px)}
 .eyebrow{font-size:13px;letter-spacing:.08em}
-.hero p{font-size:17px;line-height:1.8}
+.hero p{margin-top:12px;font-size:16px;line-height:1.7}
+.hero-actions{margin-top:18px}
+.envelope-preview{width:min(430px,88%)}
 .button{min-height:52px;font-size:15px}
+.summary{margin:14px 0 18px}
 .summary article,.notice{min-height:88px}
 .summary small{font-size:12px}
 .summary strong{font-size:16px}
 .notice{font-size:13px;line-height:1.6}
-.content-grid{grid-template-columns:minmax(0,1fr) 360px;gap:22px}
+.content-grid{grid-template-columns:minmax(0,1fr) 420px;gap:24px}
+.side-panel{display:block}
 .section-title{padding:28px 30px 20px}
 .section-title h2{font-size:25px}
 .small-button{min-height:46px;padding:10px 16px;font-size:14px}
@@ -192,7 +190,7 @@ input[type=checkbox]{width:20px;height:20px}
 .category-badge{padding:6px 10px;font-size:12px}
 .action-cell{width:180px}
 .row-button{min-width:72px;padding:10px 12px;border-radius:10px;font-size:13px}
-.print-card{padding:28px}
+.print-card{position:sticky;top:105px;padding:30px}
 .print-card h2{font-size:38px}
 .print-card p{font-size:14px}
 .print-card label>span{margin-bottom:8px;font-size:13px}
@@ -201,12 +199,7 @@ input[type=checkbox]{width:20px;height:20px}
 .print-card .garuda-option input{width:21px;height:21px}
 .print-card .garuda-option span{font-size:14px}
 .print-card>button{height:52px;font-size:14px}
-.steps-title strong{font-size:16px}
-.steps-title small{font-size:13px}
-.steps-card li>b{width:36px;height:36px;font-size:14px}
-.steps-card li strong{font-size:14px}
-.steps-card li small{font-size:12px;line-height:1.5}
-footer{font-size:12px}
+footer{width:min(2000px,96vw);font-size:12px}
 .dialog-title .eyebrow{font-size:14px}
 .dialog-title h2{font-size:32px}
 .dialog-info{font-size:16px}
@@ -221,7 +214,7 @@ footer{font-size:12px}
 @media(max-width:1080px){.summary{grid-template-columns:repeat(3,1fr)}
 .notice{grid-column:1/-1;min-height:52px}
 .content-grid{grid-template-columns:1fr}
-.side-panel{grid-template-columns:1fr 1fr}
+.print-card{position:static}
 }
 @media(max-width:760px){.topbar{min-height:68px;padding:0 18px}
 dialog{padding:22px}
@@ -330,10 +323,6 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
             <button class="sender-settings-button" id="openPostagePermitSettings" type="button">✎ แก้ไขกรอบค่าฝากส่ง</button>
             <button id="printButton" type="button">ดูตัวอย่างและพิมพ์ <span>↗</span></button>
           </section>
-          <section class="steps-card">
-            <div class="steps-title"><strong>ทำงานใน 3 ขั้นตอน</strong><small>ใช้เวลาน้อยกว่า 1 นาที</small></div>
-            <ol><li class="done"><b>1</b><div><strong>เชื่อมข้อมูล</strong><small>Google Sheets หรือข้อมูลตัวอย่าง</small></div></li><li id="chooseStep"><b>2</b><div><strong>เลือกรายชื่อ</strong><small>ค้นหา กรอง และเลือกหลายราย</small></div></li><li><b>3</b><div><strong>ตรวจสอบและพิมพ์</strong><small>เลือกขนาดซองให้ตรงเครื่องพิมพ์</small></div></li></ol>
-          </section>
         </aside>
       </section>
     </main>
@@ -363,7 +352,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
           <label class="form-field"><span>จังหวัด</span><input name="province" type="text" /></label>
         </div>
         <div class="form-grid equal">
-          <label class="form-field"><span>รหัสไปรษณีย์</span><input name="postalCode" type="text" inputmode="numeric" maxlength="5" pattern="[0-9]{5}" /></label>
+          <label class="form-field"><span>รหัสไปรษณีย์</span><input name="postalCode" type="text" inputmode="text" autocomplete="postal-code" maxlength="5" pattern="[0-9๐-๙]{5}" title="กรุณากรอกรหัสไปรษณีย์ 5 หลัก เป็นเลขไทยหรือเลขอารบิก" /><small>ใส่ได้ทั้ง 40000 และ ๔๐๐๐๐</small></label>
           <label class="form-field"><span>รหัสผู้ดูแล *</span><input name="adminKey" type="password" autocomplete="current-password" required /><small>รหัสนี้ตั้งไว้ใน Script Properties ชื่อ WRITE_KEY</small></label>
         </div>
         <p class="form-message" id="recipientFormMessage" role="status" aria-live="polite"></p>
@@ -542,6 +531,17 @@ function escapeHtml(value = "") {
   return String(value).replace(/[&<>'"]/g, (character) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#039;", '"': "&quot;",
   }[character]));
+}
+
+function formatAddressArea(label, value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  const prefixPatterns = {
+    ตำบล: /^(?:ตำบล|ต\.)\s*/,
+    อำเภอ: /^(?:อำเภอ|อ\.)\s*/,
+    จังหวัด: /^(?:จังหวัด|จ\.)\s*/,
+  };
+  return `${label}${text.replace(prefixPatterns[label], "").trim()}`;
 }
 
 function inferCategory(department) {
@@ -778,7 +778,6 @@ function renderSummary() {
     senderPreview.style.top = `${senderTop}px`;
     senderPreview.style.left = `${senderLeft}px`;
   }
-  $("#chooseStep").classList.toggle("done", selectedCount > 0);
 }
 
 function render() {
@@ -1157,10 +1156,11 @@ function printEnvelopes() {
   const postagePermitHtml = escapeHtml(state.settings.postagePermitText).replace(/\r?\n/g, "<br>");
   const pages = recipients.map((item) => {
     const locality = [
-      item.subdistrict && `ตำบล ${item.subdistrict}`,
-      item.district && `อำเภอ ${item.district}`,
+      formatAddressArea("ตำบล", item.subdistrict),
+      formatAddressArea("อำเภอ", item.district),
     ].filter(Boolean).join(" ");
-    return `<section class="envelope"><div class="${senderClass}">${garudaMarkup}<div class="sender-content"><strong>${escapeHtml(state.settings.sender)}</strong><div class="sender-address">${senderAddressHtml}</div>${documentNumberHtml}</div></div><div class="postage-permit">${postagePermitHtml}</div><div class="recipient"><small>เรียน</small><h1>${escapeHtml(recipientName(item))}</h1>${item.position && recipientName(item) !== item.position ? `<p>${escapeHtml(item.position)}</p>` : ""}${item.department ? `<p class="organization">${escapeHtml(item.department)}</p>` : ""}<p>${escapeHtml(item.address1)}</p><p>${escapeHtml(locality)}</p><p>${item.province ? `จังหวัด ${escapeHtml(item.province)}` : ""} <strong>${escapeHtml(item.postalCode)}</strong></p></div></section>`;
+    const province = formatAddressArea("จังหวัด", item.province);
+    return `<section class="envelope"><div class="${senderClass}">${garudaMarkup}<div class="sender-content"><strong>${escapeHtml(state.settings.sender)}</strong><div class="sender-address">${senderAddressHtml}</div>${documentNumberHtml}</div></div><div class="postage-permit">${postagePermitHtml}</div><div class="recipient"><small>เรียน</small><h1>${escapeHtml(recipientName(item))}</h1>${item.position && recipientName(item) !== item.position ? `<p>${escapeHtml(item.position)}</p>` : ""}${item.department ? `<p class="organization">${escapeHtml(item.department)}</p>` : ""}<p>${escapeHtml(item.address1)}</p><p>${escapeHtml(locality)}</p><p>${escapeHtml(province)}</p>${item.postalCode ? `<p class="postal-code"><strong>${escapeHtml(item.postalCode)}</strong></p>` : ""}</div></section>`;
   }).join("");
   const popup = window.open("", "_blank");
   if (!popup) {
@@ -1218,6 +1218,12 @@ $("#openAddRecipient").addEventListener("click", openRecipientDialog);
 $("#closeRecipientDialog").addEventListener("click", closeRecipientDialog);
 $("#cancelRecipient").addEventListener("click", closeRecipientDialog);
 $("#recipientCategory").addEventListener("change", updateRecipientFormRequirements);
+elements.recipientForm.elements.postalCode.addEventListener("invalid", (event) => {
+  event.target.setCustomValidity("กรุณากรอกรหัสไปรษณีย์ 5 หลัก เป็นเลขไทยหรือเลขอารบิก");
+});
+elements.recipientForm.elements.postalCode.addEventListener("input", (event) => {
+  event.target.setCustomValidity("");
+});
 elements.recipientForm.addEventListener("submit", handleRecipientSubmit);
 $("#openRecipientLayoutSettings").addEventListener("click", openRecipientLayoutSettings);
 $("#closeRecipientLayoutDialog").addEventListener("click", closeRecipientLayoutSettings);
