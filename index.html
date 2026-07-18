@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#2856d9" />
+    <meta name="description" content="ระบบจ่าหน้าซองหนังสือเวียนจากข้อมูล Google Sheets" />
+    <title>ระบบจ่าหน้าซองหนังสือเวียน</title>
+    <link rel="stylesheet" href="assets/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="ระบบจ่าหน้าซองหนังสือเวียน">
+        <span class="brand-mark" aria-hidden="true">ว</span>
+        <span><strong>ระบบจ่าหน้าซอง</strong><small>หนังสือเวียน · CPDKK</small></span>
+      </a>
+      <div class="top-actions">
+        <span class="status-pill" id="connectionStatus"><i></i><span>โหมดข้อมูลตัวอย่าง</span></span>
+        <button class="icon-button" id="openSettings" type="button" aria-label="ตั้งค่า">⚙</button>
+      </div>
+    </header>
+
+    <main class="workspace" id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <span class="eyebrow">งานสารบรรณที่ง่ายขึ้น</span>
+          <h1>เลือกผู้รับ แล้วพิมพ์<br /><em>จ่าหน้าซองได้ทันที</em></h1>
+          <p>ค้นหารายชื่อจาก Google Sheets เลือกหลายหน่วยงาน และจัดหน้าพิมพ์ให้พอดีกับซองในไม่กี่คลิก</p>
+          <div class="hero-actions">
+            <button class="button primary" id="heroPrint" type="button">พิมพ์ที่เลือก <b id="heroSelected">0</b></button>
+            <button class="button secondary" id="heroConnect" type="button">เชื่อมฐานข้อมูล Google Sheets</button>
+          </div>
+        </div>
+        <div class="envelope-preview" aria-label="ตัวอย่างซองจดหมาย">
+          <span class="stamp">หนังสือเวียน</span>
+          <span class="sender-mini">สำนักงานสหกรณ์<br />จังหวัดขอนแก่น</span>
+          <div class="receiver-mini"><small>เรียน</small><strong>ประธานกรรมการ</strong><span>สหกรณ์การเกษตร… จำกัด</span><span>จังหวัดขอนแก่น 40000</span></div>
+        </div>
+      </section>
+
+      <section class="summary" aria-label="สรุปข้อมูล">
+        <article><span class="summary-icon blue">⌁</span><div><small>รายชื่อทั้งหมด</small><strong id="totalCount">0 รายการ</strong></div></article>
+        <article><span class="summary-icon green">✓</span><div><small>เลือกเพื่อพิมพ์</small><strong id="selectedCount">0 รายการ</strong></div></article>
+        <article><span class="summary-icon amber">▱</span><div><small>รูปแบบกระดาษ</small><strong id="paperLabel">ซอง DL</strong></div></article>
+        <div class="notice"><i></i><span id="noticeText" aria-live="polite">กำลังโหลดข้อมูล…</span></div>
+      </section>
+
+      <section class="content-grid">
+        <section class="directory-card">
+          <div class="section-title">
+            <div><span class="eyebrow">รายชื่อผู้รับ</span><h2>เลือกหน่วยงานที่ต้องการส่ง</h2></div>
+            <button class="small-button" id="useDemo" type="button">↻ ข้อมูลตัวอย่าง</button>
+          </div>
+          <div class="filters">
+            <label class="search"><span>⌕</span><input id="searchInput" type="search" placeholder="ค้นหาชื่อ ตำแหน่ง หรือหน่วยงาน" /></label>
+            <label class="department-filter"><span>หน่วยงาน</span><select id="departmentFilter"><option value="ทั้งหมด">ทั้งหมด</option></select></label>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th class="check-cell"><input id="selectAll" type="checkbox" aria-label="เลือกทั้งหมด" /></th><th>ชื่อผู้รับ / ตำแหน่ง</th><th>หน่วยงาน</th><th>ที่อยู่</th><th class="action-cell">เลือก</th></tr></thead>
+              <tbody id="recipientRows"></tbody>
+            </table>
+            <div class="empty" id="emptyState" hidden>ไม่พบรายชื่อที่ตรงกับคำค้นหา</div>
+          </div>
+        </section>
+
+        <aside class="side-panel">
+          <section class="print-card">
+            <span class="eyebrow light">พร้อมพิมพ์</span>
+            <h2><span id="sideSelected">0</span> รายการ</h2>
+            <p>ระบบจะสร้างหน้าพิมพ์แยก 1 ซองต่อ 1 รายชื่อ</p>
+            <label><span>ขนาดซอง / กระดาษ</span><select id="paperSize"><option value="DL">ซอง DL · 22 × 11 ซม.</option><option value="C5">ซอง C5 · 22.9 × 16.2 ซม.</option><option value="A4">กระดาษ A4 · 21 × 29.7 ซม.</option></select></label>
+            <button id="printButton" type="button">ดูตัวอย่างและพิมพ์ <span>↗</span></button>
+          </section>
+          <section class="steps-card">
+            <div class="steps-title"><strong>ทำงานใน 3 ขั้นตอน</strong><small>ใช้เวลาน้อยกว่า 1 นาที</small></div>
+            <ol><li class="done"><b>1</b><div><strong>เชื่อมข้อมูล</strong><small>Google Sheets หรือข้อมูลตัวอย่าง</small></div></li><li id="chooseStep"><b>2</b><div><strong>เลือกรายชื่อ</strong><small>ค้นหา กรอง และเลือกหลายราย</small></div></li><li><b>3</b><div><strong>ตรวจสอบและพิมพ์</strong><small>เลือกขนาดซองให้ตรงเครื่องพิมพ์</small></div></li></ol>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <footer><span>ระบบจ่าหน้าซองหนังสือเวียน</span><span>สำนักงานสหกรณ์จังหวัดขอนแก่น</span></footer>
+
+    <dialog id="settingsDialog">
+      <form method="dialog" id="settingsForm">
+        <div class="dialog-title"><div><span class="eyebrow">ตั้งค่าระบบ</span><h2>เชื่อม Google Sheets</h2></div><button class="close-button" value="cancel" aria-label="ปิด">×</button></div>
+        <p class="dialog-info">วาง URL เว็บแอปที่ Deploy จาก Google Apps Script ระบบจะอ่านข้อมูลจากชีต <strong>Recipients</strong> และเชื่อมต่อให้อัตโนมัติเมื่อเปิดระบบครั้งถัดไป</p>
+        <label class="form-field"><span>Apps Script Web App URL</span><input id="scriptUrl" type="url" inputmode="url" autocomplete="url" placeholder="https://script.google.com/macros/s/…/exec" /><small>ใช้ URL ที่ลงท้ายด้วย /exec โดยตั้ง Execute as: Me และ Who has access: Anyone</small></label>
+        <hr />
+        <div class="form-grid">
+          <label class="form-field"><span>ชื่อหน่วยงานผู้ส่ง</span><input id="senderName" type="text" /></label>
+          <label class="form-field"><span>ขนาดเริ่มต้น</span><select id="defaultPaper"><option value="DL">ซอง DL</option><option value="C5">ซอง C5</option><option value="A4">กระดาษ A4</option></select></label>
+        </div>
+        <label class="form-field"><span>ที่อยู่ผู้ส่ง</span><textarea id="senderAddress" rows="3"></textarea></label>
+        <p class="dialog-info">ข้อควรระวัง: Web App ที่เปิดสิทธิ์แบบ Anyone เป็นข้อมูลสาธารณะ จึงไม่ควรใช้กับข้อมูลลับหรือข้อมูลส่วนบุคคลที่ไม่จำเป็น</p>
+        <div class="dialog-actions"><button class="button secondary" id="saveSettings" type="button">บันทึกไว้ก่อน</button><button class="button primary" id="connectButton" type="button">ทดสอบและเชื่อมต่อ</button></div>
+      </form>
+    </dialog>
+
+    <script src="config.js"></script>
+    <script src="assets/app.js"></script>
+  </body>
+</html>
