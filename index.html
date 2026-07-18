@@ -49,7 +49,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .envelope-preview:after{position:absolute;inset:0;border-radius:inherit;background:linear-gradient(32deg,transparent 0 48.5%,rgba(40,86,217,.055) 49% 49.5%,transparent 50%);content:""}
 .stamp{position:absolute;top:22px;right:24px;padding:6px 10px;border:1px dashed #f2a74b;border-radius:7px;color:#c66a08;font-size:9px;font-weight:800;transform:rotate(5deg)}
 .garuda-mini{position:absolute;top:16px;left:30px;width:34px;height:38px;object-fit:contain;object-position:center;color:#111}
-.sender-mini{position:absolute;top:58px;left:30px;color:#7b8494;font-size:10px;font-weight:700;line-height:1.55}
+.sender-mini{position:absolute;top:58px;left:30px;width:48%;color:#596579;font-size:10px;font-weight:700;line-height:1.45;white-space:pre-line}
 .receiver-mini{position:absolute;z-index:2;top:43%;left:42%;display:flex;flex-direction:column;line-height:1.6}
 .receiver-mini small{color:#98a2b3;font-size:9px}
 .receiver-mini strong{font-size:14px}
@@ -114,6 +114,8 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--blue)}
 .print-card option{color:var(--ink)}
 .print-card .garuda-option{display:flex;align-items:center;gap:9px;margin-top:12px;padding:10px 11px;border:1px solid rgba(255,255,255,.18);border-radius:11px;background:rgba(255,255,255,.08);cursor:pointer}.print-card .garuda-option input{width:17px;height:17px;flex:0 0 auto;accent-color:#fff}.print-card .garuda-option span{margin:0;color:#fff;font-size:10px;font-weight:800}
 .print-card>button{display:flex;align-items:center;justify-content:space-between;width:100%;height:45px;margin-top:11px;padding:0 14px;border:0;border-radius:11px;background:#fff;color:var(--blue-deep);font-size:10px;font-weight:900}
+.print-card>.sender-settings-button{justify-content:center;border:1px solid rgba(255,255,255,.32);background:rgba(255,255,255,.08);color:#fff}
+.print-card>.sender-settings-button:hover{background:rgba(255,255,255,.15)}
 .steps-card{padding:21px;border-radius:23px}
 .steps-title{padding-bottom:13px;border-bottom:1px solid #edf0f5}
 .steps-title strong,.steps-title small{display:block}
@@ -133,6 +135,7 @@ dialog::backdrop{background:rgba(17,26,48,.56);backdrop-filter:blur(6px)}
 .dialog-title{display:flex;align-items:flex-start;justify-content:space-between}
 .dialog-title .eyebrow{font-size:12px}
 .dialog-title h2{font-size:30px}
+.dialog-title.compact{margin-top:18px}.dialog-title h3{margin:0;font-size:20px;letter-spacing:-.02em}
 .close-button{width:44px;height:44px;border:1px solid #e1e6ed;border-radius:12px;background:#fff;color:#667085;font-size:26px}
 .dialog-info{margin:16px 0 22px;padding:15px 17px;border-radius:12px;background:#f5f7fb;color:#667085;font-size:14px;line-height:1.7}
 .form-field{display:block;margin-top:16px}
@@ -224,7 +227,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
         <div class="envelope-preview" aria-label="ตัวอย่างซองจดหมาย">
           <span class="stamp">หนังสือเวียน</span>
           <img class="garuda-mini" id="garudaPreview" alt="ตราครุฑ" hidden />
-          <span class="sender-mini">สำนักงานสหกรณ์<br />จังหวัดขอนแก่น</span>
+          <span class="sender-mini" id="senderPreview"></span>
           <div class="receiver-mini"><small>เรียน</small><strong>ประธานกรรมการ</strong><span>สหกรณ์การเกษตร… จำกัด</span><span>จังหวัดขอนแก่น 40000</span></div>
         </div>
       </section>
@@ -263,6 +266,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
             <p>ระบบจะสร้างหน้าพิมพ์แยก 1 ซองต่อ 1 รายชื่อ</p>
             <label><span>ขนาดซอง / กระดาษ</span><select id="paperSize"><option value="DL">ซอง DL · 22 × 11 ซม.</option><option value="C5">ซอง C5 · 22.9 × 16.2 ซม.</option><option value="A4">กระดาษ A4 · 21 × 29.7 ซม.</option></select></label>
             <label class="garuda-option"><input id="showGaruda" type="checkbox" checked /><span>แสดงตราครุฑเหนือชื่อหน่วยงาน</span></label>
+            <button class="sender-settings-button" id="openSenderSettings" type="button">✎ แก้ไขข้อมูลผู้ส่งและตำแหน่ง</button>
             <button id="printButton" type="button">ดูตัวอย่างและพิมพ์ <span>↗</span></button>
           </section>
           <section class="steps-card">
@@ -306,18 +310,46 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
       </form>
     </dialog>
 
+    <dialog id="senderDialog">
+      <form id="senderForm">
+        <div class="dialog-title"><div><span class="eyebrow">ข้อมูลบนซอง</span><h2>แก้ไขหน่วยงานผู้ส่ง</h2></div><button class="close-button" id="closeSenderDialog" type="button" aria-label="ปิด">×</button></div>
+        <p class="dialog-info">ข้อมูลนี้ใช้เฉพาะบนเครื่องนี้ และจะแสดงเหนือที่อยู่ผู้รับในหน้าพิมพ์ซอง</p>
+        <label class="form-field"><span>1. ชื่อหน่วยงาน *</span><input name="sender" type="text" required /></label>
+        <label class="form-field"><span>2. ที่อยู่ผู้ส่ง *</span><textarea name="senderAddress" rows="5" required></textarea><small>สามารถขึ้นบรรทัดใหม่ และใส่หมายเลขโทรศัพท์หรือโทรสารได้</small></label>
+        <label class="form-field"><span>3. เลขที่หนังสือ</span><input name="documentNumber" type="text" placeholder="ที่ ขก0010/................................................................." /></label>
+        <hr />
+        <div class="dialog-title compact"><div><span class="eyebrow">ปรับตำแหน่งแบบแมนนวล</span><h3>รูปแบบกล่องผู้ส่ง</h3></div></div>
+        <div class="form-grid three">
+          <label class="form-field"><span>ตำแหน่งตราครุฑ</span><select name="garudaPlacement"><option value="left">ด้านซ้ายของหน่วยงาน</option><option value="above">ด้านบนหน่วยงาน</option></select></label>
+          <label class="form-field"><span>ขนาดตราครุฑ (มม.)</span><input name="garudaSizeMm" type="number" min="8" max="30" step="1" /></label>
+          <label class="form-field"><span>ขนาดตัวอักษร (พอยต์)</span><input name="senderFontPt" type="number" min="7" max="16" step="0.5" /></label>
+        </div>
+        <div class="form-grid equal">
+          <label class="form-field"><span>ระยะจากขอบบน (มม.)</span><input name="senderTopMm" type="number" min="0" max="40" step="1" /></label>
+          <label class="form-field"><span>ระยะจากขอบซ้าย (มม.)</span><input name="senderLeftMm" type="number" min="0" max="60" step="1" /></label>
+        </div>
+        <div class="dialog-actions"><button class="button secondary" id="resetSenderLayout" type="button">คืนค่าตำแหน่งแนะนำ</button><button class="button secondary" id="cancelSenderSettings" type="button">ยกเลิก</button><button class="button primary" type="submit">บันทึกข้อมูลผู้ส่ง</button></div>
+      </form>
+    </dialog>
+
     <!-- แก้ค่า appsScriptUrl ในส่วนนี้ได้โดยตรง -->
     <script id="app-config">
 // ใส่ URL ที่ได้จาก Deploy > Manage deployments > Web app ของ Google Apps Script
 // URL ต้องลงท้ายด้วย /exec ระบบจะเชื่อม Google Sheets ให้อัตโนมัติเมื่อเปิดหน้าเว็บ
 // หากเว้นว่าง ระบบจะเปิดด้วยข้อมูลตัวอย่าง และให้ผู้ใช้ใส่ URL ผ่านหน้าตั้งค่า
 window.ENVELOPE_APP_CONFIG = {
-  appsScriptUrl: "https://script.google.com/macros/s/AKfycbyQrea5QMPW1FuvSITgQ4u9zn4QHKgCGXTrRCUShFPdTAf1ADCk7dh26iEjSBUJmmwB/exec", // ตัวอย่าง: https://script.google.com/macros/s/DEPLOYMENT_ID/exec
+  appsScriptUrl: "", // ตัวอย่าง: https://script.google.com/macros/s/DEPLOYMENT_ID/exec
   sender: "สำนักงานสหกรณ์จังหวัดขอนแก่น",
-  senderAddress: "ศาลากลางจังหวัดขอนแก่น ถนนศูนย์ราชการ ตำบลในเมือง อำเภอเมืองขอนแก่น ขอนแก่น 40000",
+  senderAddress: "เลขที่ 1/112 หมู่ที่ 13 ถนนหน้าเมือง ตำบลในเมือง\nอำเภอเมือง จังหวัดขอนแก่น 40000\nโทรศัพท์. 0-4324-6682 โทรสาร. 0-4324-6681",
+  documentNumber: "ที่ ขก0010/.................................................................",
   paperSize: "DL",
   garudaImage: "https://img1.pic.in.th/images/-PNG0457c311e6c77ae0f.png",
   showGaruda: true,
+  garudaPlacement: "left",
+  garudaSizeMm: 16,
+  senderTopMm: 6,
+  senderLeftMm: 14,
+  senderFontPt: 9.5,
 };
 
     </script>
@@ -341,11 +373,17 @@ const state = {
   connected: false,
   settings: {
     appsScriptUrl: defaults.appsScriptUrl || "",
-    sender: defaults.sender || "สำนักงานสหกรณ์จังหวัดขอนแก่น",
-    senderAddress: defaults.senderAddress || "ศาลากลางจังหวัดขอนแก่น ถนนศูนย์ราชการ ตำบลในเมือง อำเภอเมืองขอนแก่น ขอนแก่น 40000",
+    sender: savedSettings.sender || defaults.sender || "สำนักงานสหกรณ์จังหวัดขอนแก่น",
+    senderAddress: savedSettings.senderAddress || defaults.senderAddress || "เลขที่ 1/112 หมู่ที่ 13 ถนนหน้าเมือง ตำบลในเมือง\nอำเภอเมือง จังหวัดขอนแก่น 40000",
+    documentNumber: savedSettings.documentNumber ?? defaults.documentNumber ?? "",
     paperSize: savedSettings.paperSize || defaults.paperSize || "DL",
     garudaImage: defaults.garudaImage || "",
     showGaruda: savedSettings.showGaruda !== undefined ? Boolean(savedSettings.showGaruda) : defaults.showGaruda !== false,
+    garudaPlacement: savedSettings.garudaPlacement || defaults.garudaPlacement || "left",
+    garudaSizeMm: clampNumber(savedSettings.garudaSizeMm ?? defaults.garudaSizeMm, 8, 30, 16),
+    senderTopMm: clampNumber(savedSettings.senderTopMm ?? defaults.senderTopMm, 0, 40, 6),
+    senderLeftMm: clampNumber(savedSettings.senderLeftMm ?? defaults.senderLeftMm, 0, 60, 14),
+    senderFontPt: clampNumber(savedSettings.senderFontPt ?? defaults.senderFontPt, 7, 16, 9.5),
   },
 };
 
@@ -370,7 +408,14 @@ const elements = {
   recipientForm: $("#recipientForm"),
   recipientFormMessage: $("#recipientFormMessage"),
   saveRecipient: $("#saveRecipient"),
+  senderDialog: $("#senderDialog"),
+  senderForm: $("#senderForm"),
 };
+
+function clampNumber(value, min, max, fallback) {
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.min(max, Math.max(min, number)) : fallback;
+}
 
 function escapeHtml(value = "") {
   return String(value).replace(/[&<>'"]/g, (character) => ({
@@ -437,6 +482,15 @@ function filteredRecipients() {
 
 function setNotice(message) {
   elements.notice.textContent = message;
+}
+
+function persistSettings() {
+  const keys = [
+    "sender", "senderAddress", "documentNumber", "paperSize", "showGaruda",
+    "garudaPlacement", "garudaSizeMm", "senderTopMm", "senderLeftMm", "senderFontPt",
+  ];
+  const saved = Object.fromEntries(keys.map((key) => [key, state.settings[key]]));
+  localStorage.setItem("envelope-app-settings", JSON.stringify(saved));
 }
 
 function buildApiUrl(baseUrl, parameters) {
@@ -549,11 +603,33 @@ function renderSummary() {
   elements.paperLabel.textContent = state.settings.paperSize === "A4" ? "กระดาษ A4" : `ซอง ${state.settings.paperSize}`;
   elements.showGaruda.checked = state.settings.showGaruda;
   const garudaPreview = $("#garudaPreview");
+  const senderPreview = $("#senderPreview");
+  const previewScale = 2;
+  const senderTop = state.settings.senderTopMm * previewScale;
+  const senderLeft = state.settings.senderLeftMm * previewScale;
+  const garudaHeight = state.settings.garudaSizeMm * previewScale;
+  senderPreview.textContent = [state.settings.sender, state.settings.senderAddress, state.settings.documentNumber]
+    .filter(Boolean)
+    .join("\n");
+  senderPreview.style.fontSize = `${state.settings.senderFontPt * 1.05}px`;
   if (state.settings.garudaImage && state.settings.showGaruda) {
     garudaPreview.src = state.settings.garudaImage;
     garudaPreview.hidden = false;
+    garudaPreview.style.top = `${senderTop}px`;
+    garudaPreview.style.left = `${senderLeft}px`;
+    garudaPreview.style.width = "auto";
+    garudaPreview.style.height = `${garudaHeight}px`;
+    if (state.settings.garudaPlacement === "left") {
+      senderPreview.style.top = `${senderTop + 3}px`;
+      senderPreview.style.left = `${senderLeft + (garudaHeight * 0.9) + 7}px`;
+    } else {
+      senderPreview.style.top = `${senderTop + garudaHeight + 4}px`;
+      senderPreview.style.left = `${senderLeft}px`;
+    }
   } else {
     garudaPreview.hidden = true;
+    senderPreview.style.top = `${senderTop}px`;
+    senderPreview.style.left = `${senderLeft}px`;
   }
   $("#chooseStep").classList.toggle("done", selectedCount > 0);
 }
@@ -636,6 +712,51 @@ function updateRecipientFormRequirements() {
 
 function closeRecipientDialog() {
   if (elements.recipientDialog.open) elements.recipientDialog.close();
+}
+
+function fillSenderForm() {
+  const fields = [
+    "sender", "senderAddress", "documentNumber", "garudaPlacement",
+    "garudaSizeMm", "senderTopMm", "senderLeftMm", "senderFontPt",
+  ];
+  fields.forEach((name) => {
+    elements.senderForm.elements[name].value = state.settings[name];
+  });
+}
+
+function openSenderSettings() {
+  fillSenderForm();
+  elements.senderDialog.showModal();
+}
+
+function closeSenderSettings() {
+  if (elements.senderDialog.open) elements.senderDialog.close();
+}
+
+function resetSenderLayout() {
+  elements.senderForm.elements.garudaPlacement.value = defaults.garudaPlacement || "left";
+  elements.senderForm.elements.garudaSizeMm.value = defaults.garudaSizeMm || 16;
+  elements.senderForm.elements.senderTopMm.value = defaults.senderTopMm || 6;
+  elements.senderForm.elements.senderLeftMm.value = defaults.senderLeftMm || 14;
+  elements.senderForm.elements.senderFontPt.value = defaults.senderFontPt || 9.5;
+}
+
+function handleSenderSubmit(event) {
+  event.preventDefault();
+  if (!elements.senderForm.reportValidity()) return;
+  const values = Object.fromEntries(new FormData(elements.senderForm).entries());
+  state.settings.sender = String(values.sender || "").trim();
+  state.settings.senderAddress = String(values.senderAddress || "").trim();
+  state.settings.documentNumber = String(values.documentNumber || "").trim();
+  state.settings.garudaPlacement = values.garudaPlacement === "above" ? "above" : "left";
+  state.settings.garudaSizeMm = clampNumber(values.garudaSizeMm, 8, 30, 16);
+  state.settings.senderTopMm = clampNumber(values.senderTopMm, 0, 40, 6);
+  state.settings.senderLeftMm = clampNumber(values.senderLeftMm, 0, 60, 14);
+  state.settings.senderFontPt = clampNumber(values.senderFontPt, 7, 16, 9.5);
+  persistSettings();
+  renderSummary();
+  closeSenderSettings();
+  setNotice("บันทึกข้อมูลและตำแหน่งผู้ส่งแล้ว");
 }
 
 function delay(milliseconds) {
@@ -731,15 +852,26 @@ function printEnvelopes() {
     A4: ["210mm", "297mm", "กระดาษ A4"],
   };
   const [width, height, label] = sizes[state.settings.paperSize];
+  const senderClass = state.settings.showGaruda && state.settings.garudaPlacement === "left"
+    ? "sender garuda-left"
+    : "sender garuda-above";
   const garudaMarkup = state.settings.garudaImage && state.settings.showGaruda
     ? `<img class="garuda" src="${state.settings.garudaImage}" alt="ตราครุฑ">`
     : "";
+  const senderAddressHtml = escapeHtml(state.settings.senderAddress).replace(/\r?\n/g, "<br>");
+  const documentNumberHtml = state.settings.documentNumber
+    ? `<div class="document-number">${escapeHtml(state.settings.documentNumber)}</div>`
+    : "";
+  const senderTopMm = clampNumber(state.settings.senderTopMm, 0, 40, 6);
+  const senderLeftMm = clampNumber(state.settings.senderLeftMm, 0, 60, 14);
+  const senderFontPt = clampNumber(state.settings.senderFontPt, 7, 16, 9.5);
+  const garudaSizeMm = clampNumber(state.settings.garudaSizeMm, 8, 30, 16);
   const pages = recipients.map((item) => {
     const locality = [
       item.subdistrict && `ตำบล ${item.subdistrict}`,
       item.district && `อำเภอ ${item.district}`,
     ].filter(Boolean).join(" ");
-    return `<section class="envelope"><div class="sender">${garudaMarkup}<strong>${escapeHtml(state.settings.sender)}</strong><br>${escapeHtml(state.settings.senderAddress)}</div><div class="recipient"><small>เรียน</small><h1>${escapeHtml(recipientName(item))}</h1>${item.position && recipientName(item) !== item.position ? `<p>${escapeHtml(item.position)}</p>` : ""}${item.department ? `<p class="organization">${escapeHtml(item.department)}</p>` : ""}<p>${escapeHtml(item.address1)}</p><p>${escapeHtml(locality)}</p><p>${item.province ? `จังหวัด ${escapeHtml(item.province)}` : ""} <strong>${escapeHtml(item.postalCode)}</strong></p></div></section>`;
+    return `<section class="envelope"><div class="${senderClass}">${garudaMarkup}<div class="sender-content"><strong>${escapeHtml(state.settings.sender)}</strong><div class="sender-address">${senderAddressHtml}</div>${documentNumberHtml}</div></div><div class="recipient"><small>เรียน</small><h1>${escapeHtml(recipientName(item))}</h1>${item.position && recipientName(item) !== item.position ? `<p>${escapeHtml(item.position)}</p>` : ""}${item.department ? `<p class="organization">${escapeHtml(item.department)}</p>` : ""}<p>${escapeHtml(item.address1)}</p><p>${escapeHtml(locality)}</p><p>${item.province ? `จังหวัด ${escapeHtml(item.province)}` : ""} <strong>${escapeHtml(item.postalCode)}</strong></p></div></section>`;
   }).join("");
   const popup = window.open("", "_blank");
   if (!popup) {
@@ -747,7 +879,7 @@ function printEnvelopes() {
     return;
   }
   popup.opener = null;
-  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์จ่าหน้าซอง</title><style>@page{size:${width} ${height};margin:0}*{box-sizing:border-box}body{margin:0;color:#17223b;font-family:"Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${width};height:${height};page-break-after:always;overflow:hidden;background:#fff}.envelope:last-child{page-break-after:auto}.sender{position:absolute;top:7mm;left:14mm;width:44%;font-size:9.5pt;line-height:1.55;color:#111}.garuda{display:block;width:auto;height:17mm;margin:0 0 2mm 0;object-fit:contain;object-position:left center}.recipient{position:absolute;left:42%;top:42%;width:51%;transform:translateY(-20%);font-size:12pt;line-height:1.5}.recipient small{color:#667085;font-size:10pt}.recipient h1{margin:1mm 0 0;font-size:15pt}.recipient p{margin:.4mm 0}.organization{font-weight:700}@media screen{body{background:#eef2f7;padding:18px}.envelope{margin:0 auto 18px;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${pages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
+  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์จ่าหน้าซอง</title><style>@page{size:${width} ${height};margin:0}*{box-sizing:border-box}body{margin:0;color:#17223b;font-family:"Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${width};height:${height};page-break-after:always;overflow:hidden;background:#fff}.envelope:last-child{page-break-after:auto}.sender{position:absolute;top:${senderTopMm}mm;left:${senderLeftMm}mm;width:55%;font-size:${senderFontPt}pt;line-height:1.45;color:#111}.sender-content{min-width:0}.sender-address{margin-top:.7mm}.document-number{margin-top:1.2mm;font-weight:700}.garuda{display:block;width:auto;height:${garudaSizeMm}mm;object-fit:contain;object-position:left top}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-above .garuda{margin:0 0 2mm 0}.recipient{position:absolute;left:42%;top:42%;width:51%;transform:translateY(-20%);font-size:12pt;line-height:1.5}.recipient small{color:#667085;font-size:10pt}.recipient h1{margin:1mm 0 0;font-size:15pt}.recipient p{margin:.4mm 0}.organization{font-weight:700}@media screen{body{background:#eef2f7;padding:18px}.envelope{margin:0 auto 18px;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${pages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
   popup.document.close();
   setNotice(`เตรียมพิมพ์ ${recipients.length} รายการ บน${label}`);
 }
@@ -778,12 +910,12 @@ elements.selectAll.addEventListener("change", () => {
 });
 elements.paper.addEventListener("change", (event) => {
   state.settings.paperSize = event.target.value;
-  localStorage.setItem("envelope-app-settings", JSON.stringify({ paperSize: state.settings.paperSize, showGaruda: state.settings.showGaruda }));
+  persistSettings();
   renderSummary();
 });
 elements.showGaruda.addEventListener("change", (event) => {
   state.settings.showGaruda = event.target.checked;
-  localStorage.setItem("envelope-app-settings", JSON.stringify({ paperSize: state.settings.paperSize, showGaruda: state.settings.showGaruda }));
+  persistSettings();
   renderSummary();
   setNotice(state.settings.showGaruda ? "เปิดการแสดงตราครุฑแล้ว" : "ปิดการแสดงตราครุฑแล้ว");
 });
@@ -792,6 +924,11 @@ $("#closeRecipientDialog").addEventListener("click", closeRecipientDialog);
 $("#cancelRecipient").addEventListener("click", closeRecipientDialog);
 $("#recipientCategory").addEventListener("change", updateRecipientFormRequirements);
 elements.recipientForm.addEventListener("submit", handleRecipientSubmit);
+$("#openSenderSettings").addEventListener("click", openSenderSettings);
+$("#closeSenderDialog").addEventListener("click", closeSenderSettings);
+$("#cancelSenderSettings").addEventListener("click", closeSenderSettings);
+$("#resetSenderLayout").addEventListener("click", resetSenderLayout);
+elements.senderForm.addEventListener("submit", handleSenderSubmit);
 $("#printButton").addEventListener("click", printEnvelopes);
 $("#heroPrint").addEventListener("click", printEnvelopes);
 
