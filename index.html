@@ -59,8 +59,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .sender-document-mini{font-weight:700}
 .receiver-mini{position:absolute;z-index:2;width:51%;color:#17223b}
 .receiver-mini small{display:block;color:#667085}
-.receiver-mini h1{font:inherit;font-weight:800}
-.receiver-mini p{font:inherit}
+.hero .receiver-mini h1{max-width:none;margin:0;color:inherit;font:inherit;font-weight:800;letter-spacing:normal;line-height:inherit}
+.hero .receiver-mini p{max-width:none;margin:0;color:inherit;font:inherit;letter-spacing:normal;line-height:inherit}
 .receiver-mini .organization,.receiver-mini .postal-code{font-weight:700}
 
 .summary{display:grid;grid-template-columns:repeat(3,minmax(150px,1fr)) minmax(260px,1.25fr);gap:12px;margin:18px 0}
@@ -205,6 +205,7 @@ input[type=checkbox]{width:20px;height:20px}
 .print-controls{display:grid;grid-template-columns:2fr 1fr 1.25fr 1fr;gap:12px;align-items:end}
 .print-controls>*{min-width:0;margin:0!important}
 .print-controls .paper-size-option{grid-column:span 2}
+.paper-profile-hint{display:block;margin-top:8px;color:#dbe5ff;font-size:12px;font-weight:700}
 .print-controls .garuda-option{height:52px}
 .print-controls #printButton{grid-column:1/-1}
 .print-card h2{font-size:38px}
@@ -341,7 +342,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
           <section class="print-card">
             <div class="print-overview"><span class="eyebrow light">พร้อมพิมพ์</span><h2><span id="sideSelected">0</span> รายการ</h2><p>ระบบจะสร้างหน้าพิมพ์แยก 1 ซองต่อ 1 รายชื่อ</p></div>
             <div class="print-controls">
-              <label class="paper-size-option"><span>ขนาดซอง / กระดาษ</span><select id="paperSize"><option value="DL">ซอง DL · 22 × 11 ซม.</option><option value="C5">ซอง C5 · 22.9 × 16.2 ซม.</option><option value="A4">กระดาษ A4 แนวตั้ง · 21 × 29.7 ซม.</option><option value="A4L">กระดาษ A4 แนวนอน · 29.7 × 21 ซม.</option></select></label>
+              <label class="paper-size-option"><span>ขนาดซอง / กระดาษ</span><select id="paperSize"><option value="DL">ซอง DL · 22 × 11 ซม.</option><option value="C5">ซอง C5 · 22.9 × 16.2 ซม.</option><option value="A4">กระดาษ A4 แนวตั้ง · 21 × 29.7 ซม.</option><option value="A4L">กระดาษ A4 แนวนอน · 29.7 × 21 ซม.</option></select><small class="paper-profile-hint">จำฟอนต์และตำแหน่งแยกให้แต่ละขนาดอัตโนมัติ</small></label>
               <label class="recipient-font-option"><span>ขนาดฟอนต์ข้อมูลผู้รับ (พอยต์)</span><input id="recipientFontPt" type="number" min="8" max="24" step="0.5" /></label>
               <button class="sender-settings-button" id="openRecipientLayoutSettings" type="button">✎ ปรับตำแหน่งและระยะผู้รับ</button>
               <label class="garuda-option"><input id="showSender" type="checkbox" checked /><span>แสดงข้อมูลผู้ส่ง</span></label>
@@ -484,6 +485,48 @@ const GARUDA_STANDARD_VERSION = "15mm-v1";
 const savedGarudaSize = savedSettings.garudaStandardVersion === GARUDA_STANDARD_VERSION
   ? savedSettings.garudaSizeMm
   : defaults.garudaSizeMm;
+const PAPER_SIZE_KEYS = ["DL", "C5", "A4", "A4L"];
+const LAYOUT_SETTING_KEYS = [
+  "garudaPlacement", "garudaSizeMm", "senderTopMm", "senderLeftMm", "senderTextOffsetMm", "senderFontPt",
+  "recipientFontPt", "recipientTopPercent", "recipientLeftPercent", "recipientLineHeight",
+  "postagePermitTopMm", "postagePermitRightMm", "postagePermitFontPt",
+];
+const initialPaperSize = PAPER_SIZE_KEYS.includes(savedSettings.paperSize)
+  ? savedSettings.paperSize
+  : (PAPER_SIZE_KEYS.includes(defaults.paperSize) ? defaults.paperSize : "DL");
+
+function normalizeLayoutProfile(source = {}, paperSize = initialPaperSize) {
+  const profileDefaults = defaults.paperLayouts?.[paperSize] || {};
+  const read = (key) => source[key] ?? profileDefaults[key] ?? defaults[key];
+  return {
+    garudaPlacement: read("garudaPlacement") === "above" ? "above" : "left",
+    garudaSizeMm: clampNumber(read("garudaSizeMm"), 8, 30, 15),
+    senderTopMm: clampNumber(read("senderTopMm"), 0, 40, 6),
+    senderLeftMm: clampNumber(read("senderLeftMm"), 0, 60, 14),
+    senderTextOffsetMm: clampNumber(read("senderTextOffsetMm"), 0, 30, 10),
+    senderFontPt: clampNumber(read("senderFontPt"), 7, 20, 9.5),
+    recipientFontPt: clampNumber(read("recipientFontPt"), 8, 24, 12),
+    recipientTopPercent: clampNumber(read("recipientTopPercent"), 5, 85, 40),
+    recipientLeftPercent: clampNumber(read("recipientLeftPercent"), 5, 80, 42),
+    recipientLineHeight: clampNumber(read("recipientLineHeight"), 1, 2.2, 1.5),
+    postagePermitTopMm: clampNumber(read("postagePermitTopMm"), 0, 40, 7),
+    postagePermitRightMm: clampNumber(read("postagePermitRightMm"), 0, 60, 8),
+    postagePermitFontPt: clampNumber(read("postagePermitFontPt"), 6, 14, 8.5),
+  };
+}
+
+const savedPaperLayouts = savedSettings.paperLayouts && typeof savedSettings.paperLayouts === "object"
+  ? savedSettings.paperLayouts
+  : {};
+const legacyLayoutSource = { ...savedSettings, garudaSizeMm: savedGarudaSize };
+const initialPaperLayouts = Object.fromEntries(PAPER_SIZE_KEYS.map((paperSize) => {
+  const paperDefaults = defaults.paperLayouts?.[paperSize] || {};
+  const source = savedPaperLayouts[paperSize]
+    ? { ...paperDefaults, ...savedPaperLayouts[paperSize] }
+    : (paperSize === initialPaperSize ? { ...paperDefaults, ...legacyLayoutSource } : paperDefaults);
+  return [paperSize, normalizeLayoutProfile(source, paperSize)];
+}));
+const initialLayout = initialPaperLayouts[initialPaperSize];
 
 const state = {
   recipients: [],
@@ -498,27 +541,26 @@ const state = {
     sender: savedSettings.sender || defaults.sender || "สำนักงานสหกรณ์จังหวัดขอนแก่น",
     senderAddress: savedSettings.senderAddress || defaults.senderAddress || "เลขที่ 1/112 หมู่ที่ 13 ถนนหน้าเมือง ตำบลในเมือง\nอำเภอเมือง จังหวัดขอนแก่น 40000",
     documentNumber: savedSettings.documentNumber ?? defaults.documentNumber ?? "",
-    paperSize: ["DL", "C5", "A4", "A4L"].includes(savedSettings.paperSize)
-      ? savedSettings.paperSize
-      : defaults.paperSize || "DL",
+    paperSize: initialPaperSize,
+    paperLayouts: initialPaperLayouts,
     garudaImage: defaults.garudaImage || "",
     showSender: savedSettings.showSender !== undefined ? Boolean(savedSettings.showSender) : defaults.showSender !== false,
     showGaruda: savedSettings.showGaruda !== undefined ? Boolean(savedSettings.showGaruda) : defaults.showGaruda !== false,
-    garudaPlacement: savedSettings.garudaPlacement || defaults.garudaPlacement || "left",
-    garudaSizeMm: clampNumber(savedGarudaSize, 8, 30, 15),
+    garudaPlacement: initialLayout.garudaPlacement,
+    garudaSizeMm: initialLayout.garudaSizeMm,
     garudaStandardVersion: GARUDA_STANDARD_VERSION,
-    senderTopMm: clampNumber(savedSettings.senderTopMm ?? defaults.senderTopMm, 0, 40, 6),
-    senderLeftMm: clampNumber(savedSettings.senderLeftMm ?? defaults.senderLeftMm, 0, 60, 14),
-    senderTextOffsetMm: clampNumber(savedSettings.senderTextOffsetMm ?? defaults.senderTextOffsetMm, 0, 30, 10),
-    senderFontPt: clampNumber(savedSettings.senderFontPt ?? defaults.senderFontPt, 7, 20, 9.5),
-    recipientFontPt: clampNumber(savedSettings.recipientFontPt ?? defaults.recipientFontPt, 8, 24, 12),
-    recipientTopPercent: clampNumber(savedSettings.recipientTopPercent ?? defaults.recipientTopPercent, 5, 85, 40),
-    recipientLeftPercent: clampNumber(savedSettings.recipientLeftPercent ?? defaults.recipientLeftPercent, 5, 80, 42),
-    recipientLineHeight: clampNumber(savedSettings.recipientLineHeight ?? defaults.recipientLineHeight, 1, 2.2, 1.5),
+    senderTopMm: initialLayout.senderTopMm,
+    senderLeftMm: initialLayout.senderLeftMm,
+    senderTextOffsetMm: initialLayout.senderTextOffsetMm,
+    senderFontPt: initialLayout.senderFontPt,
+    recipientFontPt: initialLayout.recipientFontPt,
+    recipientTopPercent: initialLayout.recipientTopPercent,
+    recipientLeftPercent: initialLayout.recipientLeftPercent,
+    recipientLineHeight: initialLayout.recipientLineHeight,
     postagePermitText: savedSettings.postagePermitText || defaults.postagePermitText || "ชำระค่าฝากส่งเป็นรายเดือน\nใบอนุญาตเลขที่ xx/xxx\nไปรษณีย์เดชาวุธ",
-    postagePermitTopMm: clampNumber(savedSettings.postagePermitTopMm ?? defaults.postagePermitTopMm, 0, 40, 7),
-    postagePermitRightMm: clampNumber(savedSettings.postagePermitRightMm ?? defaults.postagePermitRightMm, 0, 60, 8),
-    postagePermitFontPt: clampNumber(savedSettings.postagePermitFontPt ?? defaults.postagePermitFontPt, 6, 14, 8.5),
+    postagePermitTopMm: initialLayout.postagePermitTopMm,
+    postagePermitRightMm: initialLayout.postagePermitRightMm,
+    postagePermitFontPt: initialLayout.postagePermitFontPt,
   },
 };
 
@@ -556,6 +598,29 @@ const elements = {
 function clampNumber(value, min, max, fallback) {
   const number = Number(value);
   return Number.isFinite(number) ? Math.min(max, Math.max(min, number)) : fallback;
+}
+
+function captureCurrentLayout() {
+  return Object.fromEntries(LAYOUT_SETTING_KEYS.map((key) => [key, state.settings[key]]));
+}
+
+function rememberCurrentPaperLayout(paperSize = state.settings.paperSize) {
+  state.settings.paperLayouts[paperSize] = normalizeLayoutProfile(captureCurrentLayout(), paperSize);
+}
+
+function applyPaperLayout(paperSize) {
+  const profile = normalizeLayoutProfile(
+    state.settings.paperLayouts[paperSize] || defaults.paperLayouts?.[paperSize] || {},
+    paperSize,
+  );
+  state.settings.paperLayouts[paperSize] = profile;
+  LAYOUT_SETTING_KEYS.forEach((key) => {
+    state.settings[key] = profile[key];
+  });
+}
+
+function defaultPaperLayout(paperSize = state.settings.paperSize) {
+  return normalizeLayoutProfile(defaults.paperLayouts?.[paperSize] || {}, paperSize);
 }
 
 function escapeHtml(value = "") {
@@ -647,8 +712,9 @@ function setNotice(message) {
 }
 
 function persistSettings() {
+  rememberCurrentPaperLayout();
   const keys = [
-    "sender", "senderAddress", "documentNumber", "paperSize", "showSender", "showGaruda",
+    "sender", "senderAddress", "documentNumber", "paperSize", "paperLayouts", "showSender", "showGaruda",
     "garudaPlacement", "garudaSizeMm", "garudaStandardVersion", "senderTopMm", "senderLeftMm", "senderTextOffsetMm", "senderFontPt", "recipientFontPt",
     "recipientTopPercent", "recipientLeftPercent", "recipientLineHeight",
     "postagePermitText", "postagePermitTopMm", "postagePermitRightMm", "postagePermitFontPt",
@@ -834,11 +900,18 @@ function renderSummary() {
   receiverPreview.style.top = `${state.settings.recipientTopPercent}%`;
   receiverPreview.style.left = `${state.settings.recipientLeftPercent}%`;
   receiverPreview.style.lineHeight = state.settings.recipientLineHeight;
-  receiverPreview.style.fontSize = `${ptToPreviewPx(state.settings.recipientFontPt)}px`;
+  const recipientPreviewFontPx = ptToPreviewPx(state.settings.recipientFontPt);
+  receiverPreview.style.fontSize = `${recipientPreviewFontPx}px`;
+  const receiverGreeting = receiverPreview.querySelector("small");
+  if (receiverGreeting) receiverGreeting.style.fontSize = `${recipientPreviewFontPx}px`;
   const receiverHeading = receiverPreview.querySelector("h1");
-  if (receiverHeading) receiverHeading.style.margin = `${1 * previewScale}px 0 0`;
+  if (receiverHeading) {
+    receiverHeading.style.margin = `${1 * previewScale}px 0 0`;
+    receiverHeading.style.fontSize = `${recipientPreviewFontPx}px`;
+  }
   receiverPreview.querySelectorAll("p").forEach((line) => {
     line.style.margin = `${0.4 * previewScale}px 0`;
+    line.style.fontSize = `${recipientPreviewFontPx}px`;
   });
   if (state.settings.showSender && state.settings.garudaImage) {
     garudaPreview.src = state.settings.garudaImage;
@@ -986,9 +1059,10 @@ function closeRecipientLayoutSettings() {
 }
 
 function resetRecipientLayout() {
-  elements.recipientLayoutForm.elements.recipientTopPercent.value = defaults.recipientTopPercent ?? 40;
-  elements.recipientLayoutForm.elements.recipientLeftPercent.value = defaults.recipientLeftPercent ?? 42;
-  elements.recipientLayoutForm.elements.recipientLineHeight.value = defaults.recipientLineHeight ?? 1.5;
+  const profile = defaultPaperLayout();
+  elements.recipientLayoutForm.elements.recipientTopPercent.value = profile.recipientTopPercent;
+  elements.recipientLayoutForm.elements.recipientLeftPercent.value = profile.recipientLeftPercent;
+  elements.recipientLayoutForm.elements.recipientLineHeight.value = profile.recipientLineHeight;
 }
 
 function handleRecipientLayoutSubmit(event) {
@@ -1024,12 +1098,13 @@ function closeSenderSettings() {
 }
 
 function resetSenderLayout() {
-  elements.senderForm.elements.garudaPlacement.value = defaults.garudaPlacement || "left";
-  elements.senderForm.elements.garudaSizeMm.value = defaults.garudaSizeMm || 15;
-  elements.senderForm.elements.senderTopMm.value = defaults.senderTopMm || 6;
-  elements.senderForm.elements.senderLeftMm.value = defaults.senderLeftMm || 14;
-  elements.senderForm.elements.senderTextOffsetMm.value = defaults.senderTextOffsetMm ?? 10;
-  elements.senderForm.elements.senderFontPt.value = defaults.senderFontPt || 9.5;
+  const profile = defaultPaperLayout();
+  elements.senderForm.elements.garudaPlacement.value = profile.garudaPlacement;
+  elements.senderForm.elements.garudaSizeMm.value = profile.garudaSizeMm;
+  elements.senderForm.elements.senderTopMm.value = profile.senderTopMm;
+  elements.senderForm.elements.senderLeftMm.value = profile.senderLeftMm;
+  elements.senderForm.elements.senderTextOffsetMm.value = profile.senderTextOffsetMm;
+  elements.senderForm.elements.senderFontPt.value = profile.senderFontPt;
 }
 
 function handleSenderSubmit(event) {
@@ -1068,10 +1143,11 @@ function closePostagePermitSettings() {
 }
 
 function resetPostagePermit() {
+  const profile = defaultPaperLayout();
   elements.postagePermitForm.elements.postagePermitText.value = defaults.postagePermitText || "ชำระค่าฝากส่งเป็นรายเดือน\nใบอนุญาตเลขที่ xx/xxx\nไปรษณีย์เดชาวุธ";
-  elements.postagePermitForm.elements.postagePermitTopMm.value = defaults.postagePermitTopMm ?? 7;
-  elements.postagePermitForm.elements.postagePermitRightMm.value = defaults.postagePermitRightMm ?? 8;
-  elements.postagePermitForm.elements.postagePermitFontPt.value = defaults.postagePermitFontPt ?? 8.5;
+  elements.postagePermitForm.elements.postagePermitTopMm.value = profile.postagePermitTopMm;
+  elements.postagePermitForm.elements.postagePermitRightMm.value = profile.postagePermitRightMm;
+  elements.postagePermitForm.elements.postagePermitFontPt.value = profile.postagePermitFontPt;
 }
 
 function handlePostagePermitSubmit(event) {
@@ -1270,9 +1346,14 @@ elements.selectAll.addEventListener("change", () => {
   renderSummary();
 });
 elements.paper.addEventListener("change", (event) => {
-  state.settings.paperSize = event.target.value;
+  const nextPaperSize = PAPER_SIZE_KEYS.includes(event.target.value) ? event.target.value : "DL";
+  rememberCurrentPaperLayout();
+  state.settings.paperSize = nextPaperSize;
+  applyPaperLayout(nextPaperSize);
   persistSettings();
   renderSummary();
+  const selectedLabel = event.target.selectedOptions[0]?.textContent.split(" · ")[0] || nextPaperSize;
+  setNotice(`โหลดชุดฟอนต์และตำแหน่งสำหรับ ${selectedLabel} แล้ว`);
 });
 elements.recipientFont.addEventListener("change", (event) => {
   state.settings.recipientFontPt = clampNumber(event.target.value, 8, 24, 12);
