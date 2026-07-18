@@ -198,6 +198,7 @@ input[type=checkbox]{width:20px;height:20px}
 .print-controls>*{min-width:0;margin:0!important}
 .print-controls .paper-size-option{grid-column:span 2}
 .print-controls .garuda-option{height:52px}
+.print-controls #printButton{grid-column:1/-1}
 .print-card h2{font-size:38px}
 .print-card p{font-size:14px}
 .print-card label>span{margin-bottom:8px;font-size:13px}
@@ -329,6 +330,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
               <label class="paper-size-option"><span>ขนาดซอง / กระดาษ</span><select id="paperSize"><option value="DL">ซอง DL · 22 × 11 ซม.</option><option value="C5">ซอง C5 · 22.9 × 16.2 ซม.</option><option value="A4">กระดาษ A4 แนวตั้ง · 21 × 29.7 ซม.</option><option value="A4L">กระดาษ A4 แนวนอน · 29.7 × 21 ซม.</option></select></label>
               <label class="recipient-font-option"><span>ขนาดฟอนต์ข้อมูลผู้รับ (พอยต์)</span><input id="recipientFontPt" type="number" min="8" max="24" step="0.5" /></label>
               <button class="sender-settings-button" id="openRecipientLayoutSettings" type="button">✎ ปรับตำแหน่งและระยะผู้รับ</button>
+              <label class="garuda-option"><input id="showSender" type="checkbox" checked /><span>แสดงข้อมูลผู้ส่ง</span></label>
               <label class="garuda-option"><input id="showGaruda" type="checkbox" checked /><span>แสดงตราครุฑ</span></label>
               <button class="sender-settings-button" id="openSenderSettings" type="button">✎ แก้ไขข้อมูลผู้ส่ง</button>
               <button class="sender-settings-button" id="openPostagePermitSettings" type="button">✎ แก้ไขกรอบค่าฝากส่ง</button>
@@ -433,6 +435,7 @@ window.ENVELOPE_APP_CONFIG = {
   senderAddress: "เลขที่ 1/112 หมู่ที่ 13 ถนนหน้าเมือง ตำบลในเมือง\nอำเภอเมือง จังหวัดขอนแก่น 40000\nโทรศัพท์. 0-4324-6682 โทรสาร. 0-4324-6681",
   documentNumber: "ที่ ขก0010/.................................................................",
   paperSize: "DL",
+  showSender: true,
   garudaImage: "https://img1.pic.in.th/images/-PNG0457c311e6c77ae0f.png",
   showGaruda: true,
   garudaPlacement: "left",
@@ -485,6 +488,7 @@ const state = {
       ? savedSettings.paperSize
       : defaults.paperSize || "DL",
     garudaImage: defaults.garudaImage || "",
+    showSender: savedSettings.showSender !== undefined ? Boolean(savedSettings.showSender) : defaults.showSender !== false,
     showGaruda: savedSettings.showGaruda !== undefined ? Boolean(savedSettings.showGaruda) : defaults.showGaruda !== false,
     garudaPlacement: savedSettings.garudaPlacement || defaults.garudaPlacement || "left",
     garudaSizeMm: clampNumber(savedGarudaSize, 8, 30, 15),
@@ -521,6 +525,7 @@ const elements = {
   paper: $("#paperSize"),
   paperLabel: $("#paperLabel"),
   recipientFont: $("#recipientFontPt"),
+  showSender: $("#showSender"),
   showGaruda: $("#showGaruda"),
   recipientDialog: $("#recipientDialog"),
   recipientForm: $("#recipientForm"),
@@ -629,7 +634,7 @@ function setNotice(message) {
 
 function persistSettings() {
   const keys = [
-    "sender", "senderAddress", "documentNumber", "paperSize", "showGaruda",
+    "sender", "senderAddress", "documentNumber", "paperSize", "showSender", "showGaruda",
     "garudaPlacement", "garudaSizeMm", "garudaStandardVersion", "senderTopMm", "senderLeftMm", "senderTextOffsetMm", "senderFontPt", "recipientFontPt",
     "recipientTopPercent", "recipientLeftPercent", "recipientLineHeight",
     "postagePermitText", "postagePermitTopMm", "postagePermitRightMm", "postagePermitFontPt",
@@ -756,7 +761,9 @@ function renderSummary() {
     A4L: "กระดาษ A4 แนวนอน",
   };
   elements.paperLabel.textContent = paperLabels[state.settings.paperSize] || paperLabels.DL;
+  elements.showSender.checked = state.settings.showSender;
   elements.showGaruda.checked = state.settings.showGaruda;
+  elements.showGaruda.disabled = !state.settings.showSender;
   const garudaPreview = $("#garudaPreview");
   const senderPreview = $("#senderPreview");
   const postagePermitPreview = $("#postagePermitPreview");
@@ -767,6 +774,7 @@ function renderSummary() {
   senderPreview.textContent = [state.settings.sender, state.settings.senderAddress, state.settings.documentNumber]
     .filter(Boolean)
     .join("\n");
+  senderPreview.hidden = !state.settings.showSender;
   senderPreview.style.fontSize = `${state.settings.senderFontPt * 1.05}px`;
   postagePermitPreview.textContent = state.settings.postagePermitText;
   postagePermitPreview.style.top = `${state.settings.postagePermitTopMm * previewScale}px`;
@@ -781,7 +789,7 @@ function renderSummary() {
   receiverPreview.querySelectorAll("span").forEach((line) => {
     line.style.fontSize = `${state.settings.recipientFontPt * 0.82}px`;
   });
-  if (state.settings.garudaImage && state.settings.showGaruda) {
+  if (state.settings.showSender && state.settings.garudaImage && state.settings.showGaruda) {
     garudaPreview.src = state.settings.garudaImage;
     garudaPreview.hidden = false;
     garudaPreview.style.top = `${senderTop}px`;
@@ -1154,12 +1162,15 @@ function printEnvelopes() {
   const senderClass = state.settings.showGaruda && state.settings.garudaPlacement === "left"
     ? "sender garuda-left"
     : "sender garuda-above";
-  const garudaMarkup = state.settings.garudaImage && state.settings.showGaruda
+  const garudaMarkup = state.settings.showSender && state.settings.garudaImage && state.settings.showGaruda
     ? `<img class="garuda" src="${state.settings.garudaImage}" alt="ตราครุฑ">`
     : "";
   const senderAddressHtml = escapeHtml(state.settings.senderAddress).replace(/\r?\n/g, "<br>");
   const documentNumberHtml = state.settings.documentNumber
     ? `<div class="document-number">${escapeHtml(state.settings.documentNumber)}</div>`
+    : "";
+  const senderBlockHtml = state.settings.showSender
+    ? `<div class="${senderClass}">${garudaMarkup}<div class="sender-content"><strong>${escapeHtml(state.settings.sender)}</strong><div class="sender-address">${senderAddressHtml}</div>${documentNumberHtml}</div></div>`
     : "";
   const senderTopMm = clampNumber(state.settings.senderTopMm, 0, 40, 6);
   const senderLeftMm = clampNumber(state.settings.senderLeftMm, 0, 60, 14);
@@ -1182,7 +1193,7 @@ function printEnvelopes() {
       formatAddressArea("อำเภอ", item.district),
     ].filter(Boolean).join(" ");
     const province = formatAddressArea("จังหวัด", item.province);
-    return `<section class="envelope"><div class="${senderClass}">${garudaMarkup}<div class="sender-content"><strong>${escapeHtml(state.settings.sender)}</strong><div class="sender-address">${senderAddressHtml}</div>${documentNumberHtml}</div></div><div class="postage-permit">${postagePermitHtml}</div><div class="recipient"><small>เรียน</small><h1>${escapeHtml(recipientName(item))}</h1>${item.position && recipientName(item) !== item.position ? `<p>${escapeHtml(item.position)}</p>` : ""}${item.department ? `<p class="organization">${escapeHtml(item.department)}</p>` : ""}<p>${escapeHtml(item.address1)}</p><p>${escapeHtml(locality)}</p><p>${escapeHtml(province)}</p>${item.postalCode ? `<p class="postal-code"><strong>${escapeHtml(item.postalCode)}</strong></p>` : ""}</div></section>`;
+    return `<section class="envelope">${senderBlockHtml}<div class="postage-permit">${postagePermitHtml}</div><div class="recipient"><small>เรียน</small><h1>${escapeHtml(recipientName(item))}</h1>${item.position && recipientName(item) !== item.position ? `<p>${escapeHtml(item.position)}</p>` : ""}${item.department ? `<p class="organization">${escapeHtml(item.department)}</p>` : ""}<p>${escapeHtml(item.address1)}</p><p>${escapeHtml(locality)}</p><p>${escapeHtml(province)}</p>${item.postalCode ? `<p class="postal-code"><strong>${escapeHtml(item.postalCode)}</strong></p>` : ""}</div></section>`;
   }).join("");
   const popup = window.open("", "_blank");
   if (!popup) {
@@ -1229,6 +1240,12 @@ elements.recipientFont.addEventListener("change", (event) => {
   persistSettings();
   renderSummary();
   setNotice(`ตั้งขนาดฟอนต์ผู้รับเป็น ${state.settings.recipientFontPt} พอยต์แล้ว`);
+});
+elements.showSender.addEventListener("change", (event) => {
+  state.settings.showSender = event.target.checked;
+  persistSettings();
+  renderSummary();
+  setNotice(state.settings.showSender ? "เปิดการแสดงข้อมูลผู้ส่งแล้ว" : "ซ่อนข้อมูลผู้ส่งเพื่อใช้ตราประทับแล้ว");
 });
 elements.showGaruda.addEventListener("change", (event) => {
   state.settings.showGaruda = event.target.checked;
