@@ -113,6 +113,7 @@ td small{color:#8a94a5;font-size:9px}
 .check-cell{width:42px;text-align:center}
 input[type=checkbox]{width:16px;height:16px;accent-color:var(--blue)}
 .department-text{display:block;max-width:220px;line-height:1.45}
+.recipient-classification{display:block;margin-top:4px;color:#536784;font-size:.9em;font-weight:700;line-height:1.45}
 .address-text{color:#687386;white-space:nowrap}
 .action-cell{width:150px;text-align:right}
 .row-actions{display:flex;justify-content:flex-end;gap:6px}
@@ -364,6 +365,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
               <button class="sender-settings-button" id="openRecipientLayoutSettings" type="button">✎ ปรับตำแหน่งและระยะผู้รับ</button>
               <label class="garuda-option"><input id="showSender" type="checkbox" checked /><span>แสดงข้อมูลผู้ส่ง</span></label>
               <label class="garuda-option"><input id="showGaruda" type="checkbox" checked /><span>แสดงตราครุฑ</span></label>
+              <label class="garuda-option"><input id="showPostagePermit" type="checkbox" checked /><span>แสดงกรอบฝากส่ง</span></label>
               <button class="sender-settings-button" id="openSenderSettings" type="button">✎ แก้ไขข้อมูลผู้ส่ง</button>
               <button class="sender-settings-button" id="openPostagePermitSettings" type="button">✎ แก้ไขกรอบค่าฝากส่ง</button>
               <button id="printButton" type="button">ดูตัวอย่างและพิมพ์ <span>↗</span></button>
@@ -386,6 +388,10 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
         <div class="form-grid equal" id="personNameFields" hidden>
           <label class="form-field"><span>ชื่อ</span><input name="firstName" type="text" /></label>
           <label class="form-field"><span>นามสกุล</span><input name="lastName" type="text" /></label>
+        </div>
+        <div class="form-grid equal" id="cooperativeClassificationFields" hidden>
+          <label class="form-field"><span>กสส. / นิคมฯ ที่รับผิดชอบ *</span><select name="responsibleUnit"><option value="">เลือก กสส. / นิคมฯ</option><option value="กสส.1">กสส.1</option><option value="กสส.2">กสส.2</option><option value="กสส.3">กสส.3</option><option value="กสส.4">กสส.4</option><option value="กสส.5">กสส.5</option><option value="กสส.6">กสส.6</option><option value="กสส.7">กสส.7</option><option value="กสส.8">กสส.8</option><option value="นิคมฯ">นิคมฯ</option></select></label>
+          <label class="form-field"><span>ประเภทสหกรณ์</span><select name="cooperativeType"><option value="">ไม่ระบุ / กลุ่มเกษตรกร</option><option value="สหกรณ์การเกษตร">สหกรณ์การเกษตร</option><option value="สหกรณ์ออมทรัพย์">สหกรณ์ออมทรัพย์</option><option value="สหกรณ์ประมง">สหกรณ์ประมง</option><option value="สหกรณ์ร้านค้า">สหกรณ์ร้านค้า</option><option value="สหกรณ์นิคม">สหกรณ์นิคม</option><option value="สหกรณ์บริการ">สหกรณ์บริการ</option><option value="สหกรณ์เครดิตยูเนี่ยน">สหกรณ์เครดิตยูเนี่ยน</option></select><small>กลุ่มเกษตรกรสามารถเลือก “ไม่ระบุ” ได้</small></label>
         </div>
         <div class="form-grid equal">
           <label class="form-field"><span>ตำแหน่งผู้รับ</span><input name="position" type="text" placeholder="เช่น ผู้อำนวยการ หรือประธานกรรมการ" /></label>
@@ -480,6 +486,7 @@ window.ENVELOPE_APP_CONFIG = {
   recipientTopPercent: 40,
   recipientLeftPercent: 42,
   recipientLineHeight: 1.5,
+  showPostagePermit: true,
   postagePermitText: "ชำระค่าฝากส่งเป็นรายเดือน\nใบอนุญาตเลขที่ xx/xxx\nไปรษณีย์เดชาวุธ",
   postagePermitTopMm: 7,
   postagePermitRightMm: 8,
@@ -574,6 +581,7 @@ const state = {
     garudaImage: resolveAssetUrl(defaults.garudaImage),
     showSender: savedSettings.showSender !== undefined ? Boolean(savedSettings.showSender) : defaults.showSender !== false,
     showGaruda: savedSettings.showGaruda !== undefined ? Boolean(savedSettings.showGaruda) : defaults.showGaruda !== false,
+    showPostagePermit: savedSettings.showPostagePermit !== undefined ? Boolean(savedSettings.showPostagePermit) : defaults.showPostagePermit !== false,
     garudaPlacement: initialLayout.garudaPlacement,
     garudaSizeMm: initialLayout.garudaSizeMm,
     garudaStandardVersion: GARUDA_STANDARD_VERSION,
@@ -614,6 +622,7 @@ const elements = {
   previewCounter: $("#previewCounter"),
   showSender: $("#showSender"),
   showGaruda: $("#showGaruda"),
+  showPostagePermit: $("#showPostagePermit"),
   recipientDialog: $("#recipientDialog"),
   recipientForm: $("#recipientForm"),
   recipientFormMessage: $("#recipientFormMessage"),
@@ -698,6 +707,8 @@ function normalizeRecipient(raw = {}, index = 0) {
     lastName: read("lastName", "นามสกุล"),
     position: read("position", "ตำแหน่ง"),
     department,
+    responsibleUnit: read("responsibleUnit", "กสส.", "กสส", "หน่วยรับผิดชอบ"),
+    cooperativeType: read("cooperativeType", "ประเภทสหกรณ์"),
     address1: read("address1", "ที่อยู่"),
     subdistrict: read("subdistrict", "ตำบล"),
     district: read("district", "อำเภอ"),
@@ -731,7 +742,7 @@ function categoryClass(category) {
 function filteredRecipients() {
   const query = state.query.trim().toLocaleLowerCase("th");
   return state.recipients.filter((item) => {
-    const text = `${recipientName(item)} ${item.position} ${item.department} ${item.category} ${item.province}`.toLocaleLowerCase("th");
+    const text = `${recipientName(item)} ${item.position} ${item.department} ${item.category} ${item.responsibleUnit} ${item.cooperativeType} ${item.province}`.toLocaleLowerCase("th");
     const categoryMatches = state.category === "ทั้งหมด" || item.category === state.category;
     const departmentMatches = state.department === "ทั้งหมด" || item.department === state.department;
     return categoryMatches && departmentMatches && (!query || text.includes(query));
@@ -745,7 +756,7 @@ function setNotice(message) {
 function persistSettings() {
   rememberCurrentPaperLayout();
   const keys = [
-    "sender", "senderAddress", "documentNumber", "paperSize", "paperLayouts", "showSender", "showGaruda",
+    "sender", "senderAddress", "documentNumber", "paperSize", "paperLayouts", "showSender", "showGaruda", "showPostagePermit",
     "garudaPlacement", "garudaSizeMm", "garudaStandardVersion", "senderTopMm", "senderLeftMm", "senderTextOffsetMm", "senderFontPt", "recipientFontPt",
     "recipientTopPercent", "recipientLeftPercent", "recipientLineHeight",
     "postagePermitText", "postagePermitTopMm", "postagePermitRightMm", "postagePermitFontPt",
@@ -835,11 +846,12 @@ function renderRows() {
   const rows = filteredRecipients();
   elements.rows.innerHTML = rows.map((item) => {
     const checked = state.selected.has(item.id);
+    const classification = [item.responsibleUnit, item.cooperativeType].filter(Boolean).join(" · ");
     return `<tr class="${checked ? "selected-row" : ""}">
       <td class="check-cell"><input class="recipient-check" data-id="${escapeHtml(item.id)}" type="checkbox" ${checked ? "checked" : ""} aria-label="เลือก ${escapeHtml(recipientName(item))}"></td>
       <td><strong>${escapeHtml(recipientName(item))}</strong></td>
       <td><span class="category-badge ${categoryClass(item.category)}">${escapeHtml(item.category)}</span></td>
-      <td><span class="department-text">${escapeHtml(item.department || (item.category === "บุคคล" ? "บุคคล" : "ไม่ระบุหน่วยงาน"))}</span></td>
+      <td><span class="department-text">${escapeHtml(item.department || (item.category === "บุคคล" ? "บุคคล" : "ไม่ระบุหน่วยงาน"))}</span>${classification ? `<small class="recipient-classification">${escapeHtml(classification)}</small>` : ""}</td>
       <td><span class="address-text">${escapeHtml(recipientFullAddress(item))}</span></td>
       <td class="action-cell"><div class="row-actions"><button class="row-button edit" data-edit-id="${escapeHtml(item.id)}" type="button">แก้ไข</button><button class="row-button ${checked ? "active" : ""}" data-select-id="${escapeHtml(item.id)}" type="button">${checked ? "เลือกแล้ว" : "เลือก"}</button></div></td>
     </tr>`;
@@ -874,6 +886,7 @@ function renderSummary() {
   elements.paperLabel.textContent = paperLabels[state.settings.paperSize] || paperLabels.DL;
   elements.showSender.checked = state.settings.showSender;
   elements.showGaruda.checked = state.settings.showGaruda;
+  elements.showPostagePermit.checked = state.settings.showPostagePermit;
   elements.showGaruda.disabled = !state.settings.showSender;
   const envelopePreview = $("#envelopePreview");
   const senderPreviewBlock = $("#senderPreviewBlock");
@@ -909,6 +922,7 @@ function renderSummary() {
   const senderDocumentPreview = senderPreview.querySelector(".sender-document-mini");
   if (senderDocumentPreview) senderDocumentPreview.style.marginTop = `${1.2 * previewScale}px`;
   postagePermitPreview.textContent = state.settings.postagePermitText;
+  postagePermitPreview.style.display = state.settings.showPostagePermit ? "flex" : "none";
   postagePermitPreview.style.top = `${state.settings.postagePermitTopMm * previewScale}px`;
   postagePermitPreview.style.right = `${state.settings.postagePermitRightMm * previewScale}px`;
   postagePermitPreview.style.width = `${50 * previewScale}px`;
@@ -1050,7 +1064,7 @@ function openEditRecipientDialog(id) {
   elements.recipientForm.elements.category.value = recipient.category;
   updateRecipientFormRequirements();
   const fields = [
-    "prefix", "firstName", "lastName", "position", "department", "address1",
+    "prefix", "firstName", "lastName", "position", "department", "responsibleUnit", "cooperativeType", "address1",
     "subdistrict", "district", "province", "postalCode",
   ];
   fields.forEach((name) => {
@@ -1063,15 +1077,23 @@ function openEditRecipientDialog(id) {
 
 function updateRecipientFormRequirements() {
   const isPerson = elements.recipientForm.elements.category.value === "บุคคล";
+  const isCooperative = elements.recipientForm.elements.category.value === "สหกรณ์และกลุ่มเกษตรกร";
   const department = elements.recipientForm.elements.department;
+  const responsibleUnit = elements.recipientForm.elements.responsibleUnit;
   $("#prefixField").hidden = !isPerson;
   $("#personNameFields").hidden = !isPerson;
+  $("#cooperativeClassificationFields").hidden = !isCooperative;
   $("#categoryAndPrefixFields").classList.toggle("single", !isPerson);
   if (!isPerson) {
     elements.recipientForm.elements.prefix.value = "";
     elements.recipientForm.elements.firstName.value = "";
     elements.recipientForm.elements.lastName.value = "";
   }
+  if (!isCooperative) {
+    responsibleUnit.value = "";
+    elements.recipientForm.elements.cooperativeType.value = "";
+  }
+  responsibleUnit.required = isCooperative;
   department.required = !isPerson;
   $("#departmentFieldLabel").textContent = isPerson ? "หน่วยงาน (ถ้ามี)" : "ชื่อหน่วยงาน *";
   $("#departmentFieldHint").textContent = isPerson
@@ -1213,7 +1235,7 @@ function delay(milliseconds) {
 function recipientPayloadMatches(row, payload) {
   const fields = [
     "category", "prefix", "firstName", "lastName", "position", "department",
-    "address1", "subdistrict", "district", "province", "postalCode",
+    "responsibleUnit", "cooperativeType", "address1", "subdistrict", "district", "province", "postalCode",
   ];
   return fields.every((field) => String(row[field] || "").trim() === String(payload[field] || "").trim());
 }
@@ -1344,13 +1366,16 @@ function printEnvelopes() {
   const recipientLeftPercent = clampNumber(state.settings.recipientLeftPercent, 5, 80, 42);
   const recipientLineHeight = clampNumber(state.settings.recipientLineHeight, 1, 2.2, 1.5);
   const postagePermitHtml = escapeHtml(state.settings.postagePermitText).replace(/\r?\n/g, "<br>");
+  const postagePermitBlockHtml = state.settings.showPostagePermit
+    ? `<div class="postage-permit">${postagePermitHtml}</div>`
+    : "";
   const pages = recipients.map((item) => {
     const locality = [
       formatAddressArea("ตำบล", item.subdistrict),
       formatAddressArea("อำเภอ", item.district),
     ].filter(Boolean).join(" ");
     const province = formatAddressArea("จังหวัด", item.province);
-    return `<section class="envelope">${senderBlockHtml}<div class="postage-permit">${postagePermitHtml}</div><div class="recipient"><small>เรียน</small><h1>${escapeHtml(recipientName(item))}</h1>${item.position && recipientName(item) !== item.position ? `<p>${escapeHtml(item.position)}</p>` : ""}${item.department ? `<p class="organization">${escapeHtml(item.department)}</p>` : ""}<p>${escapeHtml(item.address1)}</p><p>${escapeHtml(locality)}</p><p>${escapeHtml(province)}</p>${item.postalCode ? `<p class="postal-code"><strong>${escapeHtml(item.postalCode)}</strong></p>` : ""}</div></section>`;
+    return `<section class="envelope">${senderBlockHtml}${postagePermitBlockHtml}<div class="recipient"><small>เรียน</small><h1>${escapeHtml(recipientName(item))}</h1>${item.position && recipientName(item) !== item.position ? `<p>${escapeHtml(item.position)}</p>` : ""}${item.department ? `<p class="organization">${escapeHtml(item.department)}</p>` : ""}<p>${escapeHtml(item.address1)}</p><p>${escapeHtml(locality)}</p><p>${escapeHtml(province)}</p>${item.postalCode ? `<p class="postal-code"><strong>${escapeHtml(item.postalCode)}</strong></p>` : ""}</div></section>`;
   }).join("");
   const popup = window.open("", "_blank");
   if (!popup) {
@@ -1414,6 +1439,12 @@ elements.showGaruda.addEventListener("change", (event) => {
   persistSettings();
   renderSummary();
   setNotice(state.settings.showGaruda ? "เปิดการแสดงตราครุฑแล้ว" : "ปิดการแสดงตราครุฑแล้ว");
+});
+elements.showPostagePermit.addEventListener("change", (event) => {
+  state.settings.showPostagePermit = event.target.checked;
+  persistSettings();
+  renderSummary();
+  setNotice(state.settings.showPostagePermit ? "เปิดการแสดงกรอบฝากส่งแล้ว" : "ซ่อนกรอบฝากส่งแล้ว");
 });
 $("#openAddRecipient").addEventListener("click", openRecipientDialog);
 $("#closeRecipientDialog").addEventListener("click", closeRecipientDialog);
