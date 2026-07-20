@@ -118,7 +118,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--blue)}
 .department-text{display:block;max-width:220px;line-height:1.45}
 .recipient-classification{display:block;margin-top:4px;color:#536784;font-size:.9em;font-weight:700;line-height:1.45}
 .address-text{color:#687386;white-space:nowrap}
-.action-cell{width:190px;text-align:right}
+.action-cell{width:150px;text-align:right}
 .row-actions{display:flex;justify-content:flex-end;gap:6px}
 .row-button{min-width:58px;padding:7px 9px;border:1px solid #dfe4ed;border-radius:9px;background:#fff;color:#667085;font-size:8px;font-weight:800}
 .row-button.active{border-color:#b9c9f5;background:var(--blue-soft);color:var(--blue)}
@@ -164,6 +164,17 @@ dialog::backdrop{background:rgba(17,26,48,.56);backdrop-filter:blur(6px)}
 .form-message.error{color:#b42318}
 .form-message.success{color:#127454}
 button:disabled{cursor:not-allowed;opacity:.58}
+.button.danger{border:1px solid #ffd2d2;background:#fff5f5;color:#c03535}
+.button.danger:hover{background:#ffecec}
+.button.danger.solid{border-color:#c03535;background:#c03535;color:#fff;box-shadow:0 10px 22px rgba(192,53,53,.18)}
+.dialog-actions.split{align-items:center;justify-content:space-between}
+.dialog-actions .action-group{display:flex;gap:11px}
+.confirm-dialog{width:min(540px,calc(100% - 32px));text-align:left}
+.confirm-icon{display:grid;width:46px;height:46px;margin-bottom:14px;place-items:center;border-radius:14px;background:#fff5f5;color:#c03535;font-size:24px;font-weight:900}
+.confirm-title{align-items:flex-start}
+.danger-text{color:#c03535}
+.danger-info{border:1px solid #ffe1e1;background:#fff8f8;color:#7a2e2e}
+.delete-target{padding:14px 16px;border:1px solid #dfe7f5;border-radius:14px;background:#f8fbff;color:#17223b;font-size:18px;font-weight:900;line-height:1.5}
 .category-badge{display:inline-flex;padding:4px 8px;border-radius:999px;background:#eef2ff;color:#3448a5;font-size:8px;font-weight:800;white-space:nowrap}
 .category-badge.government{background:#eef4ff;color:#174ea6}
 .category-badge.cooperative{background:#e9f8f2;color:#127454}
@@ -211,7 +222,7 @@ td small{font-size:13px;line-height:1.5}
 .address-text{display:block;min-width:360px;white-space:normal}
 input[type=checkbox]{width:20px;height:20px}
 .category-badge{padding:6px 10px;font-size:12px}
-.action-cell{width:250px}
+.action-cell{width:180px}
 .row-button{min-width:72px;padding:10px 12px;border-radius:10px;font-size:13px}
 .print-card{position:static;display:grid;grid-template-columns:220px minmax(0,1fr);gap:26px;align-items:center;padding:26px 30px}
 .print-overview{align-self:stretch;padding-right:24px;border-right:1px solid rgba(255,255,255,.2)}
@@ -415,7 +426,19 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
           <label class="form-field"><span>รหัสผู้ดูแล *</span><input name="adminKey" type="password" autocomplete="current-password" required /><small>รหัสนี้ตั้งไว้ใน Script Properties ชื่อ WRITE_KEY</small></label>
         </div>
         <p class="form-message" id="recipientFormMessage" role="status" aria-live="polite"></p>
-        <div class="dialog-actions"><button class="button secondary" id="cancelRecipient" type="button">ยกเลิก</button><button class="button primary" id="saveRecipient" type="submit">บันทึกลง Google Sheets</button></div>
+        <div class="dialog-actions split"><button class="button danger" id="deleteRecipientButton" type="button" hidden>ลบข้อมูลผู้รับ</button><div class="action-group"><button class="button secondary" id="cancelRecipient" type="button">ยกเลิก</button><button class="button primary" id="saveRecipient" type="submit">บันทึกลง Google Sheets</button></div></div>
+      </form>
+    </dialog>
+
+    <dialog id="deleteRecipientDialog" class="confirm-dialog">
+      <form id="deleteRecipientForm">
+        <div class="confirm-icon">!</div>
+        <div class="dialog-title confirm-title"><div><span class="eyebrow danger-text">ยืนยันการลบ</span><h2>ลบข้อมูลผู้รับ</h2></div><button class="close-button" id="closeDeleteRecipientDialog" type="button" aria-label="ปิด">×</button></div>
+        <p class="dialog-info danger-info">รายการนี้จะถูกลบออกจากฐานข้อมูล Google Sheets กรุณาตรวจสอบให้แน่ใจก่อนดำเนินการ</p>
+        <div class="delete-target" id="deleteRecipientName"></div>
+        <label class="form-field"><span>รหัสผู้ดูแล *</span><input name="adminKey" type="password" autocomplete="current-password" required /><small>ใช้รหัสเดียวกับตอนเพิ่มหรือแก้ไขข้อมูลผู้รับ</small></label>
+        <p class="form-message" id="deleteRecipientMessage" role="status" aria-live="polite"></p>
+        <div class="dialog-actions"><button class="button secondary" id="cancelDeleteRecipient" type="button">ยกเลิก</button><button class="button danger solid" id="confirmDeleteRecipient" type="submit">ยืนยันลบข้อมูล</button></div>
       </form>
     </dialog>
 
@@ -647,6 +670,12 @@ const elements = {
   recipientForm: $("#recipientForm"),
   recipientFormMessage: $("#recipientFormMessage"),
   saveRecipient: $("#saveRecipient"),
+  deleteRecipientButton: $("#deleteRecipientButton"),
+  deleteRecipientDialog: $("#deleteRecipientDialog"),
+  deleteRecipientForm: $("#deleteRecipientForm"),
+  deleteRecipientName: $("#deleteRecipientName"),
+  deleteRecipientMessage: $("#deleteRecipientMessage"),
+  confirmDeleteRecipient: $("#confirmDeleteRecipient"),
   recipientLayoutDialog: $("#recipientLayoutDialog"),
   recipientLayoutForm: $("#recipientLayoutForm"),
   senderDialog: $("#senderDialog"),
@@ -879,7 +908,7 @@ function renderRows() {
       <td><span class="category-badge ${categoryClass(item.category)}">${escapeHtml(item.category)}</span></td>
       <td><span class="department-text">${escapeHtml(item.department || (item.category === "บุคคล" ? "บุคคล" : "ไม่ระบุหน่วยงาน"))}</span>${classification ? `<small class="recipient-classification">${escapeHtml(classification)}</small>` : ""}</td>
       <td><span class="address-text">${escapeHtml(recipientFullAddress(item))}</span></td>
-      <td class="action-cell"><div class="row-actions"><button class="row-button edit" data-edit-id="${escapeHtml(item.id)}" type="button">แก้ไข</button><button class="row-button danger" data-delete-id="${escapeHtml(item.id)}" type="button">ลบ</button><button class="row-button ${checked ? "active" : ""}" data-select-id="${escapeHtml(item.id)}" type="button">${checked ? "เลือกแล้ว" : "เลือก"}</button></div></td>
+      <td class="action-cell"><div class="row-actions"><button class="row-button edit" data-edit-id="${escapeHtml(item.id)}" type="button">แก้ไข</button><button class="row-button ${checked ? "active" : ""}" data-select-id="${escapeHtml(item.id)}" type="button">${checked ? "เลือกแล้ว" : "เลือก"}</button></div></td>
     </tr>`;
   }).join("");
   elements.empty.hidden = rows.length > 0;
@@ -892,9 +921,6 @@ function renderRows() {
   });
   document.querySelectorAll("[data-edit-id]").forEach((button) => {
     button.addEventListener("click", () => openEditRecipientDialog(button.dataset.editId));
-  });
-  document.querySelectorAll("[data-delete-id]").forEach((button) => {
-    button.addEventListener("click", () => deleteRecipient(button.dataset.deleteId));
   });
 }
 
@@ -1077,6 +1103,7 @@ function openRecipientDialog() {
   $("#recipientDialogTitle").textContent = "เพิ่มรายชื่อผู้รับ";
   $("#recipientDialogInfo").innerHTML = "ข้อมูลจะบันทึกลงชีต <strong>Recipients</strong> ผ่าน Google Apps Script โดยตรง";
   elements.saveRecipient.textContent = "บันทึกลง Google Sheets";
+  elements.deleteRecipientButton.hidden = true;
   const savedAdminKey = sessionStorage.getItem("envelope-admin-key");
   if (savedAdminKey) elements.recipientForm.elements.adminKey.value = savedAdminKey;
   updateRecipientFormRequirements();
@@ -1101,6 +1128,7 @@ function openEditRecipientDialog(id) {
   $("#recipientDialogTitle").textContent = "แก้ไขข้อมูลผู้รับ";
   $("#recipientDialogInfo").innerHTML = "บันทึกการแก้ไขกลับไปยังแถวเดิมในชีต <strong>Recipients</strong>";
   elements.saveRecipient.textContent = "บันทึกการแก้ไข";
+  elements.deleteRecipientButton.hidden = false;
 
   elements.recipientForm.elements.category.value = recipient.category;
   updateRecipientFormRequirements();
@@ -1384,23 +1412,37 @@ async function deleteRecipient(id) {
   }
 
   const name = recipientName(recipient);
-  const confirmed = window.confirm(`ต้องการลบ “${name}” ออกจากฐานข้อมูล Google Sheets ใช่ไหมครับ?\n\nเมื่อลบแล้ว รายการนี้จะหายจากฐานข้อมูลผู้รับ`);
-  if (!confirmed) return;
+  elements.deleteRecipientName.textContent = name;
+  elements.deleteRecipientMessage.textContent = "";
+  elements.deleteRecipientMessage.className = "form-message";
+  elements.deleteRecipientForm.reset();
+  const savedAdminKey = sessionStorage.getItem("envelope-admin-key");
+  if (savedAdminKey) elements.deleteRecipientForm.elements.adminKey.value = savedAdminKey;
+  elements.deleteRecipientDialog.dataset.recipientId = id;
+  elements.deleteRecipientDialog.showModal();
+}
 
-  const savedAdminKey = sessionStorage.getItem("envelope-admin-key") || "";
-  const adminKey = window.prompt("กรอกรหัสผู้ดูแลเพื่อลบข้อมูลผู้รับ", savedAdminKey);
-  if (adminKey === null) return;
-  if (!String(adminKey).trim()) {
-    setNotice("ยังไม่ได้กรอกรหัสผู้ดูแล จึงยังไม่ลบข้อมูล");
+async function handleDeleteRecipientSubmit(event) {
+  event.preventDefault();
+  if (!elements.deleteRecipientForm.reportValidity()) return;
+
+  const id = elements.deleteRecipientDialog.dataset.recipientId || "";
+  const recipient = state.recipients.find((item) => item.id === id);
+  if (!recipient) {
+    elements.deleteRecipientMessage.textContent = "ไม่พบรายการผู้รับที่ต้องการลบ";
+    elements.deleteRecipientMessage.className = "form-message error";
     return;
   }
 
+  const name = recipientName(recipient);
+  const adminKey = String(elements.deleteRecipientForm.elements.adminKey.value || "").trim();
+  const payload = { action: "deleteRecipient", id, adminKey };
+
+  elements.confirmDeleteRecipient.disabled = true;
+  elements.confirmDeleteRecipient.textContent = "กำลังลบ…";
+  elements.deleteRecipientMessage.textContent = `กำลังลบ ${name} จาก Google Sheets…`;
+  elements.deleteRecipientMessage.className = "form-message";
   setNotice(`กำลังลบ ${name} จาก Google Sheets…`);
-  const payload = {
-    action: "deleteRecipient",
-    id,
-    adminKey: String(adminKey).trim(),
-  };
 
   try {
     let readablePayload = null;
@@ -1428,6 +1470,8 @@ async function deleteRecipient(id) {
       if (!rows.some((item) => String(item.id) === String(id))) {
         state.recipients = rows.map(normalizeRecipient);
         state.selected.delete(id);
+        closeDeleteRecipientDialog();
+        closeRecipientDialog();
         render();
         setNotice(`ลบ ${name} ออกจากฐานข้อมูลแล้ว`);
         return;
@@ -1436,8 +1480,18 @@ async function deleteRecipient(id) {
     throw new Error("ส่งคำสั่งลบแล้ว แต่ยังตรวจพบรายการเดิม กรุณาตรวจ Deployment ของ Apps Script");
   } catch (error) {
     console.error(error);
+    elements.deleteRecipientMessage.textContent = error.message;
+    elements.deleteRecipientMessage.className = "form-message error";
     setNotice(`ลบข้อมูลไม่สำเร็จ: ${error.message}`);
+  } finally {
+    elements.confirmDeleteRecipient.disabled = false;
+    elements.confirmDeleteRecipient.textContent = "ยืนยันลบข้อมูล";
   }
+}
+
+function closeDeleteRecipientDialog() {
+  if (elements.deleteRecipientDialog.open) elements.deleteRecipientDialog.close();
+  elements.deleteRecipientDialog.dataset.recipientId = "";
 }
 
 function printEnvelopes() {
@@ -1581,6 +1635,10 @@ elements.showPostagePermit.addEventListener("change", (event) => {
 $("#openAddRecipient").addEventListener("click", openRecipientDialog);
 $("#closeRecipientDialog").addEventListener("click", closeRecipientDialog);
 $("#cancelRecipient").addEventListener("click", closeRecipientDialog);
+elements.deleteRecipientButton.addEventListener("click", () => deleteRecipient(state.editingRecipientId));
+$("#closeDeleteRecipientDialog").addEventListener("click", closeDeleteRecipientDialog);
+$("#cancelDeleteRecipient").addEventListener("click", closeDeleteRecipientDialog);
+elements.deleteRecipientForm.addEventListener("submit", handleDeleteRecipientSubmit);
 $("#recipientCategory").addEventListener("change", updateRecipientFormRequirements);
 elements.recipientForm.elements.postalCode.addEventListener("invalid", (event) => {
   event.target.setCustomValidity("กรุณากรอกรหัสไปรษณีย์ 5 หลัก เป็นเลขไทยหรือเลขอารบิก");
