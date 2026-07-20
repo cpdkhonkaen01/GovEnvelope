@@ -486,7 +486,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
         <p class="dialog-info">ระบบจะดึงชื่อผู้รับและรหัสไปรษณีย์จากรายการที่เลือก ส่วนเลขลงทะเบียนและ EMS ให้กรอกเองตามเลขที่ได้รับจากไปรษณีย์</p>
         <div class="form-grid equal">
           <label class="form-field"><span>วัน/เดือน/ปี ทำรายการ</span><input name="manifestDate" id="manifestDate" type="date" required /></label>
-          <label class="form-field"><span>ใบอนุญาต/ไปรษณีย์</span><input name="manifestPermit" id="manifestPermit" type="text" placeholder="ใบอนุญาตเลขที่ 3/2521 ไปรษณีย์เทพารักษ์" /></label>
+          <label class="form-field"><span>ใบอนุญาต/ไปรษณีย์</span><input name="manifestPermit" id="manifestPermit" type="text" value="ใบอนุญาตเลขที่ 3/2521 ไปรษณีย์เทพารักษ์" readonly /></label>
         </div>
         <div class="manifest-table-wrap">
           <table class="manifest-entry-table">
@@ -547,6 +547,7 @@ try {
 }
 
 const GARUDA_STANDARD_VERSION = "15mm-v1";
+const LOCKED_MANIFEST_PERMIT = "ใบอนุญาตเลขที่ 3/2521 ไปรษณีย์เทพารักษ์";
 const RECIPIENT_BLOCK_WIDTH_PERCENT = 68;
 const savedGarudaSize = savedSettings.garudaStandardVersion === GARUDA_STANDARD_VERSION
   ? savedSettings.garudaSizeMm
@@ -823,13 +824,7 @@ function formatThaiLongDate(dateValue) {
 }
 
 function defaultManifestPermit() {
-  const lines = String(state.settings.postagePermitText || "")
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-  const permitLine = lines.find((line) => line.includes("ใบอนุญาต")) || "";
-  const postOfficeLine = lines.find((line) => line.includes("ไปรษณีย์")) || "";
-  return [permitLine, postOfficeLine].filter(Boolean).join(" ");
+  return LOCKED_MANIFEST_PERMIT;
 }
 
 function extractReceivingPostOffice(permit = "") {
@@ -1653,7 +1648,7 @@ function printMailingManifest(event) {
     return;
   }
   const manifestDate = formatThaiLongDate(form.get("manifestDate"));
-  const permit = String(form.get("manifestPermit") || "").trim();
+  const permit = LOCKED_MANIFEST_PERMIT;
   const receivingPostOffice = extractReceivingPostOffice(permit);
   const rows = recipients.map((item, index) => ({
     index: index + 1,
@@ -1783,13 +1778,15 @@ function printEnvelopes() {
     ].filter(Boolean).join(" ");
     const province = formatAddressArea("จังหวัด", item.province);
     const envelopeRecipientName = recipientEnvelopeName(item);
+    const envelopeRecipientNameStyle = manifestRecipientFontStyle(envelopeRecipientName);
+    const envelopePositionStyle = manifestRecipientFontStyle(item.position);
     const recipientDepartmentHtml = state.settings.showRecipientDepartment && item.department && envelopeRecipientName !== item.department
       ? `<p class="organization">${escapeHtml(item.department)}</p>`
       : "";
     const recipientAddressHtml = state.settings.showRecipientAddress
       ? `<p>${escapeHtml(item.address1)}</p><p>${escapeHtml(locality)}</p><p>${escapeHtml(province)}</p>${item.postalCode ? `<p class="postal-code"><strong>${escapeHtml(item.postalCode)}</strong></p>` : ""}`
       : "";
-    return `<section class="envelope">${senderBlockHtml}${postagePermitBlockHtml}<div class="recipient"><small>เรียน</small><h1>${escapeHtml(envelopeRecipientName)}</h1>${item.position && envelopeRecipientName !== item.position ? `<p>${escapeHtml(item.position)}</p>` : ""}${recipientDepartmentHtml}${recipientAddressHtml}</div></section>`;
+    return `<section class="envelope">${senderBlockHtml}${postagePermitBlockHtml}<div class="recipient"><small>เรียน</small><h1${envelopeRecipientNameStyle}>${escapeHtml(envelopeRecipientName)}</h1>${item.position && envelopeRecipientName !== item.position ? `<p class="recipient-position"${envelopePositionStyle}>${escapeHtml(item.position)}</p>` : ""}${recipientDepartmentHtml}${recipientAddressHtml}</div></section>`;
   }).join("");
   const popup = window.open("", "_blank");
   if (!popup) {
@@ -1797,7 +1794,7 @@ function printEnvelopes() {
     return;
   }
   popup.opener = null;
-  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์จ่าหน้าซอง</title><style>@page{size:${width} ${height};margin:0}*{box-sizing:border-box}body{margin:0;color:#17223b;font-family:"Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${width};height:${height};page-break-after:always;overflow:hidden;background:#fff}.envelope:last-child{page-break-after:auto}.sender{position:absolute;top:${senderTopMm}mm;left:${senderLeftMm}mm;width:55%;font-size:${senderFontPt}pt;line-height:1.45;color:#111}.sender-content{min-width:0}.sender-address{margin-top:.7mm}.document-number{margin-top:1.2mm;font-weight:700}.garuda{display:block;width:auto;height:${garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm 0}.postage-permit{position:absolute;top:${postagePermitTopMm}mm;right:${postagePermitRightMm}mm;display:flex;width:50mm;height:25mm;align-items:center;justify-content:center;overflow:hidden;padding:2mm;border:.35mm solid #111;color:#111;font-size:${postagePermitFontPt}pt;font-weight:700;line-height:1.45;text-align:center}.recipient{position:absolute;left:${recipientLeftPercent}%;top:${recipientTopPercent}%;width:${RECIPIENT_BLOCK_WIDTH_PERCENT}%;font-size:${recipientFontPt}pt;line-height:${recipientLineHeight}}.recipient small{color:#667085;font-size:${recipientFontPt}pt}.recipient h1{margin:1mm 0 0;font-size:${recipientFontPt}pt;white-space:nowrap}.recipient p{margin:.4mm 0}.organization{font-weight:700}@media screen{body{background:#eef2f7;padding:18px}.envelope{margin:0 auto 18px;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${pages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
+  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์จ่าหน้าซอง</title><style>@page{size:${width} ${height};margin:0}*{box-sizing:border-box}body{margin:0;color:#17223b;font-family:"Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${width};height:${height};page-break-after:always;overflow:hidden;background:#fff}.envelope:last-child{page-break-after:auto}.sender{position:absolute;top:${senderTopMm}mm;left:${senderLeftMm}mm;width:55%;font-size:${senderFontPt}pt;line-height:1.45;color:#111}.sender-content{min-width:0}.sender-address{margin-top:.7mm}.document-number{margin-top:1.2mm;font-weight:700}.garuda{display:block;width:auto;height:${garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm 0}.postage-permit{position:absolute;top:${postagePermitTopMm}mm;right:${postagePermitRightMm}mm;display:flex;width:50mm;height:25mm;align-items:center;justify-content:center;overflow:hidden;padding:2mm;border:.35mm solid #111;color:#111;font-size:${postagePermitFontPt}pt;font-weight:700;line-height:1.45;text-align:center}.recipient{position:absolute;left:${recipientLeftPercent}%;top:${recipientTopPercent}%;width:calc(100% - ${recipientLeftPercent}% - 8mm);font-size:${recipientFontPt}pt;line-height:${recipientLineHeight}}.recipient small{color:#667085;font-size:${recipientFontPt}pt}.recipient h1{margin:1mm 0 0;font-size:${recipientFontPt}pt;white-space:nowrap}.recipient-position{white-space:nowrap}.recipient p{margin:.4mm 0}.organization{font-weight:700}@media screen{body{background:#eef2f7;padding:18px}.envelope{margin:0 auto 18px;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${pages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
   popup.document.close();
   setNotice(`เตรียมพิมพ์ ${recipients.length} รายการ บน${label}`);
 }
