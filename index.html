@@ -898,6 +898,7 @@ function manifestRecipientLabel(item) {
 
 function manifestRecipientFontStyle(name = "") {
   const length = String(name).trim().length;
+  if (length > 72) return ' style="font-size:9.6pt"';
   if (length > 64) return ' style="font-size:10pt"';
   if (length > 50) return ' style="font-size:11pt"';
   return "";
