@@ -845,6 +845,12 @@ function parseTrackingCode(value = "", defaultPrefix = "") {
   return ["", compact, "", ""];
 }
 
+function formatTrackingCode(value = "", defaultPrefix = "") {
+  const digits = normalizeTrackingDigits(value);
+  if (!digits) return "";
+  return `${String(defaultPrefix || "").toUpperCase()} ${digits} TH`;
+}
+
 function normalizeTrackingDigits(value = "") {
   return String(value).trim().toUpperCase().replace(/[\s-]/g, "").replace(/^[A-Z]{2}/, "").replace(/[A-Z]{2}$/, "").replace(/[^0-9๐-๙]/g, "").slice(0, 9);
 }
@@ -1637,8 +1643,8 @@ function printMailingManifest(event) {
     index: index + 1,
     name: manifestRecipientLabel(item),
     destination: item.postalCode || "",
-    registered: parseTrackingCode(form.get(`registered-${item.id}`), "RJ"),
-    ems: parseTrackingCode(form.get(`ems-${item.id}`), "EQ"),
+    registered: formatTrackingCode(form.get(`registered-${item.id}`), "RJ"),
+    ems: formatTrackingCode(form.get(`ems-${item.id}`), "EQ"),
   }));
   const pageSize = 31;
   const pages = [];
@@ -1652,16 +1658,16 @@ function printMailingManifest(event) {
       index: pageIndex * pageSize + pageRows.length + index + 1,
       name: "",
       destination: "",
-      registered: ["", "", "", ""],
-      ems: ["", "", "", ""],
+      registered: "",
+      ems: "",
     }));
     const allRows = [...pageRows, ...blankRows];
     const bodyRows = allRows.map((row) => `<tr>
       <td class="center">${row.index}</td>
       <td>${escapeHtml(row.name)}</td>
       <td class="center">${escapeHtml(row.destination)}</td>
-      ${row.registered.map((part) => `<td class="center tracking">${escapeHtml(part)}</td>`).join("")}
-      ${row.ems.map((part) => `<td class="center tracking">${escapeHtml(part)}</td>`).join("")}
+      <td class="center tracking">${escapeHtml(row.registered)}</td>
+      <td class="center tracking">${escapeHtml(row.ems)}</td>
       <td></td>
       <td></td>
     </tr>`).join("");
@@ -1678,11 +1684,10 @@ function printMailingManifest(event) {
       <table class="manifest-print-table">
         <colgroup>
           <col class="col-seq"><col class="col-name"><col class="col-dest">
-          <col class="col-track"><col class="col-track-wide"><col class="col-track"><col class="col-track">
-          <col class="col-track"><col class="col-track-wide"><col class="col-track"><col class="col-track">
+          <col class="col-registered"><col class="col-ems">
           <col class="col-fee"><col class="col-note">
         </colgroup>
-        <thead><tr><th>ลำดับ</th><th>ผู้รับ</th><th>ปลายทาง</th><th colspan="4">ลงทะเบียน</th><th colspan="4">EMS</th><th>ค่าบริการ</th><th>หมายเหตุ</th></tr></thead>
+        <thead><tr><th>ลำดับ</th><th>ผู้รับ</th><th>ปลายทาง</th><th>ลงทะเบียน</th><th>EMS</th><th>ค่าบริการ</th><th>หมายเหตุ</th></tr></thead>
         <tbody>${bodyRows}</tbody>
       </table>
       <div class="manifest-footer">
@@ -1708,7 +1713,7 @@ function printMailingManifest(event) {
     return;
   }
   popup.opener = null;
-  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์ใบนำส่งไปรษณีย์</title><style>@page{size:A4 portrait;margin:8mm}*{box-sizing:border-box}body{margin:0;color:#111;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif;font-size:14pt}.manifest-page{position:relative;width:194mm;min-height:281mm;margin:0 auto;page-break-after:always;background:#fff}.manifest-page:last-child{page-break-after:auto}.page-number{position:absolute;top:0;right:0;font-size:13pt}h1{margin:0 0 7mm;text-align:left;font-size:18pt;font-weight:700}.manifest-meta{margin-left:86mm;margin-bottom:5mm;line-height:1.35}.manifest-intro{margin:0 0 2mm 12mm}.manifest-print-table{width:100%;border-collapse:collapse;table-layout:fixed}.manifest-print-table th,.manifest-print-table td{height:7.4mm;padding:0 1.2mm;border:1px solid #111;vertical-align:middle;line-height:1.08}.manifest-print-table th{text-align:center;font-weight:700}.center{text-align:center}.tracking{font-size:12.5pt}.col-seq{width:10mm}.col-name{width:66mm}.col-dest{width:18mm}.col-track{width:8mm}.col-track-wide{width:18mm}.col-fee{width:15mm}.col-note{width:16mm}.manifest-footer{display:grid;grid-template-columns:1fr 1.25fr;gap:12mm;margin-top:5mm;line-height:1.45}.manifest-footer p{margin:1.5mm 0}.indent{text-align:center}.signature{margin-top:8mm!important}@media screen{body{background:#eef2f7;padding:18px}.manifest-page{padding:0;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${manifestPages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
+  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์ใบนำส่งไปรษณีย์</title><style>@page{size:A4 portrait;margin:8mm}*{box-sizing:border-box}body{margin:0;color:#111;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif;font-size:13pt}.manifest-page{position:relative;width:194mm;min-height:281mm;margin:0 auto;page-break-after:always;background:#fff}.manifest-page:last-child{page-break-after:auto}.page-number{position:absolute;top:0;right:0;font-size:12pt}h1{margin:0 0 5mm;text-align:center;font-size:15pt;font-weight:700}.manifest-meta{width:112mm;margin:0 0 5mm auto;line-height:1.35;font-size:13pt}.manifest-intro{margin:0 0 2mm 10mm;font-size:12.5pt}.manifest-print-table{width:100%;border-collapse:collapse;table-layout:fixed}.manifest-print-table th,.manifest-print-table td{height:7.4mm;padding:0 1.2mm;border:1px solid #111;vertical-align:middle;line-height:1.08}.manifest-print-table th{text-align:center;font-weight:700}.center{text-align:center}.tracking{font-size:12pt;white-space:nowrap}.col-seq{width:9mm}.col-name{width:82mm}.col-dest{width:16mm}.col-registered{width:28mm}.col-ems{width:28mm}.col-fee{width:14mm}.col-note{width:17mm}.manifest-footer{display:grid;grid-template-columns:1fr 1.25fr;gap:12mm;margin-top:5mm;line-height:1.45}.manifest-footer p{margin:1.5mm 0}.indent{text-align:center}.signature{margin-top:8mm!important}@media screen{body{background:#eef2f7;padding:18px}.manifest-page{padding:0;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${manifestPages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
   popup.document.close();
   closeManifestDialog();
   setNotice(`เตรียมพิมพ์ใบนำส่ง ${recipients.length} รายการแล้ว`);
