@@ -832,6 +832,12 @@ function defaultManifestPermit() {
   return [permitLine, postOfficeLine].filter(Boolean).join(" ");
 }
 
+function extractReceivingPostOffice(permit = "") {
+  const text = String(permit || "").trim();
+  const match = text.match(/(?:ไปรษณีย์|ปณ\.)\s*([^\s]+)/);
+  return match ? `ปณ.${match[1]}` : "";
+}
+
 function parseTrackingCode(value = "", defaultPrefix = "") {
   const compact = normalizeTrackingDigits(value);
   const prefix = String(defaultPrefix || "").toUpperCase();
@@ -863,6 +869,15 @@ function limitTrackingInput(event) {
 
 function manifestRecipientLabel(item) {
   return recipientEnvelopeName(item);
+}
+
+function manifestRecipientFontStyle(name = "") {
+  const length = String(name).trim().length;
+  if (length > 64) return ' style="font-size:8.4pt"';
+  if (length > 56) return ' style="font-size:9pt"';
+  if (length > 48) return ' style="font-size:9.8pt"';
+  if (length > 40) return ' style="font-size:10.6pt"';
+  return "";
 }
 
 function categoryClass(category) {
@@ -1639,6 +1654,7 @@ function printMailingManifest(event) {
   }
   const manifestDate = formatThaiLongDate(form.get("manifestDate"));
   const permit = String(form.get("manifestPermit") || "").trim();
+  const receivingPostOffice = extractReceivingPostOffice(permit);
   const rows = recipients.map((item, index) => ({
     index: index + 1,
     name: manifestRecipientLabel(item),
@@ -1664,7 +1680,7 @@ function printMailingManifest(event) {
     const allRows = [...pageRows, ...blankRows];
     const bodyRows = allRows.map((row) => `<tr>
       <td class="center">${row.index}</td>
-      <td>${escapeHtml(row.name)}</td>
+      <td class="recipient-cell"${manifestRecipientFontStyle(row.name)}>${escapeHtml(row.name)}</td>
       <td class="center">${escapeHtml(row.destination)}</td>
       <td class="center tracking">${escapeHtml(row.registered)}</td>
       <td class="center tracking">${escapeHtml(row.ems)}</td>
@@ -1691,17 +1707,17 @@ function printMailingManifest(event) {
         <tbody>${bodyRows}</tbody>
       </table>
       <div class="manifest-footer">
-        <div>
+        <div class="manifest-footer-left">
           <p>รวม&nbsp;&nbsp; จำนวน ......................${pageRows.length}...................... ฉบับ</p>
           <p>ธรรมดา จำนวน....................-...................... ฉบับ</p>
         </div>
-        <div>
-          <p>รวมทั้งสิ้น....................${rows.length}....................ฉบับ</p>
-          <p>ลงชื่อ...................................................</p>
-          <p class="indent">ผู้รับผิดชอบในการฝากส่ง</p>
-          <p>ได้ตรวจสอบและรับฝากไว้ถูกต้องแล้ว</p>
-          <p class="signature">ลงชื่อ............................................................................</p>
-          <p class="indent">เจ้าหน้าที่รับฝาก</p>
+        <div class="manifest-footer-right">
+          <p class="total-line">รวมทั้งสิ้น....................${rows.length}....................ฉบับ</p>
+          <p class="sign-line">ลงชื่อ...................................................</p>
+          <p class="role-line">ผู้รับผิดชอบในการฝากส่ง</p>
+          <p class="check-line">ได้ตรวจสอบและรับฝากไว้ถูกต้องแล้ว</p>
+          <p class="signature sign-line">ลงชื่อ............................................................................</p>
+          <p class="role-line">เจ้าหน้าที่รับฝาก${receivingPostOffice ? ` ${escapeHtml(receivingPostOffice)}` : ""}</p>
         </div>
       </div>
     </section>`;
@@ -1713,7 +1729,7 @@ function printMailingManifest(event) {
     return;
   }
   popup.opener = null;
-  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์ใบนำส่งไปรษณีย์</title><style>@page{size:A4 portrait;margin:8mm}*{box-sizing:border-box}body{margin:0;color:#111;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif;font-size:13pt}.manifest-page{position:relative;width:194mm;min-height:281mm;margin:0 auto;page-break-after:always;background:#fff}.manifest-page:last-child{page-break-after:auto}.page-number{position:absolute;top:0;right:0;font-size:12pt}h1{margin:0 0 3mm;text-align:center;font-size:15pt;font-weight:700}.manifest-meta{width:96mm;margin:0 0 3mm auto;line-height:1.16;font-size:12.5pt;text-align:left}.manifest-intro{margin:0 0 1mm 10mm;font-size:12.5pt;line-height:1.12}.manifest-print-table{width:100%;border-collapse:collapse;table-layout:fixed}.manifest-print-table th,.manifest-print-table td{height:6.9mm;padding:0 1.2mm;border:1px solid #111;vertical-align:middle;line-height:1.05}.manifest-print-table th{text-align:center;font-weight:700}.center{text-align:center}.tracking{font-size:12pt;white-space:nowrap}.col-seq{width:9mm}.col-name{width:82mm}.col-dest{width:16mm}.col-registered{width:28mm}.col-ems{width:28mm}.col-fee{width:14mm}.col-note{width:17mm}.manifest-footer{display:grid;grid-template-columns:1fr 1.25fr;gap:12mm;margin-top:5mm;line-height:1.3}.manifest-footer p{margin:1mm 0}.indent{text-align:center}.signature{margin-top:6mm!important}@media screen{body{background:#eef2f7;padding:18px}.manifest-page{padding:0;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${manifestPages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
+  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์ใบนำส่งไปรษณีย์</title><style>@page{size:A4 portrait;margin:8mm}*{box-sizing:border-box}body{margin:0;color:#111;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif;font-size:13pt}.manifest-page{position:relative;width:194mm;min-height:281mm;margin:0 auto;page-break-after:always;background:#fff}.manifest-page:last-child{page-break-after:auto}.page-number{position:absolute;top:0;right:0;font-size:12pt}h1{margin:0 0 3mm;text-align:center;font-size:15pt;font-weight:700}.manifest-meta{width:82mm;margin:0 0 3mm auto;line-height:1.16;font-size:12.5pt;text-align:left}.manifest-intro{margin:0 0 1mm 10mm;font-size:12.5pt;line-height:1.12}.manifest-print-table{width:100%;border-collapse:collapse;table-layout:fixed}.manifest-print-table th,.manifest-print-table td{height:6.9mm;padding:0 1.2mm;border:1px solid #111;vertical-align:middle;line-height:1.05}.manifest-print-table th{text-align:center;font-weight:700}.center{text-align:center}.recipient-cell{white-space:nowrap;overflow:hidden}.tracking{font-size:12pt;white-space:nowrap}.col-seq{width:9mm}.col-name{width:82mm}.col-dest{width:16mm}.col-registered{width:28mm}.col-ems{width:28mm}.col-fee{width:14mm}.col-note{width:17mm}.manifest-footer{display:grid;grid-template-columns:72mm 96mm;justify-content:space-between;gap:6mm;margin-top:5mm;line-height:1.35;font-size:13pt}.manifest-footer p{margin:0}.manifest-footer-left{width:72mm;padding-top:1mm}.manifest-footer-left p+p{margin-top:3mm}.manifest-footer-right{width:96mm;margin-left:auto}.manifest-footer-right p{margin:0}.total-line{margin-bottom:4mm!important;text-align:left}.sign-line{text-align:left}.role-line{margin-top:3mm!important;text-align:center}.check-line{margin-top:4mm!important;text-align:left}.signature{margin-top:6mm!important}@media screen{body{background:#eef2f7;padding:18px}.manifest-page{padding:0;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${manifestPages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
   popup.document.close();
   closeManifestDialog();
   setNotice(`เตรียมพิมพ์ใบนำส่ง ${recipients.length} รายการแล้ว`);
