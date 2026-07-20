@@ -1827,15 +1827,13 @@ function printEnvelopes() {
     ].filter(Boolean).join(" ");
     const province = formatAddressArea("จังหวัด", item.province);
     const envelopeRecipientName = recipientEnvelopeName(item);
-    const envelopeRecipientNameStyle = manifestRecipientFontStyle(envelopeRecipientName);
-    const envelopePositionStyle = manifestRecipientFontStyle(item.position);
     const recipientDepartmentHtml = state.settings.showRecipientDepartment && item.department && envelopeRecipientName !== item.department
       ? `<p class="organization">${escapeHtml(item.department)}</p>`
       : "";
     const recipientAddressHtml = state.settings.showRecipientAddress
       ? `<p>${escapeHtml(item.address1)}</p><p>${escapeHtml(locality)}</p><p>${escapeHtml(province)}</p>${item.postalCode ? `<p class="postal-code"><strong>${escapeHtml(item.postalCode)}</strong></p>` : ""}`
       : "";
-    return `<section class="envelope">${senderBlockHtml}${postagePermitBlockHtml}<div class="recipient"><small>เรียน</small><h1${envelopeRecipientNameStyle}>${escapeHtml(envelopeRecipientName)}</h1>${item.position && envelopeRecipientName !== item.position ? `<p class="recipient-position"${envelopePositionStyle}>${escapeHtml(item.position)}</p>` : ""}${recipientDepartmentHtml}${recipientAddressHtml}</div></section>`;
+    return `<section class="envelope">${senderBlockHtml}${postagePermitBlockHtml}<div class="recipient"><small>เรียน</small><h1>${escapeHtml(envelopeRecipientName)}</h1>${item.position && envelopeRecipientName !== item.position ? `<p class="recipient-position">${escapeHtml(item.position)}</p>` : ""}${recipientDepartmentHtml}${recipientAddressHtml}</div></section>`;
   }).join("");
   const popup = window.open("", "_blank");
   if (!popup) {
