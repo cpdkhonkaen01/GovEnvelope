@@ -118,11 +118,13 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--blue)}
 .department-text{display:block;max-width:220px;line-height:1.45}
 .recipient-classification{display:block;margin-top:4px;color:#536784;font-size:.9em;font-weight:700;line-height:1.45}
 .address-text{color:#687386;white-space:nowrap}
-.action-cell{width:150px;text-align:right}
+.action-cell{width:190px;text-align:right}
 .row-actions{display:flex;justify-content:flex-end;gap:6px}
 .row-button{min-width:58px;padding:7px 9px;border:1px solid #dfe4ed;border-radius:9px;background:#fff;color:#667085;font-size:8px;font-weight:800}
 .row-button.active{border-color:#b9c9f5;background:var(--blue-soft);color:var(--blue)}
 .row-button.edit{border-color:#d7e0f7;color:#2856d9}
+.row-button.danger{border-color:#ffd2d2;background:#fff5f5;color:#c03535}
+.row-button.danger:hover{border-color:#f69b9b;background:#ffecec}
 .empty{padding:50px 20px;border-top:1px solid #edf0f5;color:var(--muted);text-align:center}
 
 .side-panel{display:grid;gap:15px}
@@ -209,7 +211,7 @@ td small{font-size:13px;line-height:1.5}
 .address-text{display:block;min-width:360px;white-space:normal}
 input[type=checkbox]{width:20px;height:20px}
 .category-badge{padding:6px 10px;font-size:12px}
-.action-cell{width:180px}
+.action-cell{width:250px}
 .row-button{min-width:72px;padding:10px 12px;border-radius:10px;font-size:13px}
 .print-card{position:static;display:grid;grid-template-columns:220px minmax(0,1fr);gap:26px;align-items:center;padding:26px 30px}
 .print-overview{align-self:stretch;padding-right:24px;border-right:1px solid rgba(255,255,255,.2)}
@@ -877,7 +879,7 @@ function renderRows() {
       <td><span class="category-badge ${categoryClass(item.category)}">${escapeHtml(item.category)}</span></td>
       <td><span class="department-text">${escapeHtml(item.department || (item.category === "บุคคล" ? "บุคคล" : "ไม่ระบุหน่วยงาน"))}</span>${classification ? `<small class="recipient-classification">${escapeHtml(classification)}</small>` : ""}</td>
       <td><span class="address-text">${escapeHtml(recipientFullAddress(item))}</span></td>
-      <td class="action-cell"><div class="row-actions"><button class="row-button edit" data-edit-id="${escapeHtml(item.id)}" type="button">แก้ไข</button><button class="row-button ${checked ? "active" : ""}" data-select-id="${escapeHtml(item.id)}" type="button">${checked ? "เลือกแล้ว" : "เลือก"}</button></div></td>
+      <td class="action-cell"><div class="row-actions"><button class="row-button edit" data-edit-id="${escapeHtml(item.id)}" type="button">แก้ไข</button><button class="row-button danger" data-delete-id="${escapeHtml(item.id)}" type="button">ลบ</button><button class="row-button ${checked ? "active" : ""}" data-select-id="${escapeHtml(item.id)}" type="button">${checked ? "เลือกแล้ว" : "เลือก"}</button></div></td>
     </tr>`;
   }).join("");
   elements.empty.hidden = rows.length > 0;
@@ -890,6 +892,9 @@ function renderRows() {
   });
   document.querySelectorAll("[data-edit-id]").forEach((button) => {
     button.addEventListener("click", () => openEditRecipientDialog(button.dataset.editId));
+  });
+  document.querySelectorAll("[data-delete-id]").forEach((button) => {
+    button.addEventListener("click", () => deleteRecipient(button.dataset.deleteId));
   });
 }
 
@@ -1368,6 +1373,70 @@ async function handleRecipientSubmit(event) {
   } finally {
     elements.saveRecipient.disabled = false;
     elements.saveRecipient.textContent = isEditing ? "บันทึกการแก้ไข" : "บันทึกลง Google Sheets";
+  }
+}
+
+async function deleteRecipient(id) {
+  const recipient = state.recipients.find((item) => item.id === id);
+  if (!recipient) {
+    setNotice("ไม่พบรายการผู้รับที่ต้องการลบ");
+    return;
+  }
+
+  const name = recipientName(recipient);
+  const confirmed = window.confirm(`ต้องการลบ “${name}” ออกจากฐานข้อมูล Google Sheets ใช่ไหมครับ?\n\nเมื่อลบแล้ว รายการนี้จะหายจากฐานข้อมูลผู้รับ`);
+  if (!confirmed) return;
+
+  const savedAdminKey = sessionStorage.getItem("envelope-admin-key") || "";
+  const adminKey = window.prompt("กรอกรหัสผู้ดูแลเพื่อลบข้อมูลผู้รับ", savedAdminKey);
+  if (adminKey === null) return;
+  if (!String(adminKey).trim()) {
+    setNotice("ยังไม่ได้กรอกรหัสผู้ดูแล จึงยังไม่ลบข้อมูล");
+    return;
+  }
+
+  setNotice(`กำลังลบ ${name} จาก Google Sheets…`);
+  const payload = {
+    action: "deleteRecipient",
+    id,
+    adminKey: String(adminKey).trim(),
+  };
+
+  try {
+    let readablePayload = null;
+    try {
+      const response = await fetch(state.settings.appsScriptUrl, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=UTF-8" },
+        body: JSON.stringify(payload),
+        redirect: "follow",
+      });
+      if (response.ok) readablePayload = await response.json();
+      else throw new Error(`HTTP ${response.status}`);
+    } catch (error) {
+      console.warn("อ่านผลตอบกลับการลบไม่ได้ ระบบจะตรวจจากรายชื่อแทน", error);
+    }
+
+    if (readablePayload && readablePayload.ok === false) {
+      throw new Error(readablePayload.error || "ลบข้อมูลไม่สำเร็จ");
+    }
+
+    sessionStorage.setItem("envelope-admin-key", payload.adminKey);
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      await delay(500 + (attempt * 300));
+      const rows = await requestRecipients(state.settings.appsScriptUrl);
+      if (!rows.some((item) => String(item.id) === String(id))) {
+        state.recipients = rows.map(normalizeRecipient);
+        state.selected.delete(id);
+        render();
+        setNotice(`ลบ ${name} ออกจากฐานข้อมูลแล้ว`);
+        return;
+      }
+    }
+    throw new Error("ส่งคำสั่งลบแล้ว แต่ยังตรวจพบรายการเดิม กรุณาตรวจ Deployment ของ Apps Script");
+  } catch (error) {
+    console.error(error);
+    setNotice(`ลบข้อมูลไม่สำเร็จ: ${error.message}`);
   }
 }
 
