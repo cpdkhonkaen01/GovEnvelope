@@ -71,19 +71,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .hero .receiver-mini p{max-width:none;margin:0;color:inherit;font:inherit;letter-spacing:normal;line-height:inherit}
 .receiver-mini .organization,.receiver-mini .postal-code{font-weight:700}
 
-.summary{display:grid;grid-template-columns:repeat(3,minmax(150px,1fr)) minmax(260px,1.25fr);gap:12px;margin:18px 0}
-.summary article,.notice{display:flex;align-items:center;min-height:76px;border:1px solid var(--line);border-radius:18px;background:#fff;box-shadow:0 7px 22px rgba(35,50,82,.035)}
-.summary article{gap:11px;padding:12px 15px}
-.summary-icon{display:grid;width:38px;height:38px;place-items:center;border-radius:12px;font-weight:800}
-.summary-icon.blue{background:var(--blue-soft);color:var(--blue)}
-.summary-icon.green{background:var(--green-soft);color:var(--green)}
-.summary-icon.amber{background:#fff6df;color:var(--amber)}
-.summary small,.summary strong{display:block}
-.summary small{color:var(--muted);font-size:9px}
-.summary strong{font-size:13px}
-.notice{justify-content:center;gap:9px;padding:12px 18px;color:#5b6577;font-size:10px;text-align:center}
-.notice i{width:8px;height:8px;flex:0 0 auto;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px var(--green-soft)}
-
 .content-grid{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:18px;align-items:start}
 .directory-card,.print-card{border:1px solid var(--line);background:#fff;box-shadow:0 10px 32px rgba(31,46,79,.045)}
 .directory-card{overflow:hidden;border-radius:23px}
@@ -93,7 +80,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .small-button{padding:8px 11px;border:1px solid #e1e6ef;border-radius:10px;background:#fff;color:#667085;font-size:10px;font-weight:700}
 .small-button.accent{border-color:var(--blue);background:var(--blue);color:#fff;box-shadow:0 7px 16px rgba(40,86,217,.16)}
 .small-button.accent:hover{background:var(--blue-deep)}
-.filters{display:grid;grid-template-columns:minmax(260px,1fr) minmax(160px,.34fr) minmax(190px,.4fr);gap:11px;padding:6px 26px 19px}
+.filters{display:grid;grid-template-columns:minmax(260px,1fr) repeat(3,minmax(150px,.36fr));gap:11px;padding:6px 26px 19px}
 .search{position:relative}
 .search span{position:absolute;top:50%;left:14px;transform:translateY(-52%);color:#98a2b3;font-size:20px}
 .search input,.department-filter select,.print-card select,.form-field input,.form-field select,.form-field textarea{width:100%;border:1px solid #dfe4ed;background:#fff;color:var(--ink)}
@@ -199,11 +186,6 @@ body{font-size:16px}
 .hero-actions{margin-top:18px}
 .preview-panel{width:min(720px,94%)}
 .button{min-height:52px;font-size:15px}
-.summary{margin:14px 0 18px}
-.summary article,.notice{min-height:88px}
-.summary small{font-size:12px}
-.summary strong{font-size:16px}
-.notice{font-size:13px;line-height:1.6}
 .content-grid{grid-template-columns:1fr;gap:18px}
 .side-panel{order:-1;display:block}
 .section-title{padding:28px 30px 20px}
@@ -253,9 +235,7 @@ footer{width:min(2000px,96vw);font-size:12px}
 
 @keyframes pulse{50%{opacity:.35}
 }
-@media(max-width:1080px){.summary{grid-template-columns:repeat(3,1fr)}
-.notice{grid-column:1/-1;min-height:52px}
-.content-grid{grid-template-columns:1fr}
+@media(max-width:1080px){.content-grid{grid-template-columns:1fr}
 .print-card{grid-template-columns:1fr}
 .print-overview{padding:0;border:0}
 .print-controls{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -274,8 +254,6 @@ dialog{padding:22px}
 .preview-toolbar{align-items:stretch;flex-direction:column}
 .preview-size-heading{align-items:flex-start;flex-direction:column;gap:2px}
 .preview-navigation{justify-content:center}
-.summary{grid-template-columns:1fr 1fr}
-.summary article:nth-child(3){grid-column:1/-1}
 .filters{grid-template-columns:1fr}
 .section-title{align-items:flex-start}
 th:nth-child(4),th:nth-child(5),th:nth-child(6),td:nth-child(4),td:nth-child(5),td:nth-child(6){display:none}
@@ -291,8 +269,6 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
 .hero h1{font-size:32px}
 .hero-actions{display:grid}
 .hero-actions button{width:100%}
-.summary{grid-template-columns:1fr}
-.summary article:nth-child(3){grid-column:auto}
 .section-title{display:block}
 .small-button{margin-top:12px}
 .filters{padding-inline:18px}
@@ -345,13 +321,6 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
         </div>
       </section>
 
-      <section class="summary" aria-label="สรุปข้อมูล">
-        <article><span class="summary-icon blue">⌁</span><div><small>รายชื่อทั้งหมด</small><strong id="totalCount">0 รายการ</strong></div></article>
-        <article><span class="summary-icon green">✓</span><div><small>เลือกเพื่อพิมพ์</small><strong id="selectedCount">0 รายการ</strong></div></article>
-        <article><span class="summary-icon amber">▱</span><div><small>รูปแบบกระดาษ</small><strong id="paperLabel">ซอง DL</strong></div></article>
-        <div class="notice"><i></i><span id="noticeText" aria-live="polite">กำลังโหลดข้อมูล…</span></div>
-      </section>
-
       <section class="content-grid">
         <section class="directory-card">
           <div class="section-title">
@@ -360,8 +329,9 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
           </div>
           <div class="filters">
             <label class="search"><span>⌕</span><input id="searchInput" type="search" placeholder="ค้นหาชื่อ ตำแหน่ง หรือหน่วยงาน" /></label>
-            <label class="department-filter"><span>ประเภท</span><select id="categoryFilter"><option value="ทั้งหมด">ทุกประเภท</option><option value="หน่วยงานราชการ">หน่วยงานราชการ</option><option value="สหกรณ์และกลุ่มเกษตรกร">สหกรณ์และกลุ่มเกษตรกร</option><option value="ภาคเอกชน">ภาคเอกชน</option><option value="บุคคล">บุคคล</option></select></label>
-            <label class="department-filter"><span>หน่วยงาน</span><select id="departmentFilter"><option value="ทั้งหมด">ทั้งหมด</option></select></label>
+            <label class="department-filter"><span>ประเภทผู้รับ *</span><select id="categoryFilter"><option value="ทั้งหมด">ทุกประเภท</option><option value="หน่วยงานราชการ">หน่วยงานราชการ</option><option value="สหกรณ์และกลุ่มเกษตรกร">สหกรณ์และกลุ่มเกษตรกร</option><option value="ภาคเอกชน">ภาคเอกชน</option><option value="บุคคล">บุคคล</option></select></label>
+            <label class="department-filter cooperative-filter" id="responsibleUnitFilterWrap" hidden><span>กสส. / นิคมฯ</span><select id="responsibleUnitFilter"><option value="ทั้งหมด">ทั้งหมด</option></select></label>
+            <label class="department-filter cooperative-filter" id="cooperativeTypeFilterWrap" hidden><span>ประเภทสหกรณ์</span><select id="cooperativeTypeFilter"><option value="ทั้งหมด">ทั้งหมด</option></select></label>
           </div>
           <div class="table-wrap">
             <table>
@@ -376,7 +346,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
           <section class="print-card">
             <div class="print-overview"><span class="eyebrow light">พร้อมพิมพ์</span><h2><span id="sideSelected">0</span> รายการ</h2><p>ระบบจะสร้างหน้าพิมพ์แยก 1 ซองต่อ 1 รายชื่อ</p></div>
             <div class="print-controls">
-              <label class="paper-size-option"><span>ขนาดซอง / กระดาษ</span><select id="paperSize"><option value="DL">ซอง DL · 22 × 11 ซม.</option><option value="C5">ซอง C5 · 22.9 × 16.2 ซม.</option><option value="A4">กระดาษ A4 แนวตั้ง · 21 × 29.7 ซม.</option><option value="A4L">กระดาษ A4 แนวนอน · 29.7 × 21 ซม.</option></select><small class="paper-profile-hint">จำฟอนต์และตำแหน่งแยกให้แต่ละขนาดอัตโนมัติ</small></label>
+              <label class="paper-size-option"><span>ขนาดซอง / กระดาษ</span><select id="paperSize"><option value="DL">ซอง DL · 22 × 11 ซม.</option><option value="C5">ซอง C5 · 22.9 × 16.2 ซม.</option><option value="A4L">กระดาษ A4 แนวนอน · 29.7 × 21 ซม.</option></select><small class="paper-profile-hint">จำฟอนต์และตำแหน่งแยกให้แต่ละขนาดอัตโนมัติ</small></label>
               <label class="recipient-font-option"><span>ขนาดฟอนต์ข้อมูลผู้รับ (พอยต์)</span><input id="recipientFontPt" type="number" min="8" max="24" step="0.5" /></label>
               <button class="sender-settings-button" id="openRecipientLayoutSettings" type="button">✎ ปรับตำแหน่งและระยะผู้รับ</button>
               <label class="garuda-option"><input id="showRecipientDepartment" type="checkbox" checked /><span>แสดงชื่อหน่วยงานผู้รับ</span></label>
@@ -541,7 +511,7 @@ const GARUDA_STANDARD_VERSION = "15mm-v1";
 const savedGarudaSize = savedSettings.garudaStandardVersion === GARUDA_STANDARD_VERSION
   ? savedSettings.garudaSizeMm
   : defaults.garudaSizeMm;
-const PAPER_SIZE_KEYS = ["DL", "C5", "A4", "A4L"];
+const PAPER_SIZE_KEYS = ["DL", "C5", "A4L"];
 const LAYOUT_SETTING_KEYS = [
   "garudaPlacement", "garudaSizeMm", "senderTopMm", "senderLeftMm", "senderTextOffsetMm", "senderFontPt",
   "recipientFontPt", "recipientTopPercent", "recipientLeftPercent", "recipientLineHeight",
@@ -599,7 +569,8 @@ const state = {
   selected: new Set(),
   query: "",
   category: "ทั้งหมด",
-  department: "ทั้งหมด",
+  responsibleUnit: "ทั้งหมด",
+  cooperativeType: "ทั้งหมด",
   connected: false,
   editingRecipientId: null,
   previewRecipientIndex: 0,
@@ -646,17 +617,17 @@ const elements = {
   rows: $("#recipientRows"),
   search: $("#searchInput"),
   category: $("#categoryFilter"),
-  department: $("#departmentFilter"),
+  responsibleUnit: $("#responsibleUnitFilter"),
+  responsibleUnitWrap: $("#responsibleUnitFilterWrap"),
+  cooperativeType: $("#cooperativeTypeFilter"),
+  cooperativeTypeWrap: $("#cooperativeTypeFilterWrap"),
   selectAll: $("#selectAll"),
-  total: $("#totalCount"),
-  selected: $("#selectedCount"),
   heroSelected: $("#heroSelected"),
   sideSelected: $("#sideSelected"),
   notice: $("#noticeText"),
   status: $("#connectionStatus"),
   empty: $("#emptyState"),
   paper: $("#paperSize"),
-  paperLabel: $("#paperLabel"),
   recipientFont: $("#recipientFontPt"),
   previewPrevious: $("#previewPrevious"),
   previewNext: $("#previewNext"),
@@ -798,13 +769,15 @@ function filteredRecipients() {
   return state.recipients.filter((item) => {
     const text = `${recipientName(item)} ${item.position} ${item.department} ${item.category} ${item.responsibleUnit} ${item.cooperativeType} ${item.province}`.toLocaleLowerCase("th");
     const categoryMatches = state.category === "ทั้งหมด" || item.category === state.category;
-    const departmentMatches = state.department === "ทั้งหมด" || item.department === state.department;
-    return categoryMatches && departmentMatches && (!query || text.includes(query));
+    const cooperativeFiltersActive = state.category === "สหกรณ์และกลุ่มเกษตรกร";
+    const responsibleUnitMatches = !cooperativeFiltersActive || state.responsibleUnit === "ทั้งหมด" || item.responsibleUnit === state.responsibleUnit;
+    const cooperativeTypeMatches = !cooperativeFiltersActive || state.cooperativeType === "ทั้งหมด" || item.cooperativeType === state.cooperativeType;
+    return categoryMatches && responsibleUnitMatches && cooperativeTypeMatches && (!query || text.includes(query));
   });
 }
 
 function setNotice(message) {
-  elements.notice.textContent = message;
+  if (elements.notice) elements.notice.textContent = message;
 }
 
 function persistSettings() {
@@ -884,16 +857,31 @@ async function requestRecipients(baseUrl) {
   }
 }
 
-function renderDepartmentOptions() {
-  const source = state.category === "ทั้งหมด"
-    ? state.recipients
-    : state.recipients.filter((item) => item.category === state.category);
-  const departments = ["ทั้งหมด", ...new Set(source.map((item) => item.department).filter(Boolean))];
-  elements.department.innerHTML = departments
+function renderCooperativeFilterOptions() {
+  const showCooperativeFilters = state.category === "สหกรณ์และกลุ่มเกษตรกร";
+  elements.responsibleUnitWrap.hidden = !showCooperativeFilters;
+  elements.cooperativeTypeWrap.hidden = !showCooperativeFilters;
+  if (!showCooperativeFilters) {
+    state.responsibleUnit = "ทั้งหมด";
+    state.cooperativeType = "ทั้งหมด";
+    return;
+  }
+
+  const source = state.recipients.filter((item) => item.category === "สหกรณ์และกลุ่มเกษตรกร");
+  const responsibleUnits = ["ทั้งหมด", ...new Set(source.map((item) => item.responsibleUnit).filter(Boolean))];
+  const cooperativeTypes = ["ทั้งหมด", ...new Set(source.map((item) => item.cooperativeType).filter(Boolean))];
+
+  elements.responsibleUnit.innerHTML = responsibleUnits
     .map((item) => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`)
     .join("");
-  if (!departments.includes(state.department)) state.department = "ทั้งหมด";
-  elements.department.value = state.department;
+  elements.cooperativeType.innerHTML = cooperativeTypes
+    .map((item) => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`)
+    .join("");
+
+  if (!responsibleUnits.includes(state.responsibleUnit)) state.responsibleUnit = "ทั้งหมด";
+  if (!cooperativeTypes.includes(state.cooperativeType)) state.cooperativeType = "ทั้งหมด";
+  elements.responsibleUnit.value = state.responsibleUnit;
+  elements.cooperativeType.value = state.cooperativeType;
 }
 
 function renderRows() {
@@ -926,8 +914,6 @@ function renderRows() {
 
 function renderSummary() {
   const selectedCount = state.selected.size;
-  elements.total.textContent = `${state.recipients.length} รายการ`;
-  elements.selected.textContent = `${selectedCount} รายการ`;
   elements.heroSelected.textContent = selectedCount;
   elements.sideSelected.textContent = selectedCount;
   elements.paper.value = state.settings.paperSize;
@@ -935,10 +921,8 @@ function renderSummary() {
   const paperLabels = {
     DL: "ซอง DL",
     C5: "ซอง C5",
-    A4: "กระดาษ A4 แนวตั้ง",
     A4L: "กระดาษ A4 แนวนอน",
   };
-  elements.paperLabel.textContent = paperLabels[state.settings.paperSize] || paperLabels.DL;
   elements.showRecipientDepartment.checked = state.settings.showRecipientDepartment;
   elements.showRecipientAddress.checked = state.settings.showRecipientAddress;
   elements.showSender.checked = state.settings.showSender;
@@ -953,7 +937,6 @@ function renderSummary() {
   const previewPaperSizes = {
     DL: [220, 110],
     C5: [229, 162],
-    A4: [210, 297],
     A4L: [297, 210],
   };
   const [previewPaperWidth, previewPaperHeight] = previewPaperSizes[state.settings.paperSize] || previewPaperSizes.DL;
@@ -1049,7 +1032,7 @@ function renderSummary() {
 
 function render() {
   elements.category.value = state.category;
-  renderDepartmentOptions();
+  renderCooperativeFilterOptions();
   renderRows();
   renderSummary();
 }
@@ -1385,7 +1368,8 @@ async function handleRecipientSubmit(event) {
     sessionStorage.setItem("envelope-admin-key", payload.adminKey);
     state.recipients = rows.map(normalizeRecipient);
     state.category = payload.category;
-    state.department = "ทั้งหมด";
+    state.responsibleUnit = "ทั้งหมด";
+    state.cooperativeType = "ทั้งหมด";
     state.selected.add(payload.id);
     render();
     elements.recipientFormMessage.textContent = isEditing ? "แก้ไขข้อมูลเรียบร้อยแล้ว" : "บันทึกข้อมูลเรียบร้อยแล้ว";
@@ -1503,7 +1487,6 @@ function printEnvelopes() {
   const sizes = {
     DL: ["220mm", "110mm", "ซอง DL"],
     C5: ["229mm", "162mm", "ซอง C5"],
-    A4: ["210mm", "297mm", "กระดาษ A4 แนวตั้ง"],
     A4L: ["297mm", "210mm", "กระดาษ A4 แนวนอน"],
   };
   const [width, height, label] = sizes[state.settings.paperSize] || sizes.DL;
@@ -1568,12 +1551,17 @@ elements.search.addEventListener("input", (event) => {
 });
 elements.category.addEventListener("change", (event) => {
   state.category = event.target.value;
-  state.department = "ทั้งหมด";
-  renderDepartmentOptions();
+  state.responsibleUnit = "ทั้งหมด";
+  state.cooperativeType = "ทั้งหมด";
+  renderCooperativeFilterOptions();
   renderRows();
 });
-elements.department.addEventListener("change", (event) => {
-  state.department = event.target.value;
+elements.responsibleUnit.addEventListener("change", (event) => {
+  state.responsibleUnit = event.target.value;
+  renderRows();
+});
+elements.cooperativeType.addEventListener("change", (event) => {
+  state.cooperativeType = event.target.value;
   renderRows();
 });
 elements.selectAll.addEventListener("change", () => {
