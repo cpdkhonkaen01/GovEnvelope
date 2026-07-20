@@ -10,6 +10,7 @@
 :root{--ink:#17223b;--muted:#667085;--blue:#2856d9;--blue-deep:#163aa5;--blue-soft:#eaf0ff;--green:#20a276;--green-soft:#e9f8f2;--amber:#e4a11b;--line:#e5e9f2;--page:#f5f7fb;--shadow:0 18px 52px rgba(37,55,91,.09)}
 
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html{scroll-behavior:smooth}
 body{margin:0;background:radial-gradient(circle at 10% -10%,rgba(40,86,217,.08),transparent 28rem),var(--page);color:var(--ink);font-family:"Noto Sans Thai","Leelawadee UI",Tahoma,Arial,sans-serif;-webkit-font-smoothing:antialiased}
 button,input,select,textarea{font:inherit}
@@ -111,6 +112,8 @@ td strong,td small{display:block}
 td strong{margin-bottom:2px;color:#263149;font-size:11px}
 td small{color:#8a94a5;font-size:9px}
 .check-cell{width:42px;text-align:center}
+.sequence-cell{width:72px;text-align:center}
+.row-sequence{display:inline-grid;min-width:32px;height:32px;place-items:center;border-radius:10px;background:#eef3ff;color:var(--blue-deep);font-weight:900}
 input[type=checkbox]{width:16px;height:16px;accent-color:var(--blue)}
 .department-text{display:block;max-width:220px;line-height:1.45}
 .recipient-classification{display:block;margin-top:4px;color:#536784;font-size:.9em;font-weight:700;line-height:1.45}
@@ -262,7 +265,7 @@ dialog{padding:22px}
 .summary article:nth-child(3){grid-column:1/-1}
 .filters{grid-template-columns:1fr}
 .section-title{align-items:flex-start}
-th:nth-child(3),th:nth-child(4),th:nth-child(5),td:nth-child(3),td:nth-child(4),td:nth-child(5){display:none}
+th:nth-child(4),th:nth-child(5),th:nth-child(6),td:nth-child(4),td:nth-child(5),td:nth-child(6){display:none}
 table{min-width:600px}
 .side-panel{grid-template-columns:1fr}
 .print-controls{grid-template-columns:1fr}
@@ -349,7 +352,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th class="check-cell"><input id="selectAll" type="checkbox" aria-label="เลือกทั้งหมด" /></th><th>ชื่อผู้รับ / ตำแหน่ง</th><th>ประเภท</th><th>หน่วยงาน</th><th>ที่อยู่</th><th class="action-cell">จัดการ</th></tr></thead>
+              <thead><tr><th class="check-cell"><input id="selectAll" type="checkbox" aria-label="เลือกทั้งหมด" /></th><th class="sequence-cell">ลำดับ</th><th>ชื่อผู้รับ / ตำแหน่ง</th><th>ประเภท</th><th>หน่วยงาน</th><th>ที่อยู่</th><th class="action-cell">จัดการ</th></tr></thead>
               <tbody id="recipientRows"></tbody>
             </table>
             <div class="empty" id="emptyState" hidden>ไม่พบรายชื่อที่ตรงกับคำค้นหา</div>
@@ -393,7 +396,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
         </div>
         <div class="form-grid equal" id="cooperativeClassificationFields" hidden>
           <label class="form-field"><span>กสส. / นิคมฯ ที่รับผิดชอบ *</span><select name="responsibleUnit"><option value="">เลือก กสส. / นิคมฯ</option><option value="กสส.1">กสส.1</option><option value="กสส.2">กสส.2</option><option value="กสส.3">กสส.3</option><option value="กสส.4">กสส.4</option><option value="กสส.5">กสส.5</option><option value="กสส.6">กสส.6</option><option value="กสส.7">กสส.7</option><option value="กสส.8">กสส.8</option><option value="นิคมฯ">นิคมฯ</option></select></label>
-          <label class="form-field"><span>ประเภทสหกรณ์</span><select name="cooperativeType"><option value="">ไม่ระบุ / กลุ่มเกษตรกร</option><option value="สหกรณ์การเกษตร">สหกรณ์การเกษตร</option><option value="สหกรณ์ออมทรัพย์">สหกรณ์ออมทรัพย์</option><option value="สหกรณ์ประมง">สหกรณ์ประมง</option><option value="สหกรณ์ร้านค้า">สหกรณ์ร้านค้า</option><option value="สหกรณ์นิคม">สหกรณ์นิคม</option><option value="สหกรณ์บริการ">สหกรณ์บริการ</option><option value="สหกรณ์เครดิตยูเนี่ยน">สหกรณ์เครดิตยูเนี่ยน</option></select><small>กลุ่มเกษตรกรสามารถเลือก “ไม่ระบุ” ได้</small></label>
+          <label class="form-field"><span>ประเภทสหกรณ์</span><select name="cooperativeType"><option value="">ไม่ระบุ</option><option value="กลุ่มเกษตรกร">กลุ่มเกษตรกร</option><option value="สหกรณ์การเกษตร">สหกรณ์การเกษตร</option><option value="สหกรณ์ออมทรัพย์">สหกรณ์ออมทรัพย์</option><option value="สหกรณ์ประมง">สหกรณ์ประมง</option><option value="สหกรณ์ร้านค้า">สหกรณ์ร้านค้า</option><option value="สหกรณ์นิคม">สหกรณ์นิคม</option><option value="สหกรณ์บริการ">สหกรณ์บริการ</option><option value="สหกรณ์เครดิตยูเนี่ยน">สหกรณ์เครดิตยูเนี่ยน</option></select><small>เลือก “กลุ่มเกษตรกร” เพื่อให้ค้นหาและแยกรายการได้ง่าย</small></label>
         </div>
         <div class="form-grid equal">
           <label class="form-field"><span>ตำแหน่งผู้รับ</span><input name="position" type="text" placeholder="เช่น ผู้อำนวยการ หรือประธานกรรมการ" /></label>
@@ -607,6 +610,13 @@ const state = {
 };
 
 const $ = (selector) => document.querySelector(selector);
+function setGroupDisabled(container, disabled) {
+  if (!container) return;
+  container.querySelectorAll("input, select, textarea").forEach((control) => {
+    control.disabled = disabled;
+  });
+}
+
 const elements = {
   rows: $("#recipientRows"),
   search: $("#searchInput"),
@@ -857,11 +867,12 @@ function renderDepartmentOptions() {
 
 function renderRows() {
   const rows = filteredRecipients();
-  elements.rows.innerHTML = rows.map((item) => {
+  elements.rows.innerHTML = rows.map((item, index) => {
     const checked = state.selected.has(item.id);
     const classification = [item.responsibleUnit, item.cooperativeType].filter(Boolean).join(" · ");
     return `<tr class="${checked ? "selected-row" : ""}">
       <td class="check-cell"><input class="recipient-check" data-id="${escapeHtml(item.id)}" type="checkbox" ${checked ? "checked" : ""} aria-label="เลือก ${escapeHtml(recipientName(item))}"></td>
+      <td class="sequence-cell"><span class="row-sequence">${index + 1}</span></td>
       <td><strong>${escapeHtml(recipientName(item))}</strong></td>
       <td><span class="category-badge ${categoryClass(item.category)}">${escapeHtml(item.category)}</span></td>
       <td><span class="department-text">${escapeHtml(item.department || (item.category === "บุคคล" ? "บุคคล" : "ไม่ระบุหน่วยงาน"))}</span>${classification ? `<small class="recipient-classification">${escapeHtml(classification)}</small>` : ""}</td>
@@ -926,6 +937,7 @@ function renderSummary() {
   const senderAddressPreview = escapeHtml(state.settings.senderAddress).replace(/\r?\n/g, "<br>");
   senderPreview.innerHTML = `<strong>${escapeHtml(state.settings.sender)}</strong><div class="sender-address-mini">${senderAddressPreview}</div>${state.settings.documentNumber ? `<div class="sender-document-mini">${escapeHtml(state.settings.documentNumber)}</div>` : ""}`;
   senderPreviewBlock.hidden = !state.settings.showSender;
+  senderPreviewBlock.style.display = state.settings.showSender ? "" : "none";
   senderPreviewBlock.style.top = `${senderTop}px`;
   senderPreviewBlock.style.left = `${senderLeft}px`;
   senderPreviewBlock.style.fontSize = `${ptToPreviewPx(state.settings.senderFontPt)}px`;
@@ -999,6 +1011,8 @@ function renderSummary() {
     garudaPreview.style.marginBottom = state.settings.garudaPlacement === "above" ? `${2 * previewScale}px` : "0";
   } else {
     garudaPreview.style.visibility = "hidden";
+    garudaPreview.removeAttribute("src");
+    if (!state.settings.showSender) senderPreview.innerHTML = "";
   }
 }
 
@@ -1102,9 +1116,11 @@ function updateRecipientFormRequirements() {
   const isCooperative = elements.recipientForm.elements.category.value === "สหกรณ์และกลุ่มเกษตรกร";
   const department = elements.recipientForm.elements.department;
   const responsibleUnit = elements.recipientForm.elements.responsibleUnit;
+  const cooperativeClassificationFields = $("#cooperativeClassificationFields");
   $("#prefixField").hidden = !isPerson;
   $("#personNameFields").hidden = !isPerson;
-  $("#cooperativeClassificationFields").hidden = !isCooperative;
+  cooperativeClassificationFields.hidden = !isCooperative;
+  setGroupDisabled(cooperativeClassificationFields, !isCooperative);
   $("#categoryAndPrefixFields").classList.toggle("single", !isPerson);
   if (!isPerson) {
     elements.recipientForm.elements.prefix.value = "";
@@ -1112,8 +1128,10 @@ function updateRecipientFormRequirements() {
     elements.recipientForm.elements.lastName.value = "";
   }
   if (!isCooperative) {
+    setGroupDisabled(cooperativeClassificationFields, false);
     responsibleUnit.value = "";
     elements.recipientForm.elements.cooperativeType.value = "";
+    setGroupDisabled(cooperativeClassificationFields, true);
   }
   responsibleUnit.required = isCooperative;
   department.required = !isPerson;
@@ -1301,6 +1319,10 @@ async function handleRecipientSubmit(event) {
   const recipientId = state.editingRecipientId;
   const values = Object.fromEntries(new FormData(elements.recipientForm).entries());
   const payload = Object.fromEntries(Object.entries(values).map(([key, value]) => [key, String(value).trim()]));
+  if (payload.category !== CATEGORIES[1]) {
+    payload.responsibleUnit = "";
+    payload.cooperativeType = "";
+  }
   if (payload.category === "บุคคล" && !payload.firstName && !payload.lastName) {
     elements.recipientFormMessage.textContent = "ประเภทบุคคลต้องระบุชื่อหรือนามสกุล";
     elements.recipientFormMessage.className = "form-message error";
