@@ -134,6 +134,7 @@ footer{display:flex;justify-content:space-between;width:min(1440px,92vw);margin:
 footer strong{color:#667085}
 
 dialog{width:min(860px,calc(100% - 32px));max-height:calc(100vh - 40px);padding:34px;border:0;border-radius:24px;box-shadow:0 30px 90px rgba(17,26,48,.3)}
+dialog.wide-dialog{width:min(1120px,calc(100% - 28px))}
 dialog::backdrop{background:rgba(17,26,48,.56);backdrop-filter:blur(6px)}
 .dialog-title{display:flex;align-items:flex-start;justify-content:space-between}
 .dialog-title .eyebrow{font-size:12px}
@@ -172,6 +173,16 @@ button:disabled{cursor:not-allowed;opacity:.58}
 .category-badge.person{background:#f3efff;color:#6941c6}
 dialog hr{height:1px;margin:20px 0 4px;border:0;background:#edf0f5}
 .dialog-actions{display:flex;justify-content:flex-end;gap:11px;margin-top:24px}.dialog-actions .button{min-height:50px;padding:0 22px;font-size:14px}
+.manifest-table-wrap{max-height:48vh;overflow:auto;margin-top:18px;border:1px solid #e6ebf4;border-radius:16px;background:#fff}
+.manifest-entry-table{min-width:860px}
+.manifest-entry-table th{position:sticky;top:0;z-index:1;background:#f7f9fd}
+.manifest-entry-table th,.manifest-entry-table td{padding:12px 14px;font-size:14px}
+.manifest-entry-table th:first-child,.manifest-entry-table td:first-child{width:64px;text-align:center}
+.manifest-entry-table th:nth-child(3),.manifest-entry-table td:nth-child(3){width:110px;text-align:center}
+.manifest-entry-table th:nth-child(4),.manifest-entry-table th:nth-child(5){width:180px}
+.manifest-entry-table input{width:100%;height:42px;padding:0 12px;border:1px solid #dfe4ed;border-radius:10px;background:#fff;color:var(--ink);font:inherit}
+.manifest-recipient-name{font-weight:800;color:#17223b}
+.manifest-recipient-sub{margin-top:3px;color:#667085;font-size:12px}
 
 /* โหมดอ่านง่าย เหมาะสำหรับผู้ใช้งานสูงอายุ */
 body{font-size:16px}
@@ -359,6 +370,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
               <label class="garuda-option"><input id="showPostagePermit" type="checkbox" checked /><span>แสดงกรอบฝากส่ง</span></label>
               <button class="sender-settings-button" id="openSenderSettings" type="button">✎ แก้ไขข้อมูลผู้ส่ง</button>
               <button class="sender-settings-button" id="openPostagePermitSettings" type="button">✎ แก้ไขกรอบค่าฝากส่ง</button>
+              <button class="sender-settings-button" id="openManifestDialog" type="button">📮 พิมพ์ใบนำส่ง</button>
               <button id="printButton" type="button">ดูตัวอย่างและพิมพ์ <span>↗</span></button>
             </div>
           </section>
@@ -462,6 +474,30 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
           <label class="form-field"><span>ขนาดตัวอักษร (พอยต์)</span><input name="postagePermitFontPt" type="number" min="6" max="14" step="0.5" /></label>
         </div>
         <div class="dialog-actions"><button class="button secondary" id="resetPostagePermit" type="button">คืนค่าแนะนำ</button><button class="button secondary" id="cancelPostagePermit" type="button">ยกเลิก</button><button class="button primary" type="submit">บันทึกกรอบค่าฝากส่ง</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="mailingManifestDialog" class="wide-dialog">
+      <form id="mailingManifestForm">
+        <div class="dialog-title">
+          <div><span class="eyebrow">ใบนำส่งไปรษณีย์</span><h2>กรอกเลขลงทะเบียน / EMS</h2></div>
+          <button class="close-button" id="closeManifestDialog" type="button" aria-label="ปิด">×</button>
+        </div>
+        <p class="dialog-info">ระบบจะดึงชื่อผู้รับและรหัสไปรษณีย์จากรายการที่เลือก ส่วนเลขลงทะเบียนและ EMS ให้กรอกเองตามเลขที่ได้รับจากไปรษณีย์</p>
+        <div class="form-grid equal">
+          <label class="form-field"><span>วัน/เดือน/ปี ทำรายการ</span><input name="manifestDate" id="manifestDate" type="date" required /></label>
+          <label class="form-field"><span>ใบอนุญาต/ไปรษณีย์</span><input name="manifestPermit" id="manifestPermit" type="text" placeholder="ใบอนุญาตเลขที่ 3/2521 ไปรษณีย์เทพารักษ์" /></label>
+        </div>
+        <div class="manifest-table-wrap">
+          <table class="manifest-entry-table">
+            <thead><tr><th>ลำดับ</th><th>ผู้รับ</th><th>ปลายทาง</th><th>ลงทะเบียน</th><th>EMS</th></tr></thead>
+            <tbody id="manifestRows"></tbody>
+          </table>
+        </div>
+        <div class="dialog-actions">
+          <button class="button secondary" id="cancelManifestDialog" type="button">ยกเลิก</button>
+          <button class="button primary" type="submit">ดูตัวอย่างและพิมพ์ใบนำส่ง</button>
+        </div>
       </form>
     </dialog>
 
@@ -657,6 +693,11 @@ const elements = {
   senderForm: $("#senderForm"),
   postagePermitDialog: $("#postagePermitDialog"),
   postagePermitForm: $("#postagePermitForm"),
+  mailingManifestDialog: $("#mailingManifestDialog"),
+  mailingManifestForm: $("#mailingManifestForm"),
+  manifestRows: $("#manifestRows"),
+  manifestDate: $("#manifestDate"),
+  manifestPermit: $("#manifestPermit"),
 };
 
 function clampNumber(value, min, max, fallback) {
@@ -759,6 +800,50 @@ function recipientFullAddress(item) {
     formatAddressArea("จังหวัด", item.province),
     item.postalCode,
   ].filter(Boolean).join(" ");
+}
+
+function selectedRecipients() {
+  return state.recipients.filter((item) => state.selected.has(item.id));
+}
+
+function localIsoDate(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatThaiLongDate(dateValue) {
+  const date = dateValue ? new Date(`${dateValue}T00:00:00`) : new Date();
+  return new Intl.DateTimeFormat("th-TH-u-ca-buddhist", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
+function defaultManifestPermit() {
+  const lines = String(state.settings.postagePermitText || "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const permitLine = lines.find((line) => line.includes("ใบอนุญาต")) || "";
+  const postOfficeLine = lines.find((line) => line.includes("ไปรษณีย์")) || "";
+  return [permitLine, postOfficeLine].filter(Boolean).join(" ");
+}
+
+function parseTrackingCode(value = "") {
+  const compact = String(value).trim().toUpperCase().replace(/[\s-]/g, "");
+  if (!compact) return ["", "", "", ""];
+  const full = compact.match(/^([A-Z]{2})([0-9๐-๙]{8})([0-9๐-๙])([A-Z]{2})$/);
+  if (full) return [full[1], full[2], full[3], full[4]];
+  const numberOnly = compact.match(/^([0-9๐-๙]{8})([0-9๐-๙])$/);
+  if (numberOnly) return ["", numberOnly[1], numberOnly[2], ""];
+  return ["", compact, "", ""];
+}
+
+function manifestRecipientLabel(item) {
+  return recipientEnvelopeName(item);
 }
 
 function categoryClass(category) {
@@ -1487,6 +1572,125 @@ function closeDeleteRecipientDialog() {
   elements.deleteRecipientDialog.dataset.recipientId = "";
 }
 
+function openManifestDialog() {
+  const recipients = selectedRecipients();
+  if (!recipients.length) {
+    setNotice("โปรดเลือกรายชื่อผู้รับอย่างน้อย 1 รายการก่อนพิมพ์ใบนำส่ง");
+    return;
+  }
+  elements.manifestDate.value = localIsoDate();
+  elements.manifestPermit.value = defaultManifestPermit();
+  elements.manifestRows.innerHTML = recipients.map((item, index) => {
+    const name = manifestRecipientLabel(item);
+    const subText = item.department && item.department !== name ? item.department : recipientFullAddress(item);
+    return `<tr data-recipient-id="${escapeHtml(item.id)}">
+      <td>${index + 1}</td>
+      <td><div class="manifest-recipient-name">${escapeHtml(name)}</div>${subText ? `<div class="manifest-recipient-sub">${escapeHtml(subText)}</div>` : ""}</td>
+      <td>${escapeHtml(item.postalCode || "")}</td>
+      <td><input name="registered-${escapeHtml(item.id)}" type="text" autocomplete="off" placeholder="เช่น RJ160684588TH" /></td>
+      <td><input name="ems-${escapeHtml(item.id)}" type="text" autocomplete="off" placeholder="เช่น EQ122387244TH" /></td>
+    </tr>`;
+  }).join("");
+  elements.mailingManifestDialog.showModal();
+}
+
+function closeManifestDialog() {
+  if (elements.mailingManifestDialog.open) elements.mailingManifestDialog.close();
+}
+
+function printMailingManifest(event) {
+  event.preventDefault();
+  const recipients = selectedRecipients();
+  if (!recipients.length) {
+    closeManifestDialog();
+    setNotice("โปรดเลือกรายชื่อผู้รับอย่างน้อย 1 รายการก่อนพิมพ์ใบนำส่ง");
+    return;
+  }
+
+  const form = new FormData(elements.mailingManifestForm);
+  const manifestDate = formatThaiLongDate(form.get("manifestDate"));
+  const permit = String(form.get("manifestPermit") || "").trim();
+  const rows = recipients.map((item, index) => ({
+    index: index + 1,
+    name: manifestRecipientLabel(item),
+    destination: item.postalCode || "",
+    registered: parseTrackingCode(form.get(`registered-${item.id}`)),
+    ems: parseTrackingCode(form.get(`ems-${item.id}`)),
+  }));
+  const pageSize = 31;
+  const pages = [];
+  for (let start = 0; start < rows.length; start += pageSize) {
+    pages.push(rows.slice(start, start + pageSize));
+  }
+
+  const sender = state.settings.sender || "สำนักงานสหกรณ์จังหวัดขอนแก่น";
+  const manifestPages = pages.map((pageRows, pageIndex) => {
+    const blankRows = Array.from({ length: Math.max(0, pageSize - pageRows.length) }, (_, index) => ({
+      index: pageIndex * pageSize + pageRows.length + index + 1,
+      name: "",
+      destination: "",
+      registered: ["", "", "", ""],
+      ems: ["", "", "", ""],
+    }));
+    const allRows = [...pageRows, ...blankRows];
+    const bodyRows = allRows.map((row) => `<tr>
+      <td class="center">${row.index}</td>
+      <td>${escapeHtml(row.name)}</td>
+      <td class="center">${escapeHtml(row.destination)}</td>
+      ${row.registered.map((part) => `<td class="center tracking">${escapeHtml(part)}</td>`).join("")}
+      ${row.ems.map((part) => `<td class="center tracking">${escapeHtml(part)}</td>`).join("")}
+      <td></td>
+      <td></td>
+    </tr>`).join("");
+    const pageNumber = pages.length > 1 ? `<div class="page-number">-${pageIndex + 1}-</div>` : "";
+    return `<section class="manifest-page">
+      ${pageNumber}
+      <h1>ใบนำส่งของทางไปรษณีย์โดยชำระค่าบริการเป็นสินเชื่อ</h1>
+      <div class="manifest-meta">
+        <div>วัน/เดือน/ปี…${escapeHtml(manifestDate)}.......</div>
+        <div>ชื่อหน่วยงาน ${escapeHtml(sender)}</div>
+        ${permit ? `<div>${escapeHtml(permit)}</div>` : ""}
+      </div>
+      <p class="manifest-intro">ได้ฝากส่งสิ่งของของทางไปรษณีย์โดยชำระค่าบริการเป็นเงินเชื่อดังรายการต่อไปนี้</p>
+      <table class="manifest-print-table">
+        <colgroup>
+          <col class="col-seq"><col class="col-name"><col class="col-dest">
+          <col class="col-track"><col class="col-track-wide"><col class="col-track"><col class="col-track">
+          <col class="col-track"><col class="col-track-wide"><col class="col-track"><col class="col-track">
+          <col class="col-fee"><col class="col-note">
+        </colgroup>
+        <thead><tr><th>ลำดับ</th><th>ผู้รับ</th><th>ปลายทาง</th><th colspan="4">ลงทะเบียน</th><th colspan="4">EMS</th><th>ค่าบริการ</th><th>หมายเหตุ</th></tr></thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+      <div class="manifest-footer">
+        <div>
+          <p>รวม&nbsp;&nbsp; จำนวน ......................${pageRows.length}...................... ฉบับ</p>
+          <p>ธรรมดา จำนวน....................-...................... ฉบับ</p>
+        </div>
+        <div>
+          <p>รวมทั้งสิ้น....................${rows.length}....................ฉบับ</p>
+          <p>ลงชื่อ...................................................</p>
+          <p class="indent">ผู้รับผิดชอบในการฝากส่ง</p>
+          <p>ได้ตรวจสอบและรับฝากไว้ถูกต้องแล้ว</p>
+          <p class="signature">ลงชื่อ............................................................................</p>
+          <p class="indent">เจ้าหน้าที่รับฝาก</p>
+        </div>
+      </div>
+    </section>`;
+  }).join("");
+
+  const popup = window.open("", "_blank");
+  if (!popup) {
+    setNotice("เบราว์เซอร์บล็อกหน้าพิมพ์ กรุณาอนุญาต Pop-up แล้วลองอีกครั้ง");
+    return;
+  }
+  popup.opener = null;
+  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์ใบนำส่งไปรษณีย์</title><style>@page{size:A4 portrait;margin:8mm}*{box-sizing:border-box}body{margin:0;color:#111;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif;font-size:14pt}.manifest-page{position:relative;width:194mm;min-height:281mm;margin:0 auto;page-break-after:always;background:#fff}.manifest-page:last-child{page-break-after:auto}.page-number{position:absolute;top:0;right:0;font-size:13pt}h1{margin:0 0 7mm;text-align:left;font-size:18pt;font-weight:700}.manifest-meta{margin-left:86mm;margin-bottom:5mm;line-height:1.35}.manifest-intro{margin:0 0 2mm 12mm}.manifest-print-table{width:100%;border-collapse:collapse;table-layout:fixed}.manifest-print-table th,.manifest-print-table td{height:7.4mm;padding:0 1.2mm;border:1px solid #111;vertical-align:middle;line-height:1.08}.manifest-print-table th{text-align:center;font-weight:700}.center{text-align:center}.tracking{font-size:12.5pt}.col-seq{width:10mm}.col-name{width:66mm}.col-dest{width:18mm}.col-track{width:8mm}.col-track-wide{width:18mm}.col-fee{width:15mm}.col-note{width:16mm}.manifest-footer{display:grid;grid-template-columns:1fr 1.25fr;gap:12mm;margin-top:5mm;line-height:1.45}.manifest-footer p{margin:1.5mm 0}.indent{text-align:center}.signature{margin-top:8mm!important}@media screen{body{background:#eef2f7;padding:18px}.manifest-page{padding:0;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${manifestPages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
+  popup.document.close();
+  closeManifestDialog();
+  setNotice(`เตรียมพิมพ์ใบนำส่ง ${recipients.length} รายการแล้ว`);
+}
+
 function printEnvelopes() {
   const recipients = state.recipients.filter((item) => state.selected.has(item.id));
   if (!recipients.length) {
@@ -1659,6 +1863,10 @@ $("#closePostagePermitDialog").addEventListener("click", closePostagePermitSetti
 $("#cancelPostagePermit").addEventListener("click", closePostagePermitSettings);
 $("#resetPostagePermit").addEventListener("click", resetPostagePermit);
 elements.postagePermitForm.addEventListener("submit", handlePostagePermitSubmit);
+$("#openManifestDialog").addEventListener("click", openManifestDialog);
+$("#closeManifestDialog").addEventListener("click", closeManifestDialog);
+$("#cancelManifestDialog").addEventListener("click", closeManifestDialog);
+elements.mailingManifestForm.addEventListener("submit", printMailingManifest);
 $("#printButton").addEventListener("click", printEnvelopes);
 $("#heroPrint").addEventListener("click", printEnvelopes);
 elements.previewPrevious.addEventListener("click", () => {
