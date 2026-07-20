@@ -363,7 +363,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
 
         <aside class="side-panel">
           <section class="print-card">
-            <div class="print-overview"><span class="eyebrow light">พร้อมพิมพ์</span><h2><span id="sideSelected">0</span> รายการ</h2><p>ระบบจะสร้างหน้าพิมพ์แยก 1 ซองต่อ 1 รายชื่อ</p></div>
+            <div class="print-overview"><span class="eyebrow light">พร้อมพิมพ์</span><h2><span id="sideSelected">0</span> รายการ</h2><p>ระบบจะสร้างหน้าพิมพ์ตามจำนวนซองที่ตั้งไว้ในแต่ละรายชื่อ</p></div>
             <div class="print-controls">
               <label class="paper-size-option"><span>ขนาดซอง / กระดาษ</span><select id="paperSize"><option value="DL">ซอง DL · 22 × 11 ซม.</option><option value="C5">ซอง C5 · 22.9 × 16.2 ซม.</option><option value="A4L">กระดาษ A4 แนวนอน · 29.7 × 21 ซม.</option></select><small class="paper-profile-hint">จำฟอนต์และตำแหน่งแยกให้แต่ละขนาดอัตโนมัติ</small></label>
               <label class="recipient-font-option"><span>ขนาดฟอนต์ข้อมูลผู้รับ (พอยต์)</span><input id="recipientFontPt" type="number" min="8" max="24" step="0.5" /></label>
@@ -723,6 +723,19 @@ function setRecipientEnvelopeCopies(id, value) {
   return copies;
 }
 
+function syncEnvelopeCopyInputs() {
+  document.querySelectorAll("[data-copy-id]").forEach((input) => {
+    input.value = setRecipientEnvelopeCopies(input.dataset.copyId, input.value);
+  });
+}
+
+function selectedEnvelopeJobs() {
+  syncEnvelopeCopyInputs();
+  return state.recipients
+    .filter((item) => state.selected.has(item.id))
+    .flatMap((item) => Array.from({ length: recipientEnvelopeCopies(item.id) }, () => ({ item })));
+}
+
 function captureCurrentLayout() {
   return Object.fromEntries(LAYOUT_SETTING_KEYS.map((key) => [key, state.settings[key]]));
 }
@@ -1033,20 +1046,17 @@ function renderRows() {
       <td class="check-cell"><input class="recipient-check" data-id="${escapeHtml(item.id)}" type="checkbox" ${checked ? "checked" : ""} aria-label="เลือก ${escapeHtml(recipientName(item))}"></td>
       <td class="sequence-cell"><span class="row-sequence">${index + 1}</span></td>
       <td class="recipient-name-cell"><strong>${escapeHtml(displayName)}</strong>${positionLine}</td>
-      <td><span class="category-badge ${categoryClass(item.category)}">${escapeHtml(item.category)}</span></td>
-      <td><span class="department-text">${escapeHtml(item.department || (item.category === "บุคคล" ? "บุคคล" : "ไม่ระบุหน่วยงาน"))}</span>${classification ? `<small class="recipient-classification">${escapeHtml(classification)}</small>` : ""}</td>
+      <td><span class="category-badge ${categoryClass(item.category)}">${escapeHtml(item.category)}</span>${classification ? `<small class="recipient-classification">${escapeHtml(classification)}</small>` : ""}</td>
+      <td><span class="department-text">${escapeHtml(item.department || (item.category === "บุคคล" ? "บุคคล" : "ไม่ระบุหน่วยงาน"))}</span></td>
       <td><span class="address-text">${escapeHtml(recipientFullAddress(item))}</span></td>
       <td class="copy-cell"><input class="copy-input" data-copy-id="${escapeHtml(item.id)}" type="number" min="1" max="20" step="1" value="${copies}" aria-label="จำนวนซองของ ${escapeHtml(recipientName(item))}"></td>
-      <td class="action-cell"><div class="row-actions"><button class="row-button edit" data-edit-id="${escapeHtml(item.id)}" type="button">แก้ไข</button><button class="row-button ${checked ? "active" : ""}" data-select-id="${escapeHtml(item.id)}" type="button">${checked ? "เลือกแล้ว" : "เลือก"}</button></div></td>
+      <td class="action-cell"><div class="row-actions"><button class="row-button edit" data-edit-id="${escapeHtml(item.id)}" type="button">แก้ไข</button></div></td>
     </tr>`;
   }).join("");
   elements.empty.hidden = rows.length > 0;
   elements.selectAll.checked = rows.length > 0 && rows.every((item) => state.selected.has(item.id));
   document.querySelectorAll(".recipient-check").forEach((input) => {
     input.addEventListener("change", () => toggleRecipient(input.dataset.id));
-  });
-  document.querySelectorAll("[data-select-id]").forEach((button) => {
-    button.addEventListener("click", () => toggleRecipient(button.dataset.selectId));
   });
   document.querySelectorAll("[data-edit-id]").forEach((button) => {
     button.addEventListener("click", () => openEditRecipientDialog(button.dataset.editId));
@@ -1056,15 +1066,23 @@ function renderRows() {
       const copies = setRecipientEnvelopeCopies(input.dataset.copyId, input.value);
       input.value = copies;
       persistSettings();
+      renderSummary();
       setNotice(`ตั้งจำนวนซองของรายชื่อนี้เป็น ${copies} ฉบับแล้ว`);
+    });
+    input.addEventListener("input", () => {
+      setRecipientEnvelopeCopies(input.dataset.copyId, input.value);
+      renderSummary();
     });
   });
 }
 
 function renderSummary() {
   const selectedCount = state.selected.size;
+  const selectedEnvelopeCount = state.recipients
+    .filter((item) => state.selected.has(item.id))
+    .reduce((total, item) => total + recipientEnvelopeCopies(item.id), 0);
   elements.heroSelected.textContent = selectedCount;
-  elements.sideSelected.textContent = selectedCount;
+  elements.sideSelected.textContent = selectedEnvelopeCount;
   elements.paper.value = state.settings.paperSize;
   elements.recipientFont.value = state.settings.recipientFontPt;
   const paperLabels = {
@@ -1629,22 +1647,23 @@ function closeDeleteRecipientDialog() {
 }
 
 function openManifestDialog() {
-  const recipients = selectedRecipients();
-  if (!recipients.length) {
+  const jobs = selectedEnvelopeJobs();
+  persistSettings();
+  if (!jobs.length) {
     setNotice("โปรดเลือกรายชื่อผู้รับอย่างน้อย 1 รายการก่อนพิมพ์ใบนำส่ง");
     return;
   }
   elements.manifestDate.value = localIsoDate();
   elements.manifestPermit.value = defaultManifestPermit();
-  elements.manifestRows.innerHTML = recipients.map((item, index) => {
+  elements.manifestRows.innerHTML = jobs.map(({ item }, index) => {
     const name = manifestRecipientLabel(item);
     const subText = item.department && item.department !== name ? item.department : recipientFullAddress(item);
     return `<tr data-recipient-id="${escapeHtml(item.id)}">
       <td>${index + 1}</td>
       <td><div class="manifest-recipient-name">${escapeHtml(name)}</div>${subText ? `<div class="manifest-recipient-sub">${escapeHtml(subText)}</div>` : ""}</td>
       <td>${escapeHtml(item.postalCode || "")}</td>
-      <td><input name="registered-${escapeHtml(item.id)}" class="tracking-input" type="text" inputmode="numeric" autocomplete="off" maxlength="9" pattern="[0-9๐-๙]{9}" title="กรอกตัวเลข 9 หลัก" placeholder="ตัวเลข 9 หลัก" /></td>
-      <td><input name="ems-${escapeHtml(item.id)}" class="tracking-input" type="text" inputmode="numeric" autocomplete="off" maxlength="9" pattern="[0-9๐-๙]{9}" title="กรอกตัวเลข 9 หลัก" placeholder="ตัวเลข 9 หลัก" /></td>
+      <td><input name="registered-${index}" class="tracking-input" type="text" inputmode="numeric" autocomplete="off" maxlength="9" pattern="[0-9๐-๙]{9}" title="กรอกตัวเลข 9 หลัก" placeholder="ตัวเลข 9 หลัก" /></td>
+      <td><input name="ems-${index}" class="tracking-input" type="text" inputmode="numeric" autocomplete="off" maxlength="9" pattern="[0-9๐-๙]{9}" title="กรอกตัวเลข 9 หลัก" placeholder="ตัวเลข 9 หลัก" /></td>
     </tr>`;
   }).join("");
   elements.manifestRows.querySelectorAll(".tracking-input").forEach((input) => {
@@ -1659,8 +1678,9 @@ function closeManifestDialog() {
 
 function printMailingManifest(event) {
   event.preventDefault();
-  const recipients = selectedRecipients();
-  if (!recipients.length) {
+  const jobs = selectedEnvelopeJobs();
+  persistSettings();
+  if (!jobs.length) {
     closeManifestDialog();
     setNotice("โปรดเลือกรายชื่อผู้รับอย่างน้อย 1 รายการก่อนพิมพ์ใบนำส่ง");
     return;
@@ -1677,12 +1697,12 @@ function printMailingManifest(event) {
   const manifestDate = formatThaiLongDate(form.get("manifestDate"));
   const permit = LOCKED_MANIFEST_PERMIT;
   const receivingPostOffice = extractReceivingPostOffice(permit);
-  const rows = recipients.map((item, index) => ({
+  const rows = jobs.map(({ item }, index) => ({
     index: index + 1,
     name: manifestRecipientLabel(item),
     destination: item.postalCode || "",
-    registered: formatTrackingCode(form.get(`registered-${item.id}`), "RJ"),
-    ems: formatTrackingCode(form.get(`ems-${item.id}`), "EQ"),
+    registered: formatTrackingCode(form.get(`registered-${index}`), "RJ"),
+    ems: formatTrackingCode(form.get(`ems-${index}`), "EQ"),
   }));
   const pageSize = 24;
   const pages = [];
@@ -1758,8 +1778,10 @@ function printMailingManifest(event) {
 }
 
 function printEnvelopes() {
-  const recipients = state.recipients.filter((item) => state.selected.has(item.id));
-  if (!recipients.length) {
+  const jobs = selectedEnvelopeJobs();
+  persistSettings();
+  const selectedCount = state.selected.size;
+  if (!jobs.length) {
     setNotice("โปรดเลือกรายชื่อผู้รับอย่างน้อย 1 รายการ");
     return;
   }
@@ -1798,8 +1820,7 @@ function printEnvelopes() {
   const postagePermitBlockHtml = state.settings.showPostagePermit
     ? `<div class="postage-permit">${postagePermitHtml}</div>`
     : "";
-  const printRecipients = recipients.flatMap((item) => Array.from({ length: recipientEnvelopeCopies(item.id) }, () => item));
-  const pages = printRecipients.map((item) => {
+  const pages = jobs.map(({ item }) => {
     const locality = [
       formatAddressArea("ตำบล", item.subdistrict),
       formatAddressArea("อำเภอ", item.district),
@@ -1824,7 +1845,7 @@ function printEnvelopes() {
   popup.opener = null;
   popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์จ่าหน้าซอง</title><style>@page{size:${width} ${height};margin:0}*{box-sizing:border-box}body{margin:0;color:#17223b;font-family:"Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${width};height:${height};page-break-after:always;overflow:hidden;background:#fff}.envelope:last-child{page-break-after:auto}.sender{position:absolute;top:${senderTopMm}mm;left:${senderLeftMm}mm;width:55%;font-size:${senderFontPt}pt;line-height:1.45;color:#111}.sender-content{min-width:0}.sender-address{margin-top:.7mm}.document-number{margin-top:1.2mm;font-weight:700}.garuda{display:block;width:auto;height:${garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm 0}.postage-permit{position:absolute;top:${postagePermitTopMm}mm;right:${postagePermitRightMm}mm;display:flex;width:50mm;height:25mm;align-items:center;justify-content:center;overflow:hidden;padding:2mm;border:.35mm solid #111;color:#111;font-size:${postagePermitFontPt}pt;font-weight:700;line-height:1.45;text-align:center}.recipient{position:absolute;left:${recipientLeftPercent}%;top:${recipientTopPercent}%;width:calc(100% - ${recipientLeftPercent}% - 8mm);font-size:${recipientFontPt}pt;line-height:${recipientLineHeight}}.recipient small{color:#667085;font-size:${recipientFontPt}pt}.recipient h1{margin:1mm 0 0;font-size:${recipientFontPt}pt;white-space:nowrap}.recipient-position{white-space:nowrap}.recipient p{margin:.4mm 0}.organization{font-weight:700}@media screen{body{background:#eef2f7;padding:18px}.envelope{margin:0 auto 18px;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${pages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
   popup.document.close();
-  setNotice(`เตรียมพิมพ์ ${printRecipients.length} ซอง จาก ${recipients.length} รายชื่อ บน${label}`);
+  setNotice(`เตรียมพิมพ์ ${jobs.length} ซอง จาก ${selectedCount} รายชื่อ บน${label}`);
 }
 
 elements.search.addEventListener("input", (event) => {
