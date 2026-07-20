@@ -832,13 +832,16 @@ function defaultManifestPermit() {
   return [permitLine, postOfficeLine].filter(Boolean).join(" ");
 }
 
-function parseTrackingCode(value = "") {
+function parseTrackingCode(value = "", defaultPrefix = "") {
   const compact = String(value).trim().toUpperCase().replace(/[\s-]/g, "");
+  const prefix = String(defaultPrefix || "").toUpperCase();
   if (!compact) return ["", "", "", ""];
   const full = compact.match(/^([A-Z]{2})([0-9๐-๙]{8})([0-9๐-๙])([A-Z]{2})$/);
   if (full) return [full[1], full[2], full[3], full[4]];
   const numberOnly = compact.match(/^([0-9๐-๙]{8})([0-9๐-๙])$/);
-  if (numberOnly) return ["", numberOnly[1], numberOnly[2], ""];
+  if (numberOnly) return [prefix, numberOnly[1], numberOnly[2], "TH"];
+  const shortNumber = compact.match(/^([0-9๐-๙]+)$/);
+  if (shortNumber) return [prefix, shortNumber[1], "", "TH"];
   return ["", compact, "", ""];
 }
 
@@ -1587,8 +1590,8 @@ function openManifestDialog() {
       <td>${index + 1}</td>
       <td><div class="manifest-recipient-name">${escapeHtml(name)}</div>${subText ? `<div class="manifest-recipient-sub">${escapeHtml(subText)}</div>` : ""}</td>
       <td>${escapeHtml(item.postalCode || "")}</td>
-      <td><input name="registered-${escapeHtml(item.id)}" type="text" autocomplete="off" placeholder="เช่น RJ160684588TH" /></td>
-      <td><input name="ems-${escapeHtml(item.id)}" type="text" autocomplete="off" placeholder="เช่น EQ122387244TH" /></td>
+      <td><input name="registered-${escapeHtml(item.id)}" type="text" inputmode="numeric" autocomplete="off" placeholder="กรอกเฉพาะตัวเลข" /></td>
+      <td><input name="ems-${escapeHtml(item.id)}" type="text" inputmode="numeric" autocomplete="off" placeholder="กรอกเฉพาะตัวเลข" /></td>
     </tr>`;
   }).join("");
   elements.mailingManifestDialog.showModal();
@@ -1614,8 +1617,8 @@ function printMailingManifest(event) {
     index: index + 1,
     name: manifestRecipientLabel(item),
     destination: item.postalCode || "",
-    registered: parseTrackingCode(form.get(`registered-${item.id}`)),
-    ems: parseTrackingCode(form.get(`ems-${item.id}`)),
+    registered: parseTrackingCode(form.get(`registered-${item.id}`), "RJ"),
+    ems: parseTrackingCode(form.get(`ems-${item.id}`), "EQ"),
   }));
   const pageSize = 31;
   const pages = [];
