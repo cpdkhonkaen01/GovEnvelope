@@ -380,7 +380,6 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
       </a>
       <div class="top-actions">
         <span class="status-pill loading" id="connectionStatus"><i></i><span>กำลังเชื่อมฐานข้อมูล</span></span>
-        <button class="small-button" id="changeAdminPasswordButton" type="button" hidden>เปลี่ยนรหัสผ่าน</button>
         <button class="small-button" id="adminAuthButton" type="button">เข้าสู่ระบบผู้ดูแล</button>
       </div>
     </header>
@@ -663,17 +662,6 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
       </form>
     </dialog>
 
-    <dialog id="adminPasswordSetupDialog" class="confirm-dialog">
-      <form id="adminPasswordSetupForm">
-        <div class="dialog-title"><div><span class="eyebrow">ตั้งค่าผู้ดูแล</span><h2>ตั้งรหัสผ่านใหม่</h2></div><button class="close-button" id="closeAdminPasswordSetup" type="button" aria-label="ปิด">×</button></div>
-        <p class="dialog-info">ตั้งรหัสผ่านอย่างน้อย 8 ตัวอักษร หลังจากนี้ใช้รหัสนี้เข้าสู่ระบบได้ทันที</p>
-        <label class="form-field"><span>รหัสผ่านใหม่</span><input name="newPassword" type="password" minlength="8" autocomplete="new-password" required /></label>
-        <label class="form-field"><span>ยืนยันรหัสผ่านใหม่</span><input name="confirmPassword" type="password" minlength="8" autocomplete="new-password" required /></label>
-        <p class="form-message" id="adminPasswordSetupMessage" role="status" aria-live="polite"></p>
-        <div class="dialog-actions"><button class="button secondary" id="cancelAdminPasswordSetup" type="button">ยกเลิก</button><button class="button primary" id="saveAdminPassword" type="submit">บันทึกรหัสผ่าน</button></div>
-      </form>
-    </dialog>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script id="app-config">
@@ -922,14 +910,10 @@ const elements = {
   historySyncHint: $("#historySyncHint"),
   printJobCreator: $("#printJobCreator"),
   adminAuthButton: $("#adminAuthButton"),
-  changeAdminPasswordButton: $("#changeAdminPasswordButton"),
   adminAuthDialog: $("#adminAuthDialog"),
   adminAuthForm: $("#adminAuthForm"),
   adminAuthPassword: $("#adminAuthPassword"),
   adminAuthMessage: $("#adminAuthMessage"),
-  adminPasswordSetupDialog: $("#adminPasswordSetupDialog"),
-  adminPasswordSetupForm: $("#adminPasswordSetupForm"),
-  adminPasswordSetupMessage: $("#adminPasswordSetupMessage"),
 };
 
 function clampNumber(value, min, max, fallback) {
@@ -1831,7 +1815,6 @@ function isAdminSignedIn() {
 function updateAdminAuthUi() {
   const signedIn = isAdminSignedIn();
   if (elements.adminAuthButton) elements.adminAuthButton.textContent = signedIn ? "ออกจากระบบผู้ดูแล" : "เข้าสู่ระบบผู้ดูแล";
-  if (elements.changeAdminPasswordButton) elements.changeAdminPasswordButton.hidden = !signedIn;
   if (elements.historySyncHint) elements.historySyncHint.textContent = signedIn
     ? "เชื่อมต่อแล้ว ระบบบันทึกทุกการเปลี่ยนแปลงลง Supabase ให้เอง"
     : "เข้าสู่ระบบผู้ดูแลครั้งเดียว หลังจากนั้นระบบจะบันทึกทุกการเปลี่ยนแปลงให้เอง";
@@ -1876,47 +1859,6 @@ async function handleAdminAuthSubmit(event) {
   } finally {
     button.disabled = false;
     button.textContent = "เข้าสู่ระบบ";
-  }
-}
-
-function openPasswordSetupDialog() {
-  elements.adminPasswordSetupForm.reset();
-  elements.adminPasswordSetupMessage.textContent = "";
-  elements.adminPasswordSetupMessage.className = "form-message";
-  elements.adminPasswordSetupDialog.showModal();
-}
-
-function closePasswordSetupDialog() {
-  if (elements.adminPasswordSetupDialog.open) elements.adminPasswordSetupDialog.close();
-}
-
-async function handlePasswordSetupSubmit(event) {
-  event.preventDefault();
-  if (!elements.adminPasswordSetupForm.reportValidity()) return;
-  const values = new FormData(elements.adminPasswordSetupForm);
-  const password = String(values.get("newPassword") || "");
-  const confirmation = String(values.get("confirmPassword") || "");
-  if (password !== confirmation) {
-    elements.adminPasswordSetupMessage.textContent = "รหัสผ่านทั้งสองช่องไม่ตรงกัน";
-    elements.adminPasswordSetupMessage.className = "form-message error";
-    return;
-  }
-  const button = $("#saveAdminPassword");
-  button.disabled = true;
-  button.textContent = "กำลังบันทึก…";
-  try {
-    const { error } = await requireSupabase().auth.updateUser({ password });
-    if (error) throw error;
-    elements.adminPasswordSetupMessage.textContent = "ตั้งรหัสผ่านเรียบร้อยแล้ว";
-    elements.adminPasswordSetupMessage.className = "form-message success";
-    setNotice("ตั้งรหัสผ่านผู้ดูแลแล้ว ครั้งต่อไปกรอกรหัสเพื่อเข้าสู่ระบบได้ทันที");
-    setTimeout(closePasswordSetupDialog, 600);
-  } catch (error) {
-    elements.adminPasswordSetupMessage.textContent = `ตั้งรหัสผ่านไม่สำเร็จ: ${error.message}`;
-    elements.adminPasswordSetupMessage.className = "form-message error";
-  } finally {
-    button.disabled = false;
-    button.textContent = "บันทึกรหัสผ่าน";
   }
 }
 
@@ -3093,13 +3035,9 @@ elements.historyDateFilter.addEventListener("change", () => {
 $("#resetHistoryFilters").addEventListener("click", resetHistoryFilters);
 elements.printJobCreator.addEventListener("change", handlePrintJobCreatorChange);
 elements.adminAuthButton.addEventListener("click", toggleAdminAuth);
-elements.changeAdminPasswordButton.addEventListener("click", openPasswordSetupDialog);
 elements.adminAuthForm.addEventListener("submit", handleAdminAuthSubmit);
 $("#closeAdminAuth").addEventListener("click", closeAdminAuthDialog);
 $("#cancelAdminAuth").addEventListener("click", closeAdminAuthDialog);
-elements.adminPasswordSetupForm.addEventListener("submit", handlePasswordSetupSubmit);
-$("#closeAdminPasswordSetup").addEventListener("click", closePasswordSetupDialog);
-$("#cancelAdminPasswordSetup").addEventListener("click", closePasswordSetupDialog);
 $("#printButton").addEventListener("click", printEnvelopes);
 $("#heroPrint").addEventListener("click", printEnvelopes);
 elements.previewPrevious.addEventListener("click", () => {
