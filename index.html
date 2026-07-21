@@ -682,7 +682,7 @@ const state = {
     senderAddress: savedSettings.senderAddress || defaults.senderAddress || "เลขที่ 1/112 หมู่ที่ 13 ถนนหน้าเมือง ตำบลในเมือง\nอำเภอเมือง จังหวัดขอนแก่น 40000",
     documentNumber: savedSettings.documentNumber ?? defaults.documentNumber ?? "",
     paperSize: initialPaperSize,
-    envelopeCopiesById: savedSettings.envelopeCopiesById && typeof savedSettings.envelopeCopiesById === "object" ? savedSettings.envelopeCopiesById : {},
+    envelopeCopiesById: {},
     paperLayouts: initialPaperLayouts,
     garudaImage: resolveAssetUrl(defaults.garudaImage),
     showRecipientDepartment: savedSettings.showRecipientDepartment !== undefined ? Boolean(savedSettings.showRecipientDepartment) : defaults.showRecipientDepartment !== false,
@@ -984,7 +984,10 @@ function requestDeletePrintJob(button) {
 
 function deletePrintJob(id) {
   state.printJobs = state.printJobs.filter((job) => job.id !== id);
-  if (state.currentPrintJobId === id) state.currentPrintJobId = "";
+  if (state.currentPrintJobId === id) {
+    state.currentPrintJobId = "";
+    state.settings.envelopeCopiesById = {};
+  }
   persistPrintHistory();
   renderPrintHistory();
   queuePrintJobCloudDelete(id);
@@ -995,6 +998,7 @@ function startNewPrintJob() {
   saveCurrentPrintJobDraft();
   state.currentPrintJobId = "";
   state.selected.clear();
+  state.settings.envelopeCopiesById = {};
   state.previewRecipientIndex = 0;
   elements.manifestRows.innerHTML = "";
   elements.manifestRows.dataset.printJobId = "";
@@ -1220,7 +1224,7 @@ function setNotice(message) {
 function persistSettings() {
   rememberCurrentPaperLayout();
   const keys = [
-    "sender", "senderAddress", "documentNumber", "paperSize", "envelopeCopiesById", "paperLayouts", "showRecipientDepartment", "showRecipientAddress", "showSender", "showGaruda", "showPostagePermit",
+    "sender", "senderAddress", "documentNumber", "paperSize", "paperLayouts", "showRecipientDepartment", "showRecipientAddress", "showSender", "showGaruda", "showPostagePermit",
     "garudaPlacement", "garudaSizeMm", "garudaStandardVersion", "senderTopMm", "senderLeftMm", "senderTextOffsetMm", "senderFontPt", "recipientFontPt",
     "recipientTopPercent", "recipientLeftPercent", "recipientLineHeight",
     "postagePermitText", "postagePermitTopMm", "postagePermitRightMm", "postagePermitFontPt",
