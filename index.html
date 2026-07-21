@@ -62,6 +62,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .preview-nav-button{min-height:38px;padding:0 12px;border:1px solid #cfd8eb;border-radius:10px;background:#fff;color:#234ec9;font-size:13px;font-weight:800;box-shadow:0 4px 12px rgba(31,46,79,.06)}
 .preview-nav-button:hover:not(:disabled){border-color:#2856d9;background:#eef3ff}
 .preview-nav-button:disabled{cursor:not-allowed;opacity:.42}
+.line-break-button{border-color:#9fb5f3;background:#eef3ff;white-space:nowrap}
 .preview-counter{min-width:48px;color:#263149;font-size:14px;text-align:center;white-space:nowrap}
 .envelope-preview{position:relative;width:100%;aspect-ratio:229/162;overflow:hidden;border:1px solid rgba(23,58,165,.16);border-radius:4px;background:#fff;box-shadow:0 24px 52px rgba(32,67,140,.18);font-family:"Noto Sans Thai",Tahoma,sans-serif}
 .postage-permit-mini{position:absolute;z-index:3;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid #111;background:#fff;color:#111;font-weight:800;line-height:1.45;text-align:center;white-space:pre-line}
@@ -75,7 +76,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .receiver-mini{position:absolute;z-index:2;width:68%;color:#17223b}
 .receiver-mini small{display:block;color:#667085}
 .hero .receiver-mini h1{max-width:none;margin:0;color:inherit;font:inherit;font-weight:800;letter-spacing:normal;line-height:inherit;white-space:nowrap}
-.hero .receiver-mini h1.recipient-name-long{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal}
+.hero .receiver-mini h1.recipient-name-manual{white-space:normal}
 .hero .receiver-mini p{max-width:none;margin:0;color:inherit;font:inherit;letter-spacing:normal;line-height:inherit}
 .receiver-mini .organization,.receiver-mini .postal-code{font-weight:700}
 
@@ -416,6 +417,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
           <div class="preview-toolbar">
             <div class="preview-size-heading"><span>ตัวอย่างย่อส่วนตามสัดส่วนจริง</span><strong id="previewSizeLabel">ซอง C5 · 229 × 162 มม.</strong></div>
             <div class="preview-navigation" aria-label="เลื่อนดูตัวอย่างผู้รับที่เลือก">
+              <button class="preview-nav-button line-break-button" id="openRecipientLineBreak" type="button">↵ ตัดบรรทัดหน้านี้</button>
               <button class="preview-nav-button" id="previewPrevious" type="button" disabled>← ก่อนหน้า</button>
               <strong class="preview-counter" id="previewCounter">ตัวอย่าง</strong>
               <button class="preview-nav-button" id="previewNext" type="button" disabled>ถัดไป →</button>
@@ -529,6 +531,16 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
           <label class="form-field"><span>ระยะห่างบรรทัด</span><input name="recipientLineHeight" type="number" min="1" max="2.2" step="0.05" /><small>ค่าแนะนำ 1.5</small></label>
         </div>
         <div class="dialog-actions"><button class="button secondary" id="resetRecipientLayout" type="button">คืนค่าตำแหน่งแนะนำ</button><button class="button secondary" id="cancelRecipientLayout" type="button">ยกเลิก</button><button class="button primary" type="submit">บันทึกตำแหน่งผู้รับ</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="recipientLineBreakDialog" class="confirm-dialog">
+      <form id="recipientLineBreakForm">
+        <div class="dialog-title"><div><span class="eyebrow">เฉพาะหน้าที่กำลังดู</span><h2>กำหนดจุดตัดบรรทัด</h2></div><button class="close-button" id="closeRecipientLineBreakDialog" type="button" aria-label="ปิด">×</button></div>
+        <p class="dialog-info">วางเคอร์เซอร์ตรงจุดที่ต้องการ แล้วกด Enter เพื่อขึ้นบรรทัดใหม่ ระบบจะใช้ขนาดฟอนต์ข้อมูลผู้รับที่ตั้งไว้ และจำรูปแบบแยกตามรายชื่อ</p>
+        <label class="form-field"><span>ชื่อผู้รับ / ตำแหน่ง</span><textarea id="recipientLineBreakText" name="recipientLineBreakText" rows="4" required></textarea><small>แก้ได้เฉพาะการเว้นวรรคและการขึ้นบรรทัดใหม่ โดยข้อความเดิมต้องครบถ้วน</small></label>
+        <p class="form-message" id="recipientLineBreakMessage" role="status" aria-live="polite"></p>
+        <div class="dialog-actions split"><button class="button secondary" id="clearRecipientLineBreak" type="button">กลับเป็นบรรทัดเดียว</button><div class="action-group"><button class="button secondary" id="cancelRecipientLineBreak" type="button">ยกเลิก</button><button class="button primary" type="submit">บันทึกจุดตัดบรรทัด</button></div></div>
       </form>
     </dialog>
 
@@ -797,6 +809,9 @@ const state = {
     documentNumber: savedSettings.documentNumber ?? defaults.documentNumber ?? "",
     paperSize: initialPaperSize,
     envelopeCopiesById: {},
+    recipientNameBreaksById: savedSettings.recipientNameBreaksById && typeof savedSettings.recipientNameBreaksById === "object"
+      ? { ...savedSettings.recipientNameBreaksById }
+      : {},
     paperLayouts: initialPaperLayouts,
     garudaImage: resolveAssetUrl(defaults.garudaImage),
     showRecipientDepartment: savedSettings.showRecipientDepartment !== undefined ? Boolean(savedSettings.showRecipientDepartment) : defaults.showRecipientDepartment !== false,
@@ -849,6 +864,7 @@ const elements = {
   previewPrevious: $("#previewPrevious"),
   previewNext: $("#previewNext"),
   previewCounter: $("#previewCounter"),
+  openRecipientLineBreak: $("#openRecipientLineBreak"),
   showRecipientDepartment: $("#showRecipientDepartment"),
   showRecipientAddress: $("#showRecipientAddress"),
   showSender: $("#showSender"),
@@ -866,6 +882,10 @@ const elements = {
   confirmDeleteRecipient: $("#confirmDeleteRecipient"),
   recipientLayoutDialog: $("#recipientLayoutDialog"),
   recipientLayoutForm: $("#recipientLayoutForm"),
+  recipientLineBreakDialog: $("#recipientLineBreakDialog"),
+  recipientLineBreakForm: $("#recipientLineBreakForm"),
+  recipientLineBreakText: $("#recipientLineBreakText"),
+  recipientLineBreakMessage: $("#recipientLineBreakMessage"),
   senderDialog: $("#senderDialog"),
   senderForm: $("#senderForm"),
   postagePermitDialog: $("#postagePermitDialog"),
@@ -1375,6 +1395,41 @@ function recipientEnvelopeName(item) {
   return name || item.position || (state.settings.showRecipientDepartment ? item.department : "") || "ไม่ระบุชื่อผู้รับ";
 }
 
+function normalizeRecipientNameBreaks(value = "") {
+  return String(value)
+    .replace(/\r\n?/g, "\n")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join("\n");
+}
+
+function compactRecipientName(value = "") {
+  return normalizeRecipientNameBreaks(value).replace(/\s+/g, " ").trim();
+}
+
+function recipientEnvelopeDisplayName(item) {
+  const original = recipientEnvelopeName(item);
+  const saved = normalizeRecipientNameBreaks(state.settings.recipientNameBreaksById?.[item.id] || "");
+  return saved && compactRecipientName(saved) === compactRecipientName(original) ? saved : original;
+}
+
+function recipientEnvelopeNameHtml(item) {
+  return escapeHtml(recipientEnvelopeDisplayName(item)).replace(/\n/g, "<br>");
+}
+
+function previewRecipientItems() {
+  const selected = state.recipients.filter((item) => state.selected.has(item.id));
+  return selected.length ? selected : state.recipients.slice(0, 1);
+}
+
+function currentPreviewRecipient() {
+  const recipients = previewRecipientItems();
+  if (!recipients.length) return null;
+  const index = Math.min(Math.max(0, state.previewRecipientIndex), recipients.length - 1);
+  return recipients[index] || null;
+}
+
 function recipientFullAddress(item) {
   return [
     item.address1,
@@ -1457,7 +1512,7 @@ function manifestRecipientFontStyle(name = "") {
 }
 
 function envelopeRecipientHeadingFontPt(name = "", fallbackPt = 12) {
-  return String(name).trim().length > 80 ? 9 : fallbackPt;
+  return fallbackPt;
 }
 
 function categoryClass(category) {
@@ -1486,7 +1541,7 @@ function setNotice(message) {
 function persistSettings() {
   rememberCurrentPaperLayout();
   const keys = [
-    "sender", "senderAddress", "documentNumber", "paperSize", "paperLayouts", "printJobCreator", "showRecipientDepartment", "showRecipientAddress", "showSender", "showGaruda", "showPostagePermit",
+    "sender", "senderAddress", "documentNumber", "paperSize", "paperLayouts", "printJobCreator", "recipientNameBreaksById", "showRecipientDepartment", "showRecipientAddress", "showSender", "showGaruda", "showPostagePermit",
     "garudaPlacement", "garudaSizeMm", "garudaStandardVersion", "senderTopMm", "senderLeftMm", "senderTextOffsetMm", "senderFontPt", "recipientFontPt",
     "recipientTopPercent", "recipientLeftPercent", "recipientLineHeight",
     "postagePermitText", "postagePermitTopMm", "postagePermitRightMm", "postagePermitFontPt",
@@ -1897,9 +1952,7 @@ function renderSummary() {
   postagePermitPreview.style.fontSize = `${ptToPreviewPx(state.settings.postagePermitFontPt)}px`;
   const receiverPreview = $("#receiverPreview");
   const selectedPreviewRecipients = state.recipients.filter((item) => state.selected.has(item.id));
-  const previewRecipients = selectedPreviewRecipients.length
-    ? selectedPreviewRecipients
-    : state.recipients.slice(0, 1);
+  const previewRecipients = previewRecipientItems();
   if (state.previewRecipientIndex >= previewRecipients.length) state.previewRecipientIndex = 0;
   if (state.previewRecipientIndex < 0) state.previewRecipientIndex = Math.max(0, previewRecipients.length - 1);
   const previewRecipient = previewRecipients[state.previewRecipientIndex];
@@ -1908,6 +1961,7 @@ function renderSummary() {
     : "ตัวอย่าง";
   elements.previewPrevious.disabled = selectedPreviewRecipients.length <= 1;
   elements.previewNext.disabled = selectedPreviewRecipients.length <= 1;
+  elements.openRecipientLineBreak.disabled = !previewRecipient;
   if (previewRecipient) {
     const previewLocality = [
       formatAddressArea("ตำบล", previewRecipient.subdistrict),
@@ -1915,14 +1969,15 @@ function renderSummary() {
     ].filter(Boolean).join(" ");
     const previewProvince = formatAddressArea("จังหวัด", previewRecipient.province);
     const previewRecipientName = recipientEnvelopeName(previewRecipient);
-    const previewRecipientNameClass = previewRecipientName.trim().length > 80 ? ' class="recipient-name-long"' : "";
+    const previewRecipientDisplayName = recipientEnvelopeDisplayName(previewRecipient);
+    const previewRecipientNameClass = previewRecipientDisplayName.includes("\n") ? ' class="recipient-name-manual"' : "";
     const previewDepartmentHtml = state.settings.showRecipientDepartment && previewRecipient.department && previewRecipientName !== previewRecipient.department
       ? `<p class="organization">${escapeHtml(previewRecipient.department)}</p>`
       : "";
     const previewAddressHtml = state.settings.showRecipientAddress
       ? `<p>${escapeHtml(previewRecipient.address1)}</p><p>${escapeHtml(previewLocality)}</p><p>${escapeHtml(previewProvince)}</p>${previewRecipient.postalCode ? `<p class="postal-code">${escapeHtml(previewRecipient.postalCode)}</p>` : ""}`
       : "";
-    receiverPreview.innerHTML = `<small>เรียน</small><h1${previewRecipientNameClass}>${escapeHtml(previewRecipientName)}</h1>${previewRecipient.position && previewRecipientName !== previewRecipient.position ? `<p>${escapeHtml(previewRecipient.position)}</p>` : ""}${previewDepartmentHtml}${previewAddressHtml}`;
+    receiverPreview.innerHTML = `<small>เรียน</small><h1${previewRecipientNameClass}>${recipientEnvelopeNameHtml(previewRecipient)}</h1>${previewRecipient.position && previewRecipientName !== previewRecipient.position ? `<p>${escapeHtml(previewRecipient.position)}</p>` : ""}${previewDepartmentHtml}${previewAddressHtml}`;
   } else {
     receiverPreview.innerHTML = "<small>เรียน</small><h1>เลือกผู้รับเพื่อดูตัวอย่าง</h1>";
   }
@@ -1937,8 +1992,7 @@ function renderSummary() {
   const receiverHeading = receiverPreview.querySelector("h1");
   if (receiverHeading) {
     receiverHeading.style.margin = `${1 * previewScale}px 0 0`;
-    const headingFontPt = envelopeRecipientHeadingFontPt(receiverHeading.textContent, state.settings.recipientFontPt);
-    receiverHeading.style.fontSize = `${ptToPreviewPx(headingFontPt)}px`;
+    receiverHeading.style.fontSize = `${recipientPreviewFontPx}px`;
   }
   receiverPreview.querySelectorAll("p").forEach((line) => {
     line.style.margin = `${0.4 * previewScale}px 0`;
@@ -2097,6 +2151,56 @@ function openRecipientLayoutSettings() {
 
 function closeRecipientLayoutSettings() {
   if (elements.recipientLayoutDialog.open) elements.recipientLayoutDialog.close();
+}
+
+function openRecipientLineBreakDialog() {
+  const recipient = currentPreviewRecipient();
+  if (!recipient) {
+    setNotice("กรุณาเลือกผู้รับก่อนกำหนดจุดตัดบรรทัด");
+    return;
+  }
+  elements.recipientLineBreakForm.dataset.recipientId = recipient.id;
+  elements.recipientLineBreakText.value = recipientEnvelopeDisplayName(recipient);
+  elements.recipientLineBreakMessage.textContent = "";
+  elements.recipientLineBreakMessage.className = "form-message";
+  elements.recipientLineBreakDialog.showModal();
+  elements.recipientLineBreakText.focus();
+}
+
+function closeRecipientLineBreakDialog() {
+  if (elements.recipientLineBreakDialog.open) elements.recipientLineBreakDialog.close();
+  elements.recipientLineBreakForm.dataset.recipientId = "";
+}
+
+function clearRecipientLineBreak() {
+  const recipientId = elements.recipientLineBreakForm.dataset.recipientId;
+  const recipient = state.recipients.find((item) => item.id === recipientId);
+  if (!recipient) return;
+  delete state.settings.recipientNameBreaksById[recipientId];
+  persistSettings();
+  renderSummary();
+  closeRecipientLineBreakDialog();
+  setNotice("ยกเลิกการตัดบรรทัดของหน้าปัจจุบันแล้ว");
+}
+
+function handleRecipientLineBreakSubmit(event) {
+  event.preventDefault();
+  const recipientId = elements.recipientLineBreakForm.dataset.recipientId;
+  const recipient = state.recipients.find((item) => item.id === recipientId);
+  if (!recipient) return;
+  const original = recipientEnvelopeName(recipient);
+  const formatted = normalizeRecipientNameBreaks(elements.recipientLineBreakText.value);
+  if (!formatted || compactRecipientName(formatted) !== compactRecipientName(original)) {
+    elements.recipientLineBreakMessage.textContent = "กรุณาคงข้อความเดิมไว้ครบถ้วน และเพิ่มเฉพาะจุดขึ้นบรรทัดใหม่";
+    elements.recipientLineBreakMessage.className = "form-message error";
+    return;
+  }
+  if (formatted.includes("\n")) state.settings.recipientNameBreaksById[recipientId] = formatted;
+  else delete state.settings.recipientNameBreaksById[recipientId];
+  persistSettings();
+  renderSummary();
+  closeRecipientLineBreakDialog();
+  setNotice(formatted.includes("\n") ? "บันทึกจุดตัดบรรทัดของหน้าปัจจุบันแล้ว" : "ตั้งชื่อผู้รับเป็นบรรทัดเดียวแล้ว");
 }
 
 function resetRecipientLayout() {
@@ -2416,7 +2520,7 @@ function printMailingManifest(event) {
     registered: formatTrackingCode(form.get(`registered-${index}`), "RJ"),
     ems: formatTrackingCode(form.get(`ems-${index}`), "EQ"),
   }));
-  const pageSize = 29;
+  const pageSize = 30;
   const pages = [];
   for (let start = 0; start < rows.length; start += pageSize) {
     pages.push(rows.slice(start, start + pageSize));
@@ -2484,7 +2588,7 @@ function printMailingManifest(event) {
     return;
   }
   popup.opener = null;
-  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์ใบนำส่งไปรษณีย์</title><style>@page{size:A4 portrait;margin:8mm}*{box-sizing:border-box}body{margin:0;color:#111;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif;font-size:13pt}.manifest-page{position:relative;width:194mm;min-height:281mm;margin:0 auto;page-break-after:always;background:#fff}.manifest-page:last-child{page-break-after:auto}.page-number{position:absolute;top:0;right:0;font-size:12pt}h1{margin:0 0 2.5mm;text-align:center;font-size:15pt;font-weight:700}.manifest-meta{width:52.5mm;margin:0 0 2.5mm auto;line-height:1.12;font-size:12.5pt;text-align:left}.manifest-intro{margin:0 0 .8mm 10mm;font-size:12.5pt;line-height:1.08}.manifest-print-table{width:192mm;max-width:100%;border-collapse:collapse;table-layout:fixed}.manifest-print-table th,.manifest-print-table td{height:6.25mm;padding:0 1.2mm;border:1px solid #111;vertical-align:middle;line-height:1.04}.manifest-print-table th{text-align:center;font-size:11.5pt;font-weight:700;white-space:nowrap}.center{text-align:center}.recipient-cell{font-size:12pt;overflow:hidden}.recipient-name-text{display:block;overflow:hidden;white-space:nowrap}.recipient-name-text-long{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal}.tracking{font-size:12pt;white-space:nowrap}.col-seq{width:9mm}.col-name{width:78mm}.col-dest{width:16mm}.col-registered{width:28mm}.col-ems{width:28mm}.col-fee{width:18mm}.col-note{width:12mm}.manifest-footer{position:relative;height:36mm;margin-top:3mm;line-height:1.18;font-size:13pt}.manifest-footer p{margin:0}.manifest-footer-left{position:absolute;left:9mm;top:1mm;width:82mm}.manifest-footer-left p+p{margin-top:1.6mm}.manifest-footer-right{position:absolute;left:116mm;top:0;width:78mm;margin-left:0}.manifest-footer-right p{margin:0}.total-line{margin-bottom:1.6mm!important;text-align:left}.sign-line{display:flex;align-items:flex-end;text-align:left}.sign-line span:first-child{flex:0 0 auto}.sign-dots{display:block;width:64mm;height:.9em;border-bottom:1px dotted #111}.role-line{width:64mm;margin-top:.4mm!important;margin-left:10mm;text-align:center}.check-line{margin-top:2.2mm!important;text-align:left}.signature{margin-top:4mm!important}@media screen{body{background:#eef2f7;padding:18px}.manifest-page{padding:0;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${manifestPages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
+  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์ใบนำส่งไปรษณีย์</title><style>@page{size:A4 portrait;margin:8mm}*{box-sizing:border-box}body{margin:0;color:#111;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif;font-size:13pt}.manifest-page{position:relative;width:194mm;min-height:281mm;margin:0 auto;page-break-after:always;background:#fff}.manifest-page:last-child{page-break-after:auto}.page-number{position:absolute;top:0;right:0;font-size:12pt}h1{margin:0 0 2.5mm;text-align:center;font-size:15pt;font-weight:700}.manifest-meta{width:52.5mm;margin:0 0 2.5mm auto;line-height:1.12;font-size:12.5pt;text-align:left}.manifest-intro{margin:0 0 .8mm 10mm;font-size:12.5pt;line-height:1.08}.manifest-print-table{width:192mm;max-width:100%;border-collapse:collapse;table-layout:fixed}.manifest-print-table th,.manifest-print-table td{height:6.25mm;padding:0 1.2mm;border:1px solid #111;vertical-align:middle;line-height:1.04}.manifest-print-table th{text-align:center;font-size:11.5pt;font-weight:700;white-space:nowrap}.center{text-align:center}.recipient-cell{font-size:12pt;overflow:hidden}.recipient-name-text{display:block;overflow:hidden;white-space:nowrap}.recipient-name-text-long{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal}.tracking{font-size:12pt;white-space:nowrap}.col-seq{width:9mm}.col-name{width:78mm}.col-dest{width:16mm}.col-registered{width:28mm}.col-ems{width:28mm}.col-fee{width:18mm}.col-note{width:12mm}.manifest-footer{position:relative;height:36mm;margin-top:3mm;line-height:1.18;font-size:14pt}.manifest-footer p{margin:0}.manifest-footer-left{position:absolute;left:9mm;top:1mm;width:82mm}.manifest-footer-left p+p{margin-top:1.6mm}.manifest-footer-right{position:absolute;left:116mm;top:0;width:78mm;margin-left:0}.manifest-footer-right p{margin:0}.total-line{margin-bottom:1.6mm!important;text-align:left}.sign-line{display:flex;align-items:flex-end;text-align:left}.sign-line span:first-child{flex:0 0 auto}.sign-dots{display:block;width:64mm;height:.9em;border-bottom:1px dotted #111}.role-line{width:64mm;margin-top:.4mm!important;margin-left:10mm;text-align:center}.check-line{margin-top:2.2mm!important;text-align:left}.signature{margin-top:4mm!important}@media screen{body{background:#eef2f7;padding:18px}.manifest-page{padding:0;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${manifestPages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
   popup.document.close();
   saveCurrentPrintJobDraft({ manifestPrintedAt: new Date().toISOString() });
   closeManifestDialog();
@@ -2542,15 +2646,15 @@ function printEnvelopes() {
     ].filter(Boolean).join(" ");
     const province = formatAddressArea("จังหวัด", item.province);
     const envelopeRecipientName = recipientEnvelopeName(item);
-    const envelopeRecipientHeadingPt = envelopeRecipientHeadingFontPt(envelopeRecipientName, recipientFontPt);
-    const envelopeRecipientHeadingClass = envelopeRecipientName.trim().length > 80 ? ' class="recipient-name-long"' : "";
+    const envelopeRecipientDisplayName = recipientEnvelopeDisplayName(item);
+    const envelopeRecipientHeadingClass = envelopeRecipientDisplayName.includes("\n") ? ' class="recipient-name-manual"' : "";
     const recipientDepartmentHtml = state.settings.showRecipientDepartment && item.department && envelopeRecipientName !== item.department
       ? `<p class="organization">${escapeHtml(item.department)}</p>`
       : "";
     const recipientAddressHtml = state.settings.showRecipientAddress
       ? `<p>${escapeHtml(item.address1)}</p><p>${escapeHtml(locality)}</p><p>${escapeHtml(province)}</p>${item.postalCode ? `<p class="postal-code"><strong>${escapeHtml(item.postalCode)}</strong></p>` : ""}`
       : "";
-    return `<section class="envelope">${senderBlockHtml}${postagePermitBlockHtml}<div class="recipient"><small>เรียน</small><h1${envelopeRecipientHeadingClass} style="font-size:${envelopeRecipientHeadingPt}pt">${escapeHtml(envelopeRecipientName)}</h1>${item.position && envelopeRecipientName !== item.position ? `<p class="recipient-position">${escapeHtml(item.position)}</p>` : ""}${recipientDepartmentHtml}${recipientAddressHtml}</div></section>`;
+    return `<section class="envelope">${senderBlockHtml}${postagePermitBlockHtml}<div class="recipient"><small>เรียน</small><h1${envelopeRecipientHeadingClass} style="font-size:${recipientFontPt}pt">${recipientEnvelopeNameHtml(item)}</h1>${item.position && envelopeRecipientName !== item.position ? `<p class="recipient-position">${escapeHtml(item.position)}</p>` : ""}${recipientDepartmentHtml}${recipientAddressHtml}</div></section>`;
   }).join("");
   const popup = window.open("", "_blank");
   if (!popup) {
@@ -2558,7 +2662,7 @@ function printEnvelopes() {
     return;
   }
   popup.opener = null;
-  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์จ่าหน้าซอง</title><style>@page{size:${width} ${height};margin:0}*{box-sizing:border-box}body{margin:0;color:#17223b;font-family:"Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${width};height:${height};page-break-after:always;overflow:hidden;background:#fff}.envelope:last-child{page-break-after:auto}.sender{position:absolute;top:${senderTopMm}mm;left:${senderLeftMm}mm;width:55%;font-size:${senderFontPt}pt;line-height:1.45;color:#111}.sender-content{min-width:0}.sender-address{margin-top:.7mm}.document-number{margin-top:1.2mm;font-weight:700}.garuda{display:block;width:auto;height:${garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm 0}.postage-permit{position:absolute;top:${postagePermitTopMm}mm;right:${postagePermitRightMm}mm;display:flex;width:50mm;height:25mm;align-items:center;justify-content:center;overflow:hidden;padding:2mm;border:.35mm solid #111;color:#111;font-size:${postagePermitFontPt}pt;font-weight:700;line-height:1.45;text-align:center}.recipient{position:absolute;left:${recipientLeftPercent}%;top:${recipientTopPercent}%;width:calc(100% - ${recipientLeftPercent}% - 8mm);font-size:${recipientFontPt}pt;line-height:${recipientLineHeight}}.recipient small{color:#667085;font-size:${recipientFontPt}pt}.recipient h1{margin:1mm 0 0;font-size:${recipientFontPt}pt;white-space:nowrap}.recipient h1.recipient-name-long{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal}.recipient-position{white-space:nowrap}.recipient p{margin:.4mm 0}.organization{font-weight:700}@media screen{body{background:#eef2f7;padding:18px}.envelope{margin:0 auto 18px;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${pages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
+  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์จ่าหน้าซอง</title><style>@page{size:${width} ${height};margin:0}*{box-sizing:border-box}body{margin:0;color:#17223b;font-family:"Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${width};height:${height};page-break-after:always;overflow:hidden;background:#fff}.envelope:last-child{page-break-after:auto}.sender{position:absolute;top:${senderTopMm}mm;left:${senderLeftMm}mm;width:55%;font-size:${senderFontPt}pt;line-height:1.45;color:#111}.sender-content{min-width:0}.sender-address{margin-top:.7mm}.document-number{margin-top:1.2mm;font-weight:700}.garuda{display:block;width:auto;height:${garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm 0}.postage-permit{position:absolute;top:${postagePermitTopMm}mm;right:${postagePermitRightMm}mm;display:flex;width:50mm;height:25mm;align-items:center;justify-content:center;overflow:hidden;padding:2mm;border:.35mm solid #111;color:#111;font-size:${postagePermitFontPt}pt;font-weight:700;line-height:1.45;text-align:center}.recipient{position:absolute;left:${recipientLeftPercent}%;top:${recipientTopPercent}%;width:calc(100% - ${recipientLeftPercent}% - 8mm);font-size:${recipientFontPt}pt;line-height:${recipientLineHeight}}.recipient small{color:#667085;font-size:${recipientFontPt}pt}.recipient h1{margin:1mm 0 0;font-size:${recipientFontPt}pt;white-space:nowrap}.recipient h1.recipient-name-manual{white-space:normal}.recipient-position{white-space:nowrap}.recipient p{margin:.4mm 0}.organization{font-weight:700}@media screen{body{background:#eef2f7;padding:18px}.envelope{margin:0 auto 18px;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${pages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
   popup.document.close();
   saveCurrentPrintJobDraft({ envelopePrintedAt: new Date().toISOString() });
   setNotice(`เตรียมพิมพ์ ${jobs.length} ซอง จาก ${selectedCount} รายชื่อ บน${label} และบันทึกลงประวัติแล้ว`);
@@ -2661,6 +2765,11 @@ $("#closeRecipientLayoutDialog").addEventListener("click", closeRecipientLayoutS
 $("#cancelRecipientLayout").addEventListener("click", closeRecipientLayoutSettings);
 $("#resetRecipientLayout").addEventListener("click", resetRecipientLayout);
 elements.recipientLayoutForm.addEventListener("submit", handleRecipientLayoutSubmit);
+elements.openRecipientLineBreak.addEventListener("click", openRecipientLineBreakDialog);
+$("#closeRecipientLineBreakDialog").addEventListener("click", closeRecipientLineBreakDialog);
+$("#cancelRecipientLineBreak").addEventListener("click", closeRecipientLineBreakDialog);
+$("#clearRecipientLineBreak").addEventListener("click", clearRecipientLineBreak);
+elements.recipientLineBreakForm.addEventListener("submit", handleRecipientLineBreakSubmit);
 $("#openSenderSettings").addEventListener("click", openSenderSettings);
 $("#closeSenderDialog").addEventListener("click", closeSenderSettings);
 $("#cancelSenderSettings").addEventListener("click", closeSenderSettings);
