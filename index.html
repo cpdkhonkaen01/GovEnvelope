@@ -47,6 +47,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .button.primary:hover{transform:translateY(-1px);background:var(--blue-deep)}
 .button.primary b{display:inline-grid;min-width:24px;height:24px;margin-left:8px;place-items:center;border-radius:8px;background:rgba(255,255,255,.18)}
 .button.secondary{border:1px solid #d9dfeb;background:#fff;color:#344054}
+.button.history-button{border:1px solid #cbd7f3;background:#edf3ff;color:#234ec9}
+.button.history-button:hover{border-color:#9eb4eb;background:#e1eaff}
 .preview-panel{align-self:center;justify-self:center;width:min(720px,94%)}
 .preview-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 2px 10px}
 .preview-size-heading{display:flex;min-width:0;flex:1;align-items:center;justify-content:space-between;gap:16px;color:#667085;font-size:13px}
@@ -186,6 +188,23 @@ dialog hr{height:1px;margin:20px 0 4px;border:0;background:#edf0f5}
 .manifest-entry-table input{width:100%;height:42px;padding:0 12px;border:1px solid #dfe4ed;border-radius:10px;background:#fff;color:var(--ink);font:inherit}
 .manifest-recipient-name{font-weight:800;color:#17223b}
 .manifest-recipient-sub{margin-top:3px;color:#667085;font-size:12px}
+.history-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:18px 0}
+.history-save-status{color:#667085;font-size:14px}
+.print-history-list{display:grid;max-height:48vh;overflow:auto;gap:12px;padding-right:4px}
+.history-empty{padding:34px 20px;border:1px dashed #cfd8eb;border-radius:16px;background:#f8faff;color:#667085;text-align:center}
+.history-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;padding:17px 18px;border:1px solid #e0e6f0;border-radius:16px;background:#fff}
+.history-item.current{border-color:#9bb3ef;background:#f5f8ff;box-shadow:inset 4px 0 0 #2856d9}
+.history-item h3{margin:0 0 5px;font-size:17px}
+.history-item-meta{display:flex;flex-wrap:wrap;gap:7px 14px;color:#667085;font-size:13px}
+.history-status{display:inline-flex;padding:4px 9px;border-radius:999px;background:#fff4d8;color:#8a5a00;font-weight:800}
+.history-status.done{background:#e9f8f2;color:#127454}
+.history-status.printed{background:#eaf0ff;color:#234ec9}
+.history-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}
+.history-actions button{min-height:40px;padding:0 13px;border:1px solid #d9dfeb;border-radius:10px;background:#fff;color:#344054;font-size:13px;font-weight:800}
+.history-actions .resume{border-color:#2856d9;background:#2856d9;color:#fff}
+.history-actions .delete{border-color:#ffd2d2;color:#b42318}
+.history-sync-panel{display:grid;grid-template-columns:minmax(260px,1fr) minmax(220px,320px) auto;gap:14px;align-items:end;margin-top:18px;padding:16px;border:1px solid #dce5f7;border-radius:16px;background:#f7f9fd}
+.history-sync-panel strong,.history-sync-panel small{display:block}.history-sync-panel small{margin-top:4px;color:#667085;line-height:1.5}.history-sync-panel .form-field span{font-size:12px}
 
 /* โหมดอ่านง่าย เหมาะสำหรับผู้ใช้งานสูงอายุ */
 body{font-size:16px}
@@ -281,6 +300,9 @@ table{min-width:600px}
 .print-controls{grid-template-columns:1fr}
 .print-controls .paper-size-option{grid-column:auto}
 .form-grid{grid-template-columns:1fr}
+.history-sync-panel{grid-template-columns:1fr}
+.history-item{grid-template-columns:1fr}
+.history-actions{justify-content:flex-start}
 footer{width:min(100% - 28px,680px);flex-direction:column}
 }
 @media(max-width:460px){.brand strong{font-size:16px}
@@ -317,7 +339,9 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
           <h1>เลือกผู้รับ แล้วพิมพ์<br /><em>จ่าหน้าซองได้ทันที</em></h1>
           <p>ค้นหารายชื่อจาก Google Sheets เลือกหลายหน่วยงาน และจัดหน้าพิมพ์ให้พอดีกับซองในไม่กี่คลิก</p>
           <div class="hero-actions">
-            <button class="button primary" id="heroPrint" type="button">พิมพ์ที่เลือก <b id="heroSelected">0</b></button>
+            <button class="button primary" id="heroPrint" type="button">พิมพ์หน้าซองจดหมาย <b id="heroSelected">0</b></button>
+            <button class="button secondary" id="openManifestDialog" type="button">พิมพ์ใบนำส่ง</button>
+            <button class="button history-button" id="openPrintHistory" type="button">ประวัติชุดงานพิมพ์</button>
           </div>
         </div>
         <div class="preview-panel">
@@ -375,7 +399,6 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
               <label class="garuda-option"><input id="showPostagePermit" type="checkbox" checked /><span>แสดงกรอบฝากส่ง</span></label>
               <button class="sender-settings-button" id="openSenderSettings" type="button">✎ แก้ไขข้อมูลผู้ส่ง</button>
               <button class="sender-settings-button" id="openPostagePermitSettings" type="button">✎ แก้ไขกรอบค่าฝากส่ง</button>
-              <button class="sender-settings-button" id="openManifestDialog" type="button">📮 พิมพ์ใบนำส่ง</button>
               <button id="printButton" type="button">ดูตัวอย่างและพิมพ์ <span>↗</span></button>
             </div>
           </section>
@@ -506,6 +529,28 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
       </form>
     </dialog>
 
+    <dialog id="printHistoryDialog" class="wide-dialog history-dialog">
+      <div class="dialog-title">
+        <div><span class="eyebrow">บันทึกอัตโนมัติ</span><h2>ประวัติชุดงานพิมพ์</h2></div>
+        <button class="close-button" id="closePrintHistory" type="button" aria-label="ปิด">×</button>
+      </div>
+      <p class="dialog-info">ระบบเก็บรายชื่อ จำนวนซอง วันที่ และเลขลงทะเบียน/EMS ของแต่ละชุดงาน สามารถกด “ดำเนินการต่อ” เพื่อกลับไปทำงานเดิมได้ทันที</p>
+      <div class="history-toolbar">
+        <button class="button primary" id="startNewPrintJob" type="button">＋ เริ่มชุดงานใหม่</button>
+        <span class="history-save-status" id="historySaveStatus">บันทึกล่าสุดบนเครื่องนี้</span>
+      </div>
+      <div class="print-history-list" id="printHistoryList"></div>
+      <form class="history-sync-panel" id="historySyncForm">
+        <div>
+          <strong>สำรองประวัติไว้ใน Google Sheets</strong>
+          <small>กรอกรหัสผู้ดูแลครั้งเดียวต่อการเปิดเว็บ เพื่อให้ประวัติเปิดต่อจากเครื่องอื่นได้</small>
+        </div>
+        <label class="form-field"><span>รหัสผู้ดูแล</span><input name="adminKey" type="password" autocomplete="current-password" required /></label>
+        <button class="button secondary" id="syncPrintHistory" type="submit">ซิงค์ประวัติ</button>
+      </form>
+      <div class="dialog-actions"><button class="button secondary" id="donePrintHistory" type="button">ปิด</button></div>
+    </dialog>
+
     <!-- แก้ค่า appsScriptUrl ในส่วนนี้ได้โดยตรง -->
     <script id="app-config">
 // ใส่ URL ที่ได้จาก Deploy > Manage deployments > Web app ของ Google Apps Script
@@ -553,6 +598,15 @@ try {
 
 const GARUDA_STANDARD_VERSION = "15mm-v1";
 const LOCKED_MANIFEST_PERMIT = "ใบอนุญาตเลขที่ 3/2521 ไปรษณีย์เทพารักษ์";
+const PRINT_HISTORY_STORAGE_KEY = "envelope-print-history-v1";
+const CURRENT_PRINT_JOB_STORAGE_KEY = "envelope-current-print-job-v1";
+let savedPrintJobs = [];
+try {
+  const parsedPrintJobs = JSON.parse(localStorage.getItem(PRINT_HISTORY_STORAGE_KEY) || "[]");
+  savedPrintJobs = Array.isArray(parsedPrintJobs) ? parsedPrintJobs : [];
+} catch (error) {
+  console.warn("ไม่สามารถอ่านประวัติชุดงานพิมพ์ได้", error);
+}
 const RECIPIENT_BLOCK_WIDTH_PERCENT = 68;
 const savedGarudaSize = savedSettings.garudaStandardVersion === GARUDA_STANDARD_VERSION
   ? savedSettings.garudaSizeMm
@@ -620,6 +674,8 @@ const state = {
   connected: false,
   editingRecipientId: null,
   previewRecipientIndex: 0,
+  printJobs: savedPrintJobs,
+  currentPrintJobId: localStorage.getItem(CURRENT_PRINT_JOB_STORAGE_KEY) || "",
   settings: {
     appsScriptUrl: defaults.appsScriptUrl || "",
     sender: savedSettings.sender || defaults.sender || "สำนักงานสหกรณ์จังหวัดขอนแก่น",
@@ -705,6 +761,10 @@ const elements = {
   manifestRows: $("#manifestRows"),
   manifestDate: $("#manifestDate"),
   manifestPermit: $("#manifestPermit"),
+  printHistoryDialog: $("#printHistoryDialog"),
+  printHistoryList: $("#printHistoryList"),
+  historySaveStatus: $("#historySaveStatus"),
+  historySyncForm: $("#historySyncForm"),
 };
 
 function clampNumber(value, min, max, fallback) {
@@ -733,7 +793,237 @@ function selectedEnvelopeJobs() {
   syncEnvelopeCopyInputs();
   return state.recipients
     .filter((item) => state.selected.has(item.id))
-    .flatMap((item) => Array.from({ length: recipientEnvelopeCopies(item.id) }, () => ({ item })));
+    .flatMap((item) => Array.from({ length: recipientEnvelopeCopies(item.id) }, (_, copyIndex) => ({ item, copyIndex })));
+}
+
+function printJobTrackingKey(recipientId, copyIndex = 0) {
+  return `${recipientId}::${copyIndex}`;
+}
+
+function persistPrintHistory() {
+  state.printJobs = state.printJobs
+    .filter((job) => job && job.id)
+    .sort((first, second) => String(second.updatedAt || "").localeCompare(String(first.updatedAt || "")))
+    .slice(0, 100);
+  localStorage.setItem(PRINT_HISTORY_STORAGE_KEY, JSON.stringify(state.printJobs));
+  if (state.currentPrintJobId) localStorage.setItem(CURRENT_PRINT_JOB_STORAGE_KEY, state.currentPrintJobId);
+  else localStorage.removeItem(CURRENT_PRINT_JOB_STORAGE_KEY);
+}
+
+function currentPrintJob() {
+  return state.printJobs.find((job) => job.id === state.currentPrintJobId) || null;
+}
+
+function collectManifestTracking() {
+  const tracking = {};
+  if (elements.manifestRows?.dataset.printJobId !== state.currentPrintJobId) return tracking;
+  elements.manifestRows?.querySelectorAll("tr[data-job-key]").forEach((row) => {
+    const registered = row.querySelector('[name^="registered-"]')?.value || "";
+    const ems = row.querySelector('[name^="ems-"]')?.value || "";
+    if (registered || ems) tracking[row.dataset.jobKey] = { registered, ems };
+  });
+  return tracking;
+}
+
+function selectedRecipientSnapshots() {
+  return state.recipients
+    .filter((item) => state.selected.has(item.id))
+    .map((item) => ({
+      id: item.id,
+      name: recipientName(item),
+      department: item.department || "",
+      postalCode: item.postalCode || "",
+    }));
+}
+
+function createPrintJob() {
+  const now = new Date().toISOString();
+  const id = `PRINT-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+  const job = {
+    id,
+    createdAt: now,
+    updatedAt: now,
+    completedAt: "",
+    envelopePrintedAt: "",
+    manifestPrintedAt: "",
+    manifestDate: localIsoDate(),
+    paperSize: state.settings.paperSize,
+    recipientIds: [],
+    recipients: [],
+    copiesById: {},
+    tracking: {},
+  };
+  state.currentPrintJobId = id;
+  state.printJobs.unshift(job);
+  return job;
+}
+
+function saveCurrentPrintJobDraft(changes = {}, options = {}) {
+  const selectedItems = state.recipients.filter((item) => state.selected.has(item.id));
+  let job = currentPrintJob();
+  if (job?.completedAt) job = null;
+  if (!job && !selectedItems.length && !options.force) return null;
+  if (!job) job = createPrintJob();
+
+  const previousTracking = job.tracking && typeof job.tracking === "object" ? job.tracking : {};
+  const visibleTracking = collectManifestTracking();
+  const now = new Date().toISOString();
+  Object.assign(job, {
+    updatedAt: now,
+    paperSize: state.settings.paperSize,
+    recipientIds: selectedItems.map((item) => item.id),
+    recipients: selectedRecipientSnapshots(),
+    copiesById: Object.fromEntries(selectedItems.map((item) => [item.id, recipientEnvelopeCopies(item.id)])),
+    tracking: { ...previousTracking, ...visibleTracking },
+    manifestDate: elements.manifestDate?.value || job.manifestDate || localIsoDate(),
+  }, changes);
+  state.printJobs = [job, ...state.printJobs.filter((item) => item.id !== job.id)];
+  persistPrintHistory();
+  if (elements.historySaveStatus) elements.historySaveStatus.textContent = "บันทึกอัตโนมัติแล้วเมื่อสักครู่";
+  queuePrintJobCloudSave(job);
+  return job;
+}
+
+function printJobStatus(job) {
+  if (job.completedAt) return { label: "เสร็จสิ้น", className: "done" };
+  if (job.envelopePrintedAt && job.manifestPrintedAt) return { label: "พิมพ์ครบแล้ว", className: "printed" };
+  if (job.envelopePrintedAt) return { label: "พิมพ์หน้าซองแล้ว", className: "printed" };
+  if (job.manifestPrintedAt) return { label: "พิมพ์ใบนำส่งแล้ว", className: "printed" };
+  return { label: "กำลังดำเนินการ", className: "" };
+}
+
+function formatPrintJobDate(value) {
+  const date = new Date(value || Date.now());
+  return new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeStyle: "short" }).format(date);
+}
+
+function renderPrintHistory() {
+  if (!elements.printHistoryList) return;
+  if (!state.printJobs.length) {
+    elements.printHistoryList.innerHTML = '<div class="history-empty">ยังไม่มีประวัติ เมื่อเลือกรายชื่อ ระบบจะเริ่มบันทึกชุดงานให้อัตโนมัติ</div>';
+    return;
+  }
+  elements.printHistoryList.innerHTML = state.printJobs.map((job) => {
+    const status = printJobStatus(job);
+    const recipientCount = Array.isArray(job.recipientIds) ? job.recipientIds.length : 0;
+    const envelopeCount = Object.values(job.copiesById || {}).reduce((sum, value) => sum + Number(value || 0), 0);
+    const names = (job.recipients || []).slice(0, 2).map((item) => item.name).filter(Boolean).join(" · ");
+    return `<article class="history-item ${job.id === state.currentPrintJobId ? "current" : ""}">
+      <div>
+        <h3>ชุดงานวันที่ ${escapeHtml(formatPrintJobDate(job.createdAt))}</h3>
+        <div class="history-item-meta"><span class="history-status ${status.className}">${status.label}</span><span>${recipientCount} รายชื่อ</span><span>${envelopeCount} ซอง</span><span>${escapeHtml(job.paperSize || "DL")}</span></div>
+        ${names ? `<div class="manifest-recipient-sub">${escapeHtml(names)}${recipientCount > 2 ? " …" : ""}</div>` : ""}
+      </div>
+      <div class="history-actions">
+        <button class="resume" data-resume-job="${escapeHtml(job.id)}" type="button">ดำเนินการต่อ</button>
+        ${job.completedAt ? "" : `<button data-complete-job="${escapeHtml(job.id)}" type="button">ทำเครื่องหมายว่าเสร็จ</button>`}
+        <button class="delete" data-delete-job="${escapeHtml(job.id)}" type="button">ลบประวัติ</button>
+      </div>
+    </article>`;
+  }).join("");
+
+  elements.printHistoryList.querySelectorAll("[data-resume-job]").forEach((button) => {
+    button.addEventListener("click", () => restorePrintJob(button.dataset.resumeJob));
+  });
+  elements.printHistoryList.querySelectorAll("[data-complete-job]").forEach((button) => {
+    button.addEventListener("click", () => completePrintJob(button.dataset.completeJob));
+  });
+  elements.printHistoryList.querySelectorAll("[data-delete-job]").forEach((button) => {
+    button.addEventListener("click", () => requestDeletePrintJob(button));
+  });
+}
+
+function restorePrintJob(id, options = {}) {
+  const job = state.printJobs.find((item) => item.id === id);
+  if (!job) return;
+  const availableIds = new Set(state.recipients.map((item) => item.id));
+  state.currentPrintJobId = job.id;
+  state.selected = new Set((job.recipientIds || []).filter((recipientId) => availableIds.has(recipientId)));
+  Object.entries(job.copiesById || {}).forEach(([recipientId, copies]) => setRecipientEnvelopeCopies(recipientId, copies));
+  if (PAPER_SIZE_KEYS.includes(job.paperSize)) {
+    rememberCurrentPaperLayout();
+    state.settings.paperSize = job.paperSize;
+    applyPaperLayout(job.paperSize);
+  }
+  persistSettings();
+  persistPrintHistory();
+  if (elements.manifestRows?.dataset.printJobId !== job.id) {
+    elements.manifestRows.innerHTML = "";
+    elements.manifestRows.dataset.printJobId = "";
+  }
+  render();
+  if (!options.keepDialog) elements.printHistoryDialog?.close();
+  setNotice(`เปิดชุดงานเดิมแล้ว พบ ${state.selected.size} รายชื่อ สามารถทำต่อได้ทันที`);
+}
+
+function completePrintJob(id) {
+  const job = state.printJobs.find((item) => item.id === id);
+  if (!job) return;
+  job.completedAt = new Date().toISOString();
+  job.updatedAt = job.completedAt;
+  persistPrintHistory();
+  queuePrintJobCloudSave(job);
+  renderPrintHistory();
+  setNotice("ทำเครื่องหมายชุดงานว่าเสร็จสิ้นแล้ว");
+}
+
+function requestDeletePrintJob(button) {
+  if (button.dataset.confirmDelete !== "true") {
+    button.dataset.confirmDelete = "true";
+    button.textContent = "กดอีกครั้งเพื่อยืนยันลบ";
+    setTimeout(() => {
+      if (button.isConnected) {
+        button.dataset.confirmDelete = "false";
+        button.textContent = "ลบประวัติ";
+      }
+    }, 3500);
+    return;
+  }
+  deletePrintJob(button.dataset.deleteJob);
+}
+
+function deletePrintJob(id) {
+  state.printJobs = state.printJobs.filter((job) => job.id !== id);
+  if (state.currentPrintJobId === id) state.currentPrintJobId = "";
+  persistPrintHistory();
+  renderPrintHistory();
+  queuePrintJobCloudDelete(id);
+  setNotice("ลบประวัติชุดงานแล้ว");
+}
+
+function startNewPrintJob() {
+  saveCurrentPrintJobDraft();
+  state.currentPrintJobId = "";
+  state.selected.clear();
+  state.previewRecipientIndex = 0;
+  elements.manifestRows.innerHTML = "";
+  elements.manifestRows.dataset.printJobId = "";
+  elements.manifestDate.value = "";
+  persistPrintHistory();
+  render();
+  elements.printHistoryDialog?.close();
+  setNotice("เริ่มชุดงานใหม่แล้ว กรุณาเลือกรายชื่อผู้รับ");
+}
+
+async function openPrintHistory() {
+  saveCurrentPrintJobDraft();
+  const savedAdminKey = sessionStorage.getItem("envelope-admin-key");
+  if (savedAdminKey) elements.historySyncForm.elements.adminKey.value = savedAdminKey;
+  renderPrintHistory();
+  elements.printHistoryDialog.showModal();
+  await loadPrintJobsFromSheet();
+  renderPrintHistory();
+}
+
+function closePrintHistory() {
+  if (elements.printHistoryDialog.open) elements.printHistoryDialog.close();
+}
+
+function restoreSavedPrintJobOnLoad() {
+  const job = currentPrintJob();
+  if (!job || job.completedAt) return false;
+  restorePrintJob(job.id, { keepDialog: true });
+  return true;
 }
 
 function captureCurrentLayout() {
@@ -963,7 +1253,7 @@ function rowsFromPayload(payload) {
   return rows;
 }
 
-function requestWithJsonp(baseUrl) {
+function requestWithJsonp(baseUrl, action = "recipients") {
   return new Promise((resolve, reject) => {
     const callbackName = `__envelopeJsonp${Date.now()}${Math.random().toString(36).slice(2)}`;
     const script = document.createElement("script");
@@ -985,7 +1275,7 @@ function requestWithJsonp(baseUrl) {
       cleanup();
       reject(new Error("โหลดข้อมูลจาก Apps Script ไม่สำเร็จ"));
     };
-    script.src = buildApiUrl(baseUrl, { action: "recipients", callback: callbackName, _: Date.now() });
+    script.src = buildApiUrl(baseUrl, { action, callback: callbackName, _: Date.now() });
     document.head.appendChild(script);
   });
 }
@@ -1000,7 +1290,104 @@ async function requestRecipients(baseUrl) {
     return rowsFromPayload(await response.json());
   } catch (fetchError) {
     console.warn("Fetch Apps Script ไม่สำเร็จ กำลังลอง JSONP", fetchError);
-    return rowsFromPayload(await requestWithJsonp(baseUrl));
+    return rowsFromPayload(await requestWithJsonp(baseUrl, "recipients"));
+  }
+}
+
+async function requestPrintJobs(baseUrl) {
+  try {
+    const response = await fetch(buildApiUrl(baseUrl, { action: "printJobs", _: Date.now() }), {
+      cache: "no-store",
+      redirect: "follow",
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return rowsFromPayload(await response.json());
+  } catch (fetchError) {
+    console.warn("Fetch ประวัติชุดงานไม่สำเร็จ กำลังลอง JSONP", fetchError);
+    return rowsFromPayload(await requestWithJsonp(baseUrl, "printJobs"));
+  }
+}
+
+function mergePrintJobs(rows) {
+  const byId = new Map(state.printJobs.map((job) => [job.id, job]));
+  rows.forEach((job) => {
+    if (!job?.id) return;
+    const existing = byId.get(job.id);
+    if (!existing || String(job.updatedAt || "") > String(existing.updatedAt || "")) byId.set(job.id, job);
+  });
+  state.printJobs = [...byId.values()];
+  persistPrintHistory();
+}
+
+async function loadPrintJobsFromSheet() {
+  if (!validateAppsScriptUrl(state.settings.appsScriptUrl)) return;
+  try {
+    const rows = await requestPrintJobs(state.settings.appsScriptUrl);
+    mergePrintJobs(rows);
+    if (elements.historySaveStatus) elements.historySaveStatus.textContent = "โหลดประวัติจาก Google Sheets แล้ว";
+  } catch (error) {
+    console.warn("ยังโหลดประวัติจาก Google Sheets ไม่ได้ ใช้ประวัติบนเครื่องแทน", error);
+  }
+}
+
+async function postPrintJobAction(payload) {
+  const response = await fetch(state.settings.appsScriptUrl, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=UTF-8" },
+    body: JSON.stringify(payload),
+    redirect: "follow",
+  });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const result = await response.json();
+  if (result.ok === false) throw new Error(result.error || "บันทึกประวัติไม่สำเร็จ");
+  return result.data;
+}
+
+let printJobCloudTimer;
+function queuePrintJobCloudSave(job) {
+  const adminKey = sessionStorage.getItem("envelope-admin-key");
+  if (!adminKey || !validateAppsScriptUrl(state.settings.appsScriptUrl) || !job) return;
+  clearTimeout(printJobCloudTimer);
+  printJobCloudTimer = setTimeout(async () => {
+    try {
+      await postPrintJobAction({ action: "savePrintJob", adminKey, job });
+      if (elements.historySaveStatus) elements.historySaveStatus.textContent = "สำรองไว้ใน Google Sheets แล้ว";
+    } catch (error) {
+      console.warn("สำรองชุดงานไป Google Sheets ไม่สำเร็จ", error);
+    }
+  }, 700);
+}
+
+function queuePrintJobCloudDelete(id) {
+  const adminKey = sessionStorage.getItem("envelope-admin-key");
+  if (!adminKey || !validateAppsScriptUrl(state.settings.appsScriptUrl) || !id) return;
+  postPrintJobAction({ action: "deletePrintJob", adminKey, id }).catch((error) => {
+    console.warn("ลบประวัติจาก Google Sheets ไม่สำเร็จ", error);
+  });
+}
+
+async function syncPrintHistory(event) {
+  event.preventDefault();
+  if (!elements.historySyncForm.reportValidity()) return;
+  const adminKey = String(new FormData(elements.historySyncForm).get("adminKey") || "").trim();
+  sessionStorage.setItem("envelope-admin-key", adminKey);
+  const button = $("#syncPrintHistory");
+  button.disabled = true;
+  button.textContent = "กำลังซิงค์…";
+  try {
+    for (const job of state.printJobs) {
+      await postPrintJobAction({ action: "savePrintJob", adminKey, job });
+    }
+    await loadPrintJobsFromSheet();
+    renderPrintHistory();
+    elements.historySaveStatus.textContent = "สำรองไว้ใน Google Sheets แล้ว";
+    setNotice(`ซิงค์ประวัติ ${state.printJobs.length} ชุดกับ Google Sheets แล้ว`);
+  } catch (error) {
+    console.error(error);
+    elements.historySaveStatus.textContent = `ซิงค์ไม่สำเร็จ: ${error.message}`;
+  } finally {
+    button.disabled = false;
+    button.textContent = "ซิงค์ประวัติ";
   }
 }
 
@@ -1065,11 +1452,13 @@ function renderRows() {
       const copies = setRecipientEnvelopeCopies(input.dataset.copyId, input.value);
       input.value = copies;
       persistSettings();
+      saveCurrentPrintJobDraft();
       renderSummary();
       setNotice(`ตั้งจำนวนซองของรายชื่อนี้เป็น ${copies} ฉบับแล้ว`);
     });
     input.addEventListener("input", () => {
       setRecipientEnvelopeCopies(input.dataset.copyId, input.value);
+      saveCurrentPrintJobDraft();
       renderSummary();
     });
   });
@@ -1209,6 +1598,7 @@ function toggleRecipient(id) {
   else state.selected.add(id);
   renderRows();
   renderSummary();
+  saveCurrentPrintJobDraft();
 }
 
 async function connectToSheet() {
@@ -1230,8 +1620,11 @@ async function connectToSheet() {
     state.connected = true;
     elements.status.className = "status-pill connected";
     elements.status.querySelector("span").textContent = "เชื่อม Google Sheets แล้ว";
-    render();
-    setNotice(`เชื่อมต่อสำเร็จ พบรายชื่อ ${rows.length} รายการ`);
+    const restoredJob = restoreSavedPrintJobOnLoad();
+    if (!restoredJob) render();
+    setNotice(restoredJob
+      ? `เปิดชุดงานที่ทำค้างไว้แล้ว ${state.selected.size} รายชื่อ`
+      : `เชื่อมต่อสำเร็จ พบรายชื่อ ${rows.length} รายการ`);
   } catch (error) {
     console.error(error);
     state.connected = false;
@@ -1652,26 +2045,32 @@ function openManifestDialog() {
     setNotice("โปรดเลือกรายชื่อผู้รับอย่างน้อย 1 รายการก่อนพิมพ์ใบนำส่ง");
     return;
   }
-  elements.manifestDate.value = localIsoDate();
+  const job = saveCurrentPrintJobDraft({}, { force: true });
+  elements.manifestDate.value = job?.manifestDate || localIsoDate();
   elements.manifestPermit.value = defaultManifestPermit();
-  elements.manifestRows.innerHTML = jobs.map(({ item }, index) => {
+  elements.manifestRows.dataset.printJobId = job?.id || "";
+  elements.manifestRows.innerHTML = jobs.map(({ item, copyIndex }, index) => {
     const name = manifestRecipientLabel(item);
     const subText = item.department && item.department !== name ? item.department : recipientFullAddress(item);
-    return `<tr data-recipient-id="${escapeHtml(item.id)}">
+    const jobKey = printJobTrackingKey(item.id, copyIndex);
+    const savedTracking = job?.tracking?.[jobKey] || {};
+    return `<tr data-recipient-id="${escapeHtml(item.id)}" data-job-key="${escapeHtml(jobKey)}">
       <td>${index + 1}</td>
       <td><div class="manifest-recipient-name">${escapeHtml(name)}</div>${subText ? `<div class="manifest-recipient-sub">${escapeHtml(subText)}</div>` : ""}</td>
       <td>${escapeHtml(item.postalCode || "")}</td>
-      <td><input name="registered-${index}" class="tracking-input" type="text" inputmode="numeric" autocomplete="off" maxlength="9" pattern="[0-9๐-๙]{9}" title="กรอกตัวเลข 9 หลัก" placeholder="ตัวเลข 9 หลัก" /></td>
-      <td><input name="ems-${index}" class="tracking-input" type="text" inputmode="numeric" autocomplete="off" maxlength="9" pattern="[0-9๐-๙]{9}" title="กรอกตัวเลข 9 หลัก" placeholder="ตัวเลข 9 หลัก" /></td>
+      <td><input name="registered-${index}" class="tracking-input" type="text" inputmode="numeric" autocomplete="off" maxlength="9" pattern="[0-9๐-๙]{9}" title="กรอกตัวเลข 9 หลัก" placeholder="ตัวเลข 9 หลัก" value="${escapeHtml(savedTracking.registered || "")}" /></td>
+      <td><input name="ems-${index}" class="tracking-input" type="text" inputmode="numeric" autocomplete="off" maxlength="9" pattern="[0-9๐-๙]{9}" title="กรอกตัวเลข 9 หลัก" placeholder="ตัวเลข 9 หลัก" value="${escapeHtml(savedTracking.ems || "")}" /></td>
     </tr>`;
   }).join("");
   elements.manifestRows.querySelectorAll(".tracking-input").forEach((input) => {
     input.addEventListener("input", limitTrackingInput);
+    input.addEventListener("input", () => saveCurrentPrintJobDraft());
   });
   elements.mailingManifestDialog.showModal();
 }
 
 function closeManifestDialog() {
+  saveCurrentPrintJobDraft();
   if (elements.mailingManifestDialog.open) elements.mailingManifestDialog.close();
 }
 
@@ -1773,8 +2172,9 @@ function printMailingManifest(event) {
   popup.opener = null;
   popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์ใบนำส่งไปรษณีย์</title><style>@page{size:A4 portrait;margin:8mm}*{box-sizing:border-box}body{margin:0;color:#111;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif;font-size:13pt}.manifest-page{position:relative;width:194mm;min-height:281mm;margin:0 auto;page-break-after:always;background:#fff}.manifest-page:last-child{page-break-after:auto}.page-number{position:absolute;top:0;right:0;font-size:12pt}h1{margin:0 0 2.5mm;text-align:center;font-size:15pt;font-weight:700}.manifest-meta{width:52.5mm;margin:0 0 2.5mm auto;line-height:1.12;font-size:12.5pt;text-align:left}.manifest-intro{margin:0 0 .8mm 10mm;font-size:12.5pt;line-height:1.08}.manifest-print-table{width:100%;border-collapse:collapse;table-layout:fixed}.manifest-print-table th,.manifest-print-table td{height:6.25mm;padding:0 1.2mm;border:1px solid #111;vertical-align:middle;line-height:1.04}.manifest-print-table th{text-align:center;font-size:11.5pt;font-weight:700;white-space:nowrap}.center{text-align:center}.recipient-cell{font-size:12pt;white-space:nowrap;overflow:hidden}.tracking{font-size:12pt;white-space:nowrap}.col-seq{width:9mm}.col-name{width:78mm}.col-dest{width:16mm}.col-registered{width:28mm}.col-ems{width:28mm}.col-fee{width:18mm}.col-note{width:17mm}.manifest-footer{position:relative;height:36mm;margin-top:3mm;line-height:1.18;font-size:13pt}.manifest-footer p{margin:0}.manifest-footer-left{position:absolute;left:9mm;top:1mm;width:82mm}.manifest-footer-left p+p{margin-top:1.6mm}.manifest-footer-right{position:absolute;left:116mm;top:0;width:78mm;margin-left:0}.manifest-footer-right p{margin:0}.total-line{margin-bottom:1.6mm!important;text-align:left}.sign-line{display:flex;align-items:flex-end;text-align:left}.sign-line span:first-child{flex:0 0 auto}.sign-dots{display:block;width:64mm;height:.9em;border-bottom:1px dotted #111}.role-line{width:64mm;margin-top:.4mm!important;margin-left:10mm;text-align:center}.check-line{margin-top:2.2mm!important;text-align:left}.signature{margin-top:4mm!important}@media screen{body{background:#eef2f7;padding:18px}.manifest-page{padding:0;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${manifestPages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
   popup.document.close();
+  saveCurrentPrintJobDraft({ manifestPrintedAt: new Date().toISOString() });
   closeManifestDialog();
-  setNotice(`เตรียมพิมพ์ใบนำส่ง ${recipients.length} รายการแล้ว`);
+  setNotice(`เตรียมพิมพ์ใบนำส่ง ${jobs.length} รายการแล้ว และบันทึกลงประวัติแล้ว`);
 }
 
 function printEnvelopes() {
@@ -1843,7 +2243,8 @@ function printEnvelopes() {
   popup.opener = null;
   popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์จ่าหน้าซอง</title><style>@page{size:${width} ${height};margin:0}*{box-sizing:border-box}body{margin:0;color:#17223b;font-family:"Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${width};height:${height};page-break-after:always;overflow:hidden;background:#fff}.envelope:last-child{page-break-after:auto}.sender{position:absolute;top:${senderTopMm}mm;left:${senderLeftMm}mm;width:55%;font-size:${senderFontPt}pt;line-height:1.45;color:#111}.sender-content{min-width:0}.sender-address{margin-top:.7mm}.document-number{margin-top:1.2mm;font-weight:700}.garuda{display:block;width:auto;height:${garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm 0}.postage-permit{position:absolute;top:${postagePermitTopMm}mm;right:${postagePermitRightMm}mm;display:flex;width:50mm;height:25mm;align-items:center;justify-content:center;overflow:hidden;padding:2mm;border:.35mm solid #111;color:#111;font-size:${postagePermitFontPt}pt;font-weight:700;line-height:1.45;text-align:center}.recipient{position:absolute;left:${recipientLeftPercent}%;top:${recipientTopPercent}%;width:calc(100% - ${recipientLeftPercent}% - 8mm);font-size:${recipientFontPt}pt;line-height:${recipientLineHeight}}.recipient small{color:#667085;font-size:${recipientFontPt}pt}.recipient h1{margin:1mm 0 0;font-size:${recipientFontPt}pt;white-space:nowrap}.recipient-position{white-space:nowrap}.recipient p{margin:.4mm 0}.organization{font-weight:700}@media screen{body{background:#eef2f7;padding:18px}.envelope{margin:0 auto 18px;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${pages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
   popup.document.close();
-  setNotice(`เตรียมพิมพ์ ${jobs.length} ซอง จาก ${selectedCount} รายชื่อ บน${label}`);
+  saveCurrentPrintJobDraft({ envelopePrintedAt: new Date().toISOString() });
+  setNotice(`เตรียมพิมพ์ ${jobs.length} ซอง จาก ${selectedCount} รายชื่อ บน${label} และบันทึกลงประวัติแล้ว`);
 }
 
 elements.search.addEventListener("input", (event) => {
@@ -1874,6 +2275,7 @@ elements.selectAll.addEventListener("change", () => {
   });
   renderRows();
   renderSummary();
+  saveCurrentPrintJobDraft();
 });
 elements.paper.addEventListener("change", (event) => {
   const nextPaperSize = PAPER_SIZE_KEYS.includes(event.target.value) ? event.target.value : "DL";
@@ -1881,6 +2283,7 @@ elements.paper.addEventListener("change", (event) => {
   state.settings.paperSize = nextPaperSize;
   applyPaperLayout(nextPaperSize);
   persistSettings();
+  saveCurrentPrintJobDraft();
   renderSummary();
   const selectedLabel = event.target.selectedOptions[0]?.textContent.split(" · ")[0] || nextPaperSize;
   setNotice(`โหลดชุดฟอนต์และตำแหน่งสำหรับ ${selectedLabel} แล้ว`);
@@ -1954,7 +2357,13 @@ elements.postagePermitForm.addEventListener("submit", handlePostagePermitSubmit)
 $("#openManifestDialog").addEventListener("click", openManifestDialog);
 $("#closeManifestDialog").addEventListener("click", closeManifestDialog);
 $("#cancelManifestDialog").addEventListener("click", closeManifestDialog);
+elements.manifestDate.addEventListener("change", () => saveCurrentPrintJobDraft());
 elements.mailingManifestForm.addEventListener("submit", printMailingManifest);
+$("#openPrintHistory").addEventListener("click", openPrintHistory);
+$("#closePrintHistory").addEventListener("click", closePrintHistory);
+$("#donePrintHistory").addEventListener("click", closePrintHistory);
+$("#startNewPrintJob").addEventListener("click", startNewPrintJob);
+elements.historySyncForm.addEventListener("submit", syncPrintHistory);
 $("#printButton").addEventListener("click", printEnvelopes);
 $("#heroPrint").addEventListener("click", printEnvelopes);
 elements.previewPrevious.addEventListener("click", () => {
