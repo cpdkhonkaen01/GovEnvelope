@@ -64,7 +64,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .preview-nav-button:disabled{cursor:not-allowed;opacity:.42}
 .line-break-button{border-color:#9fb5f3;background:#eef3ff;white-space:nowrap}
 .preview-counter{min-width:48px;color:#263149;font-size:14px;text-align:center;white-space:nowrap}
-.envelope-preview{position:relative;width:100%;aspect-ratio:229/162;overflow:hidden;border:1px solid rgba(23,58,165,.16);border-radius:4px;background:#fff;box-shadow:0 24px 52px rgba(32,67,140,.18);font-family:"Noto Sans Thai",Tahoma,sans-serif}
+.envelope-preview{position:relative;width:100%;aspect-ratio:229/162;overflow:hidden;border:1px solid rgba(23,58,165,.16);border-radius:4px;background:#fff;box-shadow:0 24px 52px rgba(32,67,140,.18);font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif}
 .postage-permit-mini{position:absolute;z-index:3;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid #111;background:#fff;color:#111;font-weight:800;line-height:1.45;text-align:center;white-space:pre-line}
 .sender-mini-block{position:absolute;z-index:2;width:55%;color:#111}
 .sender-mini-block.garuda-left{display:flex;align-items:flex-start}
@@ -217,6 +217,8 @@ dialog hr{height:1px;margin:20px 0 4px;border:0;background:#edf0f5}
 .history-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}
 .history-actions button{min-height:40px;padding:0 13px;border:1px solid #d9dfeb;border-radius:10px;background:#fff;color:#344054;font-size:13px;font-weight:800}
 .history-actions .resume{border-color:#2856d9;background:#2856d9;color:#fff}
+.history-actions .pdf-download{border-color:#b8c9f5;background:#edf3ff;color:#234ec9}
+.history-actions .pdf-download.manifest{border-color:#a8dfca;background:#edf9f4;color:#127454}
 .history-actions .delete{border-color:#ffd2d2;color:#b42318}
 .history-sync-panel{display:block;margin-top:18px;padding:16px;border:1px solid #bfe7d8;border-radius:16px;background:#f0fbf7}
 .history-sync-panel strong,.history-sync-panel small{display:block}.history-sync-panel small{margin-top:4px;color:#667085;line-height:1.5}.history-sync-panel .form-field span{font-size:12px}
@@ -673,6 +675,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
     </dialog>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script id="app-config">
 // ฐานข้อมูล Supabase: ใช้ Publishable key เท่านั้น (ห้ามใส่ Secret key ในหน้าเว็บ)
 window.ENVELOPE_APP_CONFIG = {
@@ -993,7 +996,18 @@ function selectedRecipientSnapshots() {
     .map((item) => ({
       id: item.id,
       name: recipientName(item),
+      category: item.category || "",
+      prefix: item.prefix || "",
+      firstName: item.firstName || "",
+      lastName: item.lastName || "",
+      position: item.position || "",
       department: item.department || "",
+      responsibleUnit: item.responsibleUnit || "",
+      cooperativeType: item.cooperativeType || "",
+      address1: item.address1 || "",
+      subdistrict: item.subdistrict || "",
+      district: item.district || "",
+      province: item.province || "",
       postalCode: item.postalCode || "",
     }));
 }
@@ -1127,6 +1141,159 @@ function historyRecipientDetails(job) {
   }).join("")}</ol>`;
 }
 
+function printJobRecipientEntries(job) {
+  const snapshots = new Map((job.recipients || []).map((recipient) => [recipient.id, recipient]));
+  const ids = Array.isArray(job.recipientIds) && job.recipientIds.length
+    ? job.recipientIds
+    : [...snapshots.keys()];
+  return ids.flatMap((id) => {
+    const snapshot = snapshots.get(id) || {};
+    const item = state.recipients.find((recipient) => recipient.id === id) || {
+      id,
+      category: snapshot.category || "",
+      prefix: snapshot.prefix || "",
+      firstName: snapshot.firstName || "",
+      lastName: snapshot.lastName || "",
+      position: snapshot.position || snapshot.name || "ไม่ระบุชื่อผู้รับ",
+      department: snapshot.department || "",
+      responsibleUnit: snapshot.responsibleUnit || "",
+      cooperativeType: snapshot.cooperativeType || "",
+      address1: snapshot.address1 || "",
+      subdistrict: snapshot.subdistrict || "",
+      district: snapshot.district || "",
+      province: snapshot.province || "",
+      postalCode: snapshot.postalCode || "",
+    };
+    const copies = Math.max(1, Number(job.copiesById?.[id] || 1));
+    return Array.from({ length: copies }, (_, copyIndex) => ({ item, copyIndex }));
+  });
+}
+
+function safePdfFilename(value = "เอกสาร") {
+  return String(value).replace(/[\\/:*?"<>|]/g, "-").replace(/\s+/g, "-").slice(0, 100);
+}
+
+async function waitForPdfAssets(container) {
+  if (document.fonts?.ready) await document.fonts.ready;
+  await Promise.all([...container.querySelectorAll("img")].map((image) => {
+    if (image.complete) return Promise.resolve();
+    return new Promise((resolve) => {
+      image.addEventListener("load", resolve, { once: true });
+      image.addEventListener("error", resolve, { once: true });
+    });
+  }));
+}
+
+async function saveHtmlAsPdf(container, filename, format, orientation) {
+  if (typeof window.html2pdf !== "function") throw new Error("โหลดระบบสร้าง PDF ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วรีเฟรชหน้าเว็บ");
+  container.style.position = "fixed";
+  container.style.left = "-10000px";
+  container.style.top = "0";
+  container.style.zIndex = "-1";
+  document.body.appendChild(container);
+  try {
+    await waitForPdfAssets(container);
+    await window.html2pdf().set({
+      margin: 0,
+      filename,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 1.6, useCORS: true, allowTaint: false, backgroundColor: "#ffffff", logging: false },
+      jsPDF: { unit: "mm", format, orientation, compress: true },
+      pagebreak: { mode: ["css", "legacy"] },
+    }).from(container).save();
+  } finally {
+    container.remove();
+  }
+}
+
+function buildHistoryEnvelopePdf(job) {
+  const sizes = { DL: [220, 110], C5: [229, 162], A4L: [297, 210] };
+  const [widthMm, heightMm] = sizes[job.paperSize] || sizes.DL;
+  const entries = printJobRecipientEntries(job);
+  const senderClass = state.settings.garudaPlacement === "left" ? "sender garuda-left" : "sender garuda-above";
+  const garudaMarkup = state.settings.showSender && state.settings.garudaImage
+    ? `<img class="garuda${state.settings.showGaruda ? "" : " garuda-hidden"}" crossorigin="anonymous" src="${escapeHtml(state.settings.garudaImage)}" alt="ตราครุฑ">`
+    : "";
+  const senderAddress = escapeHtml(state.settings.senderAddress).replace(/\r?\n/g, "<br>");
+  const documentNumber = state.settings.documentNumber ? `<div class="document-number">${escapeHtml(state.settings.documentNumber)}</div>` : "";
+  const senderBlock = state.settings.showSender
+    ? `<div class="${senderClass}">${garudaMarkup}<div class="sender-content"><strong>${escapeHtml(state.settings.sender)}</strong><div class="sender-address">${senderAddress}</div>${documentNumber}</div></div>`
+    : "";
+  const permit = state.settings.showPostagePermit
+    ? `<div class="postage-permit">${escapeHtml(state.settings.postagePermitText).replace(/\r?\n/g, "<br>")}</div>`
+    : "";
+  const pages = entries.map(({ item }) => {
+    const rawName = recipientEnvelopeName(item);
+    const displayName = recipientEnvelopeDisplayName(item);
+    const manualClass = displayName.includes("\n") ? " recipient-name-manual" : "";
+    const locality = [formatAddressArea("ตำบล", item.subdistrict), formatAddressArea("อำเภอ", item.district)].filter(Boolean).join(" ");
+    const province = formatAddressArea("จังหวัด", item.province);
+    const department = state.settings.showRecipientDepartment && item.department && rawName !== item.department ? `<p class="organization">${escapeHtml(item.department)}</p>` : "";
+    const address = state.settings.showRecipientAddress
+      ? `<p>${escapeHtml(item.address1 || "")}</p><p>${escapeHtml(locality)}</p><p>${escapeHtml(province)}</p>${item.postalCode ? `<p class="postal-code"><strong>${escapeHtml(item.postalCode)}</strong></p>` : ""}`
+      : "";
+    return `<section class="envelope pdf-page">${senderBlock}${permit}<div class="recipient"><small>เรียน</small><h1 class="${manualClass.trim()}" style="font-size:${state.settings.recipientFontPt}pt">${recipientEnvelopeNameHtml(item)}</h1>${item.position && rawName !== item.position ? `<p>${escapeHtml(item.position)}</p>` : ""}${department}${address}</div></section>`;
+  }).join("");
+  const container = document.createElement("div");
+  container.innerHTML = `<style>*{box-sizing:border-box}.pdf-envelope-document{margin:0;color:#17223b;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${widthMm}mm;height:${heightMm}mm;overflow:hidden;background:#fff}.sender{position:absolute;top:${state.settings.senderTopMm}mm;left:${state.settings.senderLeftMm}mm;width:55%;font-size:${state.settings.senderFontPt}pt;line-height:1.45;color:#111}.sender-content{min-width:0}.sender-address{margin-top:.7mm}.document-number{margin-top:1.2mm;font-weight:700}.garuda{display:block;width:auto;height:${state.settings.garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${state.settings.senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm}.postage-permit{position:absolute;top:${state.settings.postagePermitTopMm}mm;right:${state.settings.postagePermitRightMm}mm;display:flex;width:40mm;height:20mm;align-items:center;justify-content:center;overflow:hidden;padding:2mm;border:.35mm solid #111;color:#111;font-size:${state.settings.postagePermitFontPt}pt;font-weight:700;line-height:1.45;text-align:center}.recipient{position:absolute;left:${state.settings.recipientLeftPercent}%;top:${state.settings.recipientTopPercent}%;width:calc(100% - ${state.settings.recipientLeftPercent}% - 8mm);font-size:${state.settings.recipientFontPt}pt;line-height:${state.settings.recipientLineHeight}}.recipient small{color:#667085;font-size:inherit}.recipient h1{margin:1mm 0 0;font-size:inherit;white-space:nowrap}.recipient h1.recipient-name-manual{white-space:normal}.recipient p{margin:.4mm 0}.organization{font-weight:700}.pdf-page{break-after:page;page-break-after:always}.pdf-page:last-child{break-after:auto;page-break-after:auto}</style><div class="pdf-envelope-document">${pages}</div>`;
+  return { container, format: [widthMm, heightMm], orientation: "landscape" };
+}
+
+function buildHistoryManifestPdf(job) {
+  const entries = printJobRecipientEntries(job);
+  const rows = entries.map(({ item, copyIndex }, index) => {
+    const tracking = job.tracking?.[printJobTrackingKey(item.id, copyIndex)] || {};
+    return {
+      index: index + 1,
+      name: manifestRecipientLabel(item),
+      destination: item.postalCode || "",
+      registered: formatTrackingCode(tracking.registered || "", "RJ"),
+      ems: formatTrackingCode(tracking.ems || "", "EQ"),
+    };
+  });
+  const pageSize = 30;
+  const pages = [];
+  for (let start = 0; start < rows.length; start += pageSize) pages.push(rows.slice(start, start + pageSize));
+  if (!pages.length) pages.push([]);
+  const permit = LOCKED_MANIFEST_PERMIT;
+  const receivingPostOffice = extractReceivingPostOffice(permit);
+  const manifestDate = formatThaiLongDate(job.manifestDate || printJobLocalDateKey(job.createdAt || job.updatedAt));
+  const pageHtml = pages.map((pageRows, pageIndex) => {
+    const displayRows = pageRows.map((row, index) => ({ ...row, index: index + 1 }));
+    const blankRows = Array.from({ length: Math.max(0, pageSize - displayRows.length) }, (_, index) => ({
+      index: displayRows.length + index + 1, name: "", destination: "", registered: "", ems: "",
+    }));
+    const bodyRows = [...displayRows, ...blankRows].map((row) => `<tr><td class="center">${row.index}</td><td class="recipient-cell"${manifestRecipientFontStyle(row.name)}><span class="${String(row.name).trim().length > 80 ? "long" : ""}">${escapeHtml(row.name)}</span></td><td class="center">${escapeHtml(row.destination)}</td><td class="center tracking">${escapeHtml(row.registered)}</td><td class="center tracking">${escapeHtml(row.ems)}</td><td></td><td></td></tr>`).join("");
+    return `<section class="manifest-page pdf-page">${pages.length > 1 ? `<div class="page-number">-${pageIndex + 1}-</div>` : ""}<h1>ใบนำส่งของทางไปรษณีย์โดยชำระค่าบริการเป็นสินเชื่อ</h1><div class="manifest-meta"><div>วัน/เดือน/ปี…${escapeHtml(manifestDate)}.......</div><div>ชื่อหน่วยงาน ${escapeHtml(state.settings.sender || "สำนักงานสหกรณ์จังหวัดขอนแก่น")}</div><div>${escapeHtml(permit)}</div></div><p class="manifest-intro">ได้ฝากส่งสิ่งของของทางไปรษณีย์โดยชำระค่าบริการเป็นเงินเชื่อดังรายการต่อไปนี้</p><table class="manifest-print-table"><colgroup><col class="col-seq"><col class="col-name"><col class="col-dest"><col class="col-registered"><col class="col-ems"><col class="col-fee"><col class="col-note"></colgroup><thead><tr><th>ลำดับ</th><th>ผู้รับ</th><th>ปลายทาง</th><th>ลงทะเบียน</th><th>EMS</th><th>ค่าบริการ</th><th>หมายเหตุ</th></tr></thead><tbody>${bodyRows}</tbody></table><div class="manifest-footer"><div class="manifest-footer-left"><p>รวม&nbsp;&nbsp; จำนวน ......................${pageRows.length}...................... ฉบับ</p><p>ธรรมดา จำนวน....................-...................... ฉบับ</p></div><div class="manifest-footer-right"><p class="total-line">รวมทั้งสิ้น....................${pageRows.length}....................ฉบับ</p><p class="sign-line"><span>ลงชื่อ</span><span class="sign-dots"></span></p><p class="role-line">ผู้รับผิดชอบในการฝากส่ง</p><p class="check-line">ได้ตรวจสอบและรับฝากไว้ถูกต้องแล้ว</p><p class="signature sign-line"><span>ลงชื่อ</span><span class="sign-dots"></span></p><p class="role-line">เจ้าหน้าที่รับฝาก${receivingPostOffice ? ` ${escapeHtml(receivingPostOffice)}` : ""}</p></div></div></section>`;
+  }).join("");
+  const container = document.createElement("div");
+  container.innerHTML = `<style>*{box-sizing:border-box}.pdf-manifest-document{margin:0;color:#111;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif;font-size:13pt}.manifest-page{position:relative;width:210mm;height:297mm;padding:8mm;background:#fff;overflow:hidden}.page-number{position:absolute;top:8mm;right:8mm;font-size:12pt}h1{margin:0 0 2.5mm;text-align:center;font-size:15pt}.manifest-meta{width:max-content;min-width:52.5mm;margin:0 0 2.5mm auto;line-height:1.12;font-size:12.5pt;white-space:nowrap}.manifest-intro{margin:0 0 .8mm 10mm;font-size:12.5pt;line-height:1.08}.manifest-print-table{width:192mm;border-collapse:collapse;table-layout:fixed}.manifest-print-table th,.manifest-print-table td{height:6.25mm;padding:0 1.2mm;border:1px solid #111;vertical-align:middle;line-height:1.04}.manifest-print-table th{text-align:center;font-size:11.5pt;white-space:nowrap}.center{text-align:center}.recipient-cell{overflow:hidden;font-size:12pt;white-space:nowrap}.recipient-cell span{display:block;overflow:hidden}.recipient-cell span.long{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal}.tracking{font-size:12pt;white-space:nowrap}.col-seq{width:9mm}.col-name{width:78mm}.col-dest{width:16mm}.col-registered{width:28mm}.col-ems{width:28mm}.col-fee{width:18mm}.col-note{width:12mm}.manifest-footer{position:relative;height:36mm;margin-top:3mm;line-height:1.18;font-size:14pt}.manifest-footer p{margin:0}.manifest-footer-left{position:absolute;left:9mm;top:1mm;width:82mm}.manifest-footer-left p+p{margin-top:1.6mm}.manifest-footer-right{position:absolute;left:116mm;top:0;width:78mm}.total-line{margin-bottom:1.6mm!important}.sign-line{display:flex;align-items:flex-end}.sign-dots{display:block;width:64mm;height:.9em;border-bottom:1px dotted #111}.role-line{width:64mm;margin-top:.4mm!important;margin-left:10mm;text-align:center}.check-line{margin-top:2.2mm!important}.signature{margin-top:4mm!important}.pdf-page{break-after:page;page-break-after:always}.pdf-page:last-child{break-after:auto;page-break-after:auto}</style><div class="pdf-manifest-document">${pageHtml}</div>`;
+  return { container, format: "a4", orientation: "portrait" };
+}
+
+async function downloadHistoryPdf(button, type) {
+  const jobId = type === "envelope" ? button.dataset.downloadEnvelopePdf : button.dataset.downloadManifestPdf;
+  const job = state.printJobs.find((item) => item.id === jobId);
+  if (!job) return;
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = "กำลังสร้าง PDF…";
+  try {
+    const documentData = type === "envelope" ? buildHistoryEnvelopePdf(job) : buildHistoryManifestPdf(job);
+    const dateKey = printJobLocalDateKey(job.createdAt || job.updatedAt) || localIsoDate();
+    const label = type === "envelope" ? "หน้าซองจดหมาย" : "ใบนำส่งไปรษณีย์";
+    const filename = `${safePdfFilename(label)}-${safePdfFilename(dateKey)}-${safePdfFilename(job.creatorGroup || job.id)}.pdf`;
+    await saveHtmlAsPdf(documentData.container, filename, documentData.format, documentData.orientation);
+    setNotice(`ดาวน์โหลด PDF ${label} จากประวัติเรียบร้อยแล้ว`);
+  } catch (error) {
+    console.error(error);
+    setNotice(`สร้าง PDF ไม่สำเร็จ: ${error.message}`);
+  } finally {
+    button.disabled = false;
+    button.textContent = originalText;
+  }
+}
+
 function renderPrintHistory() {
   if (!elements.printHistoryList) return;
   syncHistoryGroupOptions();
@@ -1169,6 +1336,8 @@ function renderPrintHistory() {
       <td><span class="history-status ${status.className}">${status.label}</span></td>
       <td><div class="history-actions">
         <button class="resume" data-resume-job="${escapeHtml(job.id)}" type="button">ดำเนินการต่อ</button>
+        <button class="pdf-download" data-download-envelope-pdf="${escapeHtml(job.id)}" type="button">ดาวน์โหลด PDF หน้าซอง</button>
+        <button class="pdf-download manifest" data-download-manifest-pdf="${escapeHtml(job.id)}" type="button">ดาวน์โหลด PDF ใบนำส่ง</button>
         ${job.completedAt ? "" : `<button data-complete-job="${escapeHtml(job.id)}" type="button">ทำเครื่องหมายว่าเสร็จ</button>`}
         <button class="delete" data-delete-job="${escapeHtml(job.id)}" type="button">ลบประวัติ</button>
       </div></td>
@@ -1180,6 +1349,12 @@ function renderPrintHistory() {
   });
   elements.printHistoryList.querySelectorAll("[data-complete-job]").forEach((button) => {
     button.addEventListener("click", () => completePrintJob(button.dataset.completeJob));
+  });
+  elements.printHistoryList.querySelectorAll("[data-download-envelope-pdf]").forEach((button) => {
+    button.addEventListener("click", () => downloadHistoryPdf(button, "envelope"));
+  });
+  elements.printHistoryList.querySelectorAll("[data-download-manifest-pdf]").forEach((button) => {
+    button.addEventListener("click", () => downloadHistoryPdf(button, "manifest"));
   });
   elements.printHistoryList.querySelectorAll("[data-delete-job]").forEach((button) => {
     button.addEventListener("click", () => requestDeletePrintJob(button));
@@ -2775,7 +2950,7 @@ function printEnvelopes() {
     return;
   }
   popup.opener = null;
-  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์จ่าหน้าซอง</title><style>@page{size:${width} ${height};margin:0}*{box-sizing:border-box}body{margin:0;color:#17223b;font-family:"Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${width};height:${height};page-break-after:always;overflow:hidden;background:#fff}.envelope:last-child{page-break-after:auto}.sender{position:absolute;top:${senderTopMm}mm;left:${senderLeftMm}mm;width:55%;font-size:${senderFontPt}pt;line-height:1.45;color:#111}.sender-content{min-width:0}.sender-address{margin-top:.7mm}.document-number{margin-top:1.2mm;font-weight:700}.garuda{display:block;width:auto;height:${garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm 0}.postage-permit{position:absolute;top:${postagePermitTopMm}mm;right:${postagePermitRightMm}mm;display:flex;width:40mm;height:20mm;align-items:center;justify-content:center;overflow:hidden;padding:2mm;border:.35mm solid #111;color:#111;font-size:${postagePermitFontPt}pt;font-weight:700;line-height:1.45;text-align:center}.recipient{position:absolute;left:${recipientLeftPercent}%;top:${recipientTopPercent}%;width:calc(100% - ${recipientLeftPercent}% - 8mm);font-size:${recipientFontPt}pt;line-height:${recipientLineHeight}}.recipient small{color:#667085;font-size:${recipientFontPt}pt}.recipient h1{margin:1mm 0 0;font-size:${recipientFontPt}pt;white-space:nowrap}.recipient h1.recipient-name-manual{white-space:normal}.recipient-position{white-space:nowrap}.recipient p{margin:.4mm 0}.organization{font-weight:700}@media screen{body{background:#eef2f7;padding:18px}.envelope{margin:0 auto 18px;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${pages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
+  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์จ่าหน้าซอง</title><style>@page{size:${width} ${height};margin:0}*{box-sizing:border-box}body{margin:0;color:#17223b;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${width};height:${height};page-break-after:always;overflow:hidden;background:#fff}.envelope:last-child{page-break-after:auto}.sender{position:absolute;top:${senderTopMm}mm;left:${senderLeftMm}mm;width:55%;font-size:${senderFontPt}pt;line-height:1.45;color:#111}.sender-content{min-width:0}.sender-address{margin-top:.7mm}.document-number{margin-top:1.2mm;font-weight:700}.garuda{display:block;width:auto;height:${garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm 0}.postage-permit{position:absolute;top:${postagePermitTopMm}mm;right:${postagePermitRightMm}mm;display:flex;width:40mm;height:20mm;align-items:center;justify-content:center;overflow:hidden;padding:2mm;border:.35mm solid #111;color:#111;font-size:${postagePermitFontPt}pt;font-weight:700;line-height:1.45;text-align:center}.recipient{position:absolute;left:${recipientLeftPercent}%;top:${recipientTopPercent}%;width:calc(100% - ${recipientLeftPercent}% - 8mm);font-size:${recipientFontPt}pt;line-height:${recipientLineHeight}}.recipient small{color:#667085;font-size:${recipientFontPt}pt}.recipient h1{margin:1mm 0 0;font-size:${recipientFontPt}pt;white-space:nowrap}.recipient h1.recipient-name-manual{white-space:normal}.recipient-position{white-space:nowrap}.recipient p{margin:.4mm 0}.organization{font-weight:700}@media screen{body{background:#eef2f7;padding:18px}.envelope{margin:0 auto 18px;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${pages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
   popup.document.close();
   saveCurrentPrintJobDraft({ envelopePrintedAt: new Date().toISOString() });
   setNotice(`เตรียมพิมพ์ ${jobs.length} ซอง จาก ${selectedCount} รายชื่อ บน${label} และบันทึกลงประวัติแล้ว`);
