@@ -75,6 +75,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .receiver-mini{position:absolute;z-index:2;width:68%;color:#17223b}
 .receiver-mini small{display:block;color:#667085}
 .hero .receiver-mini h1{max-width:none;margin:0;color:inherit;font:inherit;font-weight:800;letter-spacing:normal;line-height:inherit;white-space:nowrap}
+.hero .receiver-mini h1.recipient-name-long{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal}
 .hero .receiver-mini p{max-width:none;margin:0;color:inherit;font:inherit;letter-spacing:normal;line-height:inherit}
 .receiver-mini .organization,.receiver-mini .postal-code{font-weight:700}
 
@@ -97,6 +98,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .department-filter select{height:44px;padding:12px 32px 0 11px;border-radius:12px;font-size:10px;font-weight:700}
 .table-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:11px}
+.recipient-table{min-width:1460px;table-layout:fixed}
 thead{background:#f8f9fc}
 th{padding:12px 13px;color:#7c8698;font-size:8px;letter-spacing:.04em;text-align:left;text-transform:uppercase}
 td{padding:13px;border-top:1px solid #edf0f5}
@@ -105,21 +107,24 @@ tbody tr.selected-row{background:#f5f8ff;box-shadow:inset 3px 0 0 var(--blue)}
 td strong,td small{display:block}
 td strong{margin-bottom:2px;color:#263149;font-size:11px}
 td small{color:#8a94a5;font-size:9px}
-.recipient-name-cell{min-width:280px;max-width:420px}
+.recipient-name-cell{width:300px;min-width:300px;max-width:300px}
 .recipient-name-cell strong{white-space:normal;word-break:break-word}
-.recipient-position-line{margin-top:4px;color:#667085;font-weight:700;line-height:1.45}
-.check-cell{width:42px;text-align:center}
-.sequence-cell{width:72px;text-align:center}
+.recipient-position-line{margin-top:3px;color:#667085;font-weight:700;line-height:1.4}
+.check-cell{width:54px;text-align:center}
+.sequence-cell{width:68px;text-align:center}
 .row-sequence{display:inline-grid;min-width:32px;height:32px;place-items:center;border-radius:10px;background:#eef3ff;color:var(--blue-deep);font-weight:900}
 input[type=checkbox]{width:16px;height:16px;accent-color:var(--blue)}
-.copy-cell{width:90px;text-align:center}
+.copy-cell{width:108px;text-align:center}
 .copy-input{width:70px;height:34px;padding:0 8px;border:1px solid #dfe4ed;border-radius:10px;background:#fff;color:var(--ink);font-size:13px;font-weight:800;text-align:center}
 .copy-input:focus{outline:3px solid rgba(45,96,226,.16);border-color:#9fb5f3}
-.department-text{display:block;max-width:220px;line-height:1.45}
-.recipient-classification{display:block;margin-top:4px;color:#536784;font-size:.9em;font-weight:700;line-height:1.45}
-.address-text{color:#687386;white-space:nowrap}
-.action-cell{width:150px;text-align:right}
-.row-actions{display:flex;justify-content:flex-end;gap:6px}
+.type-cell{width:210px;min-width:210px}
+.department-cell{width:300px;min-width:300px}
+.department-text{display:block;max-width:none;line-height:1.45}
+.recipient-classification{display:block;margin-top:3px;color:#536784;font-size:10px;font-weight:700;line-height:1.35}
+.address-cell{width:300px;min-width:300px}
+.address-text{color:#687386;white-space:normal;overflow-wrap:anywhere}
+.action-cell{width:120px;text-align:center}
+.row-actions{display:flex;justify-content:center;gap:6px}
 .row-button{min-width:58px;padding:7px 9px;border:1px solid #dfe4ed;border-radius:9px;background:#fff;color:#667085;font-size:8px;font-weight:800}
 .row-button.active{border-color:#b9c9f5;background:var(--blue-soft);color:var(--blue)}
 .row-button.edit{border-color:#d7e0f7;color:#2856d9}
@@ -268,13 +273,16 @@ th{padding:16px;color:#596579;font-size:12px}
 td{padding:17px 15px}
 td strong{margin-bottom:4px;font-size:16px;line-height:1.5}
 td small{font-size:13px;line-height:1.5}
+.recipient-name-cell strong{font-size:14px;line-height:1.4}
+.recipient-position-line{font-size:12px;line-height:1.4}
+.recipient-classification{font-size:11px;line-height:1.35}
 .department-text,.address-text{font-size:14px;line-height:1.55}
-.address-text{display:block;min-width:360px;white-space:normal}
+.address-text{display:block;min-width:0;white-space:normal}
 input[type=checkbox]{width:20px;height:20px}
-.copy-cell{width:115px}
+.copy-cell{width:108px}
 .copy-input{width:82px;height:42px;font-size:16px}
 .category-badge{padding:6px 10px;font-size:12px}
-.action-cell{width:180px}
+.action-cell{width:120px}
 .row-button{min-width:72px;padding:10px 12px;border-radius:10px;font-size:13px}
 .print-card{position:static;display:grid;grid-template-columns:220px minmax(0,1fr);gap:26px;align-items:center;padding:26px 30px}
 .print-overview{align-self:stretch;padding-right:24px;border-right:1px solid rgba(255,255,255,.2)}
@@ -437,8 +445,8 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
             <label class="department-filter cooperative-filter" id="cooperativeTypeFilterWrap" hidden><span>ประเภทสหกรณ์</span><select id="cooperativeTypeFilter"><option value="ทั้งหมด">ทั้งหมด</option></select></label>
           </div>
           <div class="table-wrap">
-            <table>
-              <thead><tr><th class="check-cell"><input id="selectAll" type="checkbox" aria-label="เลือกทั้งหมด" /></th><th class="sequence-cell">ลำดับ</th><th>ชื่อผู้รับ / ตำแหน่ง</th><th>ประเภท</th><th>หน่วยงาน</th><th>ที่อยู่</th><th class="copy-cell">จำนวนซอง</th><th class="action-cell">จัดการ</th></tr></thead>
+            <table class="recipient-table">
+              <thead><tr><th class="check-cell"><input id="selectAll" type="checkbox" aria-label="เลือกทั้งหมด" /></th><th class="copy-cell">จำนวนซอง</th><th class="sequence-cell">ลำดับ</th><th class="recipient-name-cell">ชื่อผู้รับ / ตำแหน่ง</th><th class="type-cell">ประเภท</th><th class="department-cell">หน่วยงาน</th><th class="address-cell">ที่อยู่</th><th class="action-cell">จัดการ</th></tr></thead>
               <tbody id="recipientRows"></tbody>
             </table>
             <div class="empty" id="emptyState" hidden>ไม่พบรายชื่อที่ตรงกับคำค้นหา</div>
@@ -1448,6 +1456,10 @@ function manifestRecipientFontStyle(name = "") {
   return "";
 }
 
+function envelopeRecipientHeadingFontPt(name = "", fallbackPt = 12) {
+  return String(name).trim().length > 80 ? 9 : fallbackPt;
+}
+
 function categoryClass(category) {
   if (category === "สหกรณ์และกลุ่มเกษตรกร") return "cooperative";
   if (category === "ภาคเอกชน") return "private";
@@ -1787,12 +1799,12 @@ function renderRows() {
     const copies = recipientEnvelopeCopies(item.id);
     return `<tr class="${checked ? "selected-row" : ""}">
       <td class="check-cell"><input class="recipient-check" data-id="${escapeHtml(item.id)}" type="checkbox" ${checked ? "checked" : ""} aria-label="เลือก ${escapeHtml(recipientName(item))}"></td>
+      <td class="copy-cell"><input class="copy-input" data-copy-id="${escapeHtml(item.id)}" type="number" min="1" max="20" step="1" value="${copies}" aria-label="จำนวนซองของ ${escapeHtml(recipientName(item))}"></td>
       <td class="sequence-cell"><span class="row-sequence">${index + 1}</span></td>
       <td class="recipient-name-cell"><strong>${escapeHtml(displayName)}</strong>${positionLine}</td>
-      <td><span class="category-badge ${categoryClass(item.category)}">${escapeHtml(item.category)}</span>${classification ? `<small class="recipient-classification">${escapeHtml(classification)}</small>` : ""}</td>
-      <td><span class="department-text">${escapeHtml(item.department || (item.category === "บุคคล" ? "บุคคล" : "ไม่ระบุหน่วยงาน"))}</span></td>
-      <td><span class="address-text">${escapeHtml(recipientFullAddress(item))}</span></td>
-      <td class="copy-cell"><input class="copy-input" data-copy-id="${escapeHtml(item.id)}" type="number" min="1" max="20" step="1" value="${copies}" aria-label="จำนวนซองของ ${escapeHtml(recipientName(item))}"></td>
+      <td class="type-cell"><span class="category-badge ${categoryClass(item.category)}">${escapeHtml(item.category)}</span>${classification ? `<small class="recipient-classification">${escapeHtml(classification)}</small>` : ""}</td>
+      <td class="department-cell"><span class="department-text">${escapeHtml(item.department || (item.category === "บุคคล" ? "บุคคล" : "ไม่ระบุหน่วยงาน"))}</span></td>
+      <td class="address-cell"><span class="address-text">${escapeHtml(recipientFullAddress(item))}</span></td>
       <td class="action-cell"><div class="row-actions"><button class="row-button edit" data-edit-id="${escapeHtml(item.id)}" type="button">แก้ไข</button></div></td>
     </tr>`;
   }).join("");
@@ -1903,13 +1915,14 @@ function renderSummary() {
     ].filter(Boolean).join(" ");
     const previewProvince = formatAddressArea("จังหวัด", previewRecipient.province);
     const previewRecipientName = recipientEnvelopeName(previewRecipient);
+    const previewRecipientNameClass = previewRecipientName.trim().length > 80 ? ' class="recipient-name-long"' : "";
     const previewDepartmentHtml = state.settings.showRecipientDepartment && previewRecipient.department && previewRecipientName !== previewRecipient.department
       ? `<p class="organization">${escapeHtml(previewRecipient.department)}</p>`
       : "";
     const previewAddressHtml = state.settings.showRecipientAddress
       ? `<p>${escapeHtml(previewRecipient.address1)}</p><p>${escapeHtml(previewLocality)}</p><p>${escapeHtml(previewProvince)}</p>${previewRecipient.postalCode ? `<p class="postal-code">${escapeHtml(previewRecipient.postalCode)}</p>` : ""}`
       : "";
-    receiverPreview.innerHTML = `<small>เรียน</small><h1>${escapeHtml(previewRecipientName)}</h1>${previewRecipient.position && previewRecipientName !== previewRecipient.position ? `<p>${escapeHtml(previewRecipient.position)}</p>` : ""}${previewDepartmentHtml}${previewAddressHtml}`;
+    receiverPreview.innerHTML = `<small>เรียน</small><h1${previewRecipientNameClass}>${escapeHtml(previewRecipientName)}</h1>${previewRecipient.position && previewRecipientName !== previewRecipient.position ? `<p>${escapeHtml(previewRecipient.position)}</p>` : ""}${previewDepartmentHtml}${previewAddressHtml}`;
   } else {
     receiverPreview.innerHTML = "<small>เรียน</small><h1>เลือกผู้รับเพื่อดูตัวอย่าง</h1>";
   }
@@ -1924,7 +1937,8 @@ function renderSummary() {
   const receiverHeading = receiverPreview.querySelector("h1");
   if (receiverHeading) {
     receiverHeading.style.margin = `${1 * previewScale}px 0 0`;
-    receiverHeading.style.fontSize = `${recipientPreviewFontPx}px`;
+    const headingFontPt = envelopeRecipientHeadingFontPt(receiverHeading.textContent, state.settings.recipientFontPt);
+    receiverHeading.style.fontSize = `${ptToPreviewPx(headingFontPt)}px`;
   }
   receiverPreview.querySelectorAll("p").forEach((line) => {
     line.style.margin = `${0.4 * previewScale}px 0`;
@@ -2402,7 +2416,7 @@ function printMailingManifest(event) {
     registered: formatTrackingCode(form.get(`registered-${index}`), "RJ"),
     ems: formatTrackingCode(form.get(`ems-${index}`), "EQ"),
   }));
-  const pageSize = 30;
+  const pageSize = 29;
   const pages = [];
   for (let start = 0; start < rows.length; start += pageSize) {
     pages.push(rows.slice(start, start + pageSize));
@@ -2421,7 +2435,7 @@ function printMailingManifest(event) {
     const allRows = [...pageDisplayRows, ...blankRows];
     const bodyRows = allRows.map((row) => `<tr>
       <td class="center">${row.index}</td>
-      <td class="recipient-cell"${manifestRecipientFontStyle(row.name)}>${escapeHtml(row.name)}</td>
+      <td class="recipient-cell"${manifestRecipientFontStyle(row.name)}><span class="recipient-name-text${String(row.name).trim().length > 80 ? " recipient-name-text-long" : ""}">${escapeHtml(row.name)}</span></td>
       <td class="center">${escapeHtml(row.destination)}</td>
       <td class="center tracking">${escapeHtml(row.registered)}</td>
       <td class="center tracking">${escapeHtml(row.ems)}</td>
@@ -2470,7 +2484,7 @@ function printMailingManifest(event) {
     return;
   }
   popup.opener = null;
-  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์ใบนำส่งไปรษณีย์</title><style>@page{size:A4 portrait;margin:8mm}*{box-sizing:border-box}body{margin:0;color:#111;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif;font-size:13pt}.manifest-page{position:relative;width:194mm;min-height:281mm;margin:0 auto;page-break-after:always;background:#fff}.manifest-page:last-child{page-break-after:auto}.page-number{position:absolute;top:0;right:0;font-size:12pt}h1{margin:0 0 2.5mm;text-align:center;font-size:15pt;font-weight:700}.manifest-meta{width:52.5mm;margin:0 0 2.5mm auto;line-height:1.12;font-size:12.5pt;text-align:left}.manifest-intro{margin:0 0 .8mm 10mm;font-size:12.5pt;line-height:1.08}.manifest-print-table{width:100%;border-collapse:collapse;table-layout:fixed}.manifest-print-table th,.manifest-print-table td{height:6.25mm;padding:0 1.2mm;border:1px solid #111;vertical-align:middle;line-height:1.04}.manifest-print-table th{text-align:center;font-size:11.5pt;font-weight:700;white-space:nowrap}.center{text-align:center}.recipient-cell{font-size:12pt;white-space:nowrap;overflow:hidden}.tracking{font-size:12pt;white-space:nowrap}.col-seq{width:9mm}.col-name{width:78mm}.col-dest{width:16mm}.col-registered{width:28mm}.col-ems{width:28mm}.col-fee{width:18mm}.col-note{width:17mm}.manifest-footer{position:relative;height:36mm;margin-top:3mm;line-height:1.18;font-size:13pt}.manifest-footer p{margin:0}.manifest-footer-left{position:absolute;left:9mm;top:1mm;width:82mm}.manifest-footer-left p+p{margin-top:1.6mm}.manifest-footer-right{position:absolute;left:116mm;top:0;width:78mm;margin-left:0}.manifest-footer-right p{margin:0}.total-line{margin-bottom:1.6mm!important;text-align:left}.sign-line{display:flex;align-items:flex-end;text-align:left}.sign-line span:first-child{flex:0 0 auto}.sign-dots{display:block;width:64mm;height:.9em;border-bottom:1px dotted #111}.role-line{width:64mm;margin-top:.4mm!important;margin-left:10mm;text-align:center}.check-line{margin-top:2.2mm!important;text-align:left}.signature{margin-top:4mm!important}@media screen{body{background:#eef2f7;padding:18px}.manifest-page{padding:0;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${manifestPages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
+  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์ใบนำส่งไปรษณีย์</title><style>@page{size:A4 portrait;margin:8mm}*{box-sizing:border-box}body{margin:0;color:#111;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif;font-size:13pt}.manifest-page{position:relative;width:194mm;min-height:281mm;margin:0 auto;page-break-after:always;background:#fff}.manifest-page:last-child{page-break-after:auto}.page-number{position:absolute;top:0;right:0;font-size:12pt}h1{margin:0 0 2.5mm;text-align:center;font-size:15pt;font-weight:700}.manifest-meta{width:52.5mm;margin:0 0 2.5mm auto;line-height:1.12;font-size:12.5pt;text-align:left}.manifest-intro{margin:0 0 .8mm 10mm;font-size:12.5pt;line-height:1.08}.manifest-print-table{width:192mm;max-width:100%;border-collapse:collapse;table-layout:fixed}.manifest-print-table th,.manifest-print-table td{height:6.25mm;padding:0 1.2mm;border:1px solid #111;vertical-align:middle;line-height:1.04}.manifest-print-table th{text-align:center;font-size:11.5pt;font-weight:700;white-space:nowrap}.center{text-align:center}.recipient-cell{font-size:12pt;overflow:hidden}.recipient-name-text{display:block;overflow:hidden;white-space:nowrap}.recipient-name-text-long{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal}.tracking{font-size:12pt;white-space:nowrap}.col-seq{width:9mm}.col-name{width:78mm}.col-dest{width:16mm}.col-registered{width:28mm}.col-ems{width:28mm}.col-fee{width:18mm}.col-note{width:12mm}.manifest-footer{position:relative;height:36mm;margin-top:3mm;line-height:1.18;font-size:13pt}.manifest-footer p{margin:0}.manifest-footer-left{position:absolute;left:9mm;top:1mm;width:82mm}.manifest-footer-left p+p{margin-top:1.6mm}.manifest-footer-right{position:absolute;left:116mm;top:0;width:78mm;margin-left:0}.manifest-footer-right p{margin:0}.total-line{margin-bottom:1.6mm!important;text-align:left}.sign-line{display:flex;align-items:flex-end;text-align:left}.sign-line span:first-child{flex:0 0 auto}.sign-dots{display:block;width:64mm;height:.9em;border-bottom:1px dotted #111}.role-line{width:64mm;margin-top:.4mm!important;margin-left:10mm;text-align:center}.check-line{margin-top:2.2mm!important;text-align:left}.signature{margin-top:4mm!important}@media screen{body{background:#eef2f7;padding:18px}.manifest-page{padding:0;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${manifestPages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
   popup.document.close();
   saveCurrentPrintJobDraft({ manifestPrintedAt: new Date().toISOString() });
   closeManifestDialog();
@@ -2528,13 +2542,15 @@ function printEnvelopes() {
     ].filter(Boolean).join(" ");
     const province = formatAddressArea("จังหวัด", item.province);
     const envelopeRecipientName = recipientEnvelopeName(item);
+    const envelopeRecipientHeadingPt = envelopeRecipientHeadingFontPt(envelopeRecipientName, recipientFontPt);
+    const envelopeRecipientHeadingClass = envelopeRecipientName.trim().length > 80 ? ' class="recipient-name-long"' : "";
     const recipientDepartmentHtml = state.settings.showRecipientDepartment && item.department && envelopeRecipientName !== item.department
       ? `<p class="organization">${escapeHtml(item.department)}</p>`
       : "";
     const recipientAddressHtml = state.settings.showRecipientAddress
       ? `<p>${escapeHtml(item.address1)}</p><p>${escapeHtml(locality)}</p><p>${escapeHtml(province)}</p>${item.postalCode ? `<p class="postal-code"><strong>${escapeHtml(item.postalCode)}</strong></p>` : ""}`
       : "";
-    return `<section class="envelope">${senderBlockHtml}${postagePermitBlockHtml}<div class="recipient"><small>เรียน</small><h1>${escapeHtml(envelopeRecipientName)}</h1>${item.position && envelopeRecipientName !== item.position ? `<p class="recipient-position">${escapeHtml(item.position)}</p>` : ""}${recipientDepartmentHtml}${recipientAddressHtml}</div></section>`;
+    return `<section class="envelope">${senderBlockHtml}${postagePermitBlockHtml}<div class="recipient"><small>เรียน</small><h1${envelopeRecipientHeadingClass} style="font-size:${envelopeRecipientHeadingPt}pt">${escapeHtml(envelopeRecipientName)}</h1>${item.position && envelopeRecipientName !== item.position ? `<p class="recipient-position">${escapeHtml(item.position)}</p>` : ""}${recipientDepartmentHtml}${recipientAddressHtml}</div></section>`;
   }).join("");
   const popup = window.open("", "_blank");
   if (!popup) {
@@ -2542,7 +2558,7 @@ function printEnvelopes() {
     return;
   }
   popup.opener = null;
-  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์จ่าหน้าซอง</title><style>@page{size:${width} ${height};margin:0}*{box-sizing:border-box}body{margin:0;color:#17223b;font-family:"Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${width};height:${height};page-break-after:always;overflow:hidden;background:#fff}.envelope:last-child{page-break-after:auto}.sender{position:absolute;top:${senderTopMm}mm;left:${senderLeftMm}mm;width:55%;font-size:${senderFontPt}pt;line-height:1.45;color:#111}.sender-content{min-width:0}.sender-address{margin-top:.7mm}.document-number{margin-top:1.2mm;font-weight:700}.garuda{display:block;width:auto;height:${garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm 0}.postage-permit{position:absolute;top:${postagePermitTopMm}mm;right:${postagePermitRightMm}mm;display:flex;width:50mm;height:25mm;align-items:center;justify-content:center;overflow:hidden;padding:2mm;border:.35mm solid #111;color:#111;font-size:${postagePermitFontPt}pt;font-weight:700;line-height:1.45;text-align:center}.recipient{position:absolute;left:${recipientLeftPercent}%;top:${recipientTopPercent}%;width:calc(100% - ${recipientLeftPercent}% - 8mm);font-size:${recipientFontPt}pt;line-height:${recipientLineHeight}}.recipient small{color:#667085;font-size:${recipientFontPt}pt}.recipient h1{margin:1mm 0 0;font-size:${recipientFontPt}pt;white-space:nowrap}.recipient-position{white-space:nowrap}.recipient p{margin:.4mm 0}.organization{font-weight:700}@media screen{body{background:#eef2f7;padding:18px}.envelope{margin:0 auto 18px;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${pages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
+  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์จ่าหน้าซอง</title><style>@page{size:${width} ${height};margin:0}*{box-sizing:border-box}body{margin:0;color:#17223b;font-family:"Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${width};height:${height};page-break-after:always;overflow:hidden;background:#fff}.envelope:last-child{page-break-after:auto}.sender{position:absolute;top:${senderTopMm}mm;left:${senderLeftMm}mm;width:55%;font-size:${senderFontPt}pt;line-height:1.45;color:#111}.sender-content{min-width:0}.sender-address{margin-top:.7mm}.document-number{margin-top:1.2mm;font-weight:700}.garuda{display:block;width:auto;height:${garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm 0}.postage-permit{position:absolute;top:${postagePermitTopMm}mm;right:${postagePermitRightMm}mm;display:flex;width:50mm;height:25mm;align-items:center;justify-content:center;overflow:hidden;padding:2mm;border:.35mm solid #111;color:#111;font-size:${postagePermitFontPt}pt;font-weight:700;line-height:1.45;text-align:center}.recipient{position:absolute;left:${recipientLeftPercent}%;top:${recipientTopPercent}%;width:calc(100% - ${recipientLeftPercent}% - 8mm);font-size:${recipientFontPt}pt;line-height:${recipientLineHeight}}.recipient small{color:#667085;font-size:${recipientFontPt}pt}.recipient h1{margin:1mm 0 0;font-size:${recipientFontPt}pt;white-space:nowrap}.recipient h1.recipient-name-long{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal}.recipient-position{white-space:nowrap}.recipient p{margin:.4mm 0}.organization{font-weight:700}@media screen{body{background:#eef2f7;padding:18px}.envelope{margin:0 auto 18px;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${pages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
   popup.document.close();
   saveCurrentPrintJobDraft({ envelopePrintedAt: new Date().toISOString() });
   setNotice(`เตรียมพิมพ์ ${jobs.length} ซอง จาก ${selectedCount} รายชื่อ บน${label} และบันทึกลงประวัติแล้ว`);
