@@ -14,8 +14,8 @@ body.app-locked .topbar,body.app-locked .workspace,body.app-locked footer{displa
 .login-screen{position:fixed;inset:0;z-index:9999;display:none;place-items:center;padding:24px;background:linear-gradient(135deg,#eef8ff 0%,#e4f2ff 100%)}
 body.app-locked .login-screen{display:grid}
 .login-card{width:min(600px,calc(100vw - 36px));min-height:560px;padding:74px 50px 58px;border:0;border-top:6px solid #1553aa;border-radius:8px;background:#fff;box-shadow:0 28px 90px rgba(32,83,153,.16);text-align:center}
-.login-card-brand{display:flex;align-items:center;justify-content:center;gap:15px;margin:0 0 56px;color:#101828;font-size:21px;font-weight:800;line-height:1.4}
-.login-card-logo{display:grid;width:70px;height:70px;place-items:center;overflow:hidden}
+.login-card-brand{display:flex;align-items:center;justify-content:center;margin:0 0 56px;color:#101828;font-size:21px;font-weight:800;line-height:1.4}
+.login-card-logo{display:grid;width:92px;height:92px;place-items:center;overflow:hidden}
 .login-card-logo img{display:block;max-width:100%;max-height:100%;object-fit:contain}
 .login-card h1{margin:0;color:#0f418d;font-size:32px;font-weight:900;line-height:1.25;letter-spacing:-.02em}
 .login-card p{margin:8px 0 31px;color:#667085;font-size:24px;font-weight:800;line-height:1.35}
