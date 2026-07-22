@@ -52,6 +52,15 @@ body.app-locked .login-screen{display:grid}
 .hero h1{margin:0;font-size:clamp(37px,4vw,58px);line-height:1.14;letter-spacing:-.04em}
 .hero h1 em{color:var(--blue);font-style:normal}
 .hero p{max-width:630px;margin:18px 0 0;color:#5a6579;font-size:15px;line-height:1.85}
+.workflow-panel{max-width:760px;margin-top:22px;padding:14px;border:1px solid #d8e3fb;border-radius:18px;background:rgba(255,255,255,.78);box-shadow:0 10px 24px rgba(40,86,217,.06)}
+.workflow-steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.workflow-step{display:flex;min-height:46px;align-items:center;justify-content:center;gap:7px;padding:8px;border:1px solid #dfe6f4;border-radius:13px;background:#fff;color:#667085;font-size:12px;font-weight:900;text-align:center}
+.workflow-step b{display:grid;width:22px;height:22px;flex:0 0 auto;place-items:center;border-radius:999px;background:#eef3ff;color:#2856d9;font-size:12px}
+.workflow-step.is-active{border-color:#2856d9;background:#eef3ff;color:#163aa5;box-shadow:0 8px 16px rgba(40,86,217,.12)}
+.workflow-step.is-active b{background:#2856d9;color:#fff}
+.workflow-step.is-done{border-color:#c7ebde;background:#f0fbf7;color:#127454}
+.workflow-step.is-done b{background:#20a276;color:#fff}
+.workflow-panel p{margin:10px 2px 0;color:#475467;font-size:13px;font-weight:800;line-height:1.55}
 .hero-actions{display:flex;flex-wrap:wrap;gap:11px;margin-top:28px}
 .job-creator-control{display:block;max-width:650px;margin-top:18px}
 .job-creator-control.is-hidden{display:none}
@@ -65,6 +74,8 @@ body.app-locked .login-screen{display:grid}
 .button.primary:hover{transform:translateY(-1px);background:var(--blue-deep)}
 .button.primary b{display:inline-grid;min-width:24px;height:24px;margin-left:8px;place-items:center;border-radius:8px;background:rgba(255,255,255,.18)}
 .button.secondary{border:1px solid #d9dfeb;background:#fff;color:#344054}
+.button[disabled]{cursor:not-allowed;opacity:.48;box-shadow:none;transform:none}
+.button.primary[disabled]{border-color:#b7c5eb;background:#8fa8ed;color:#fff}
 .button.new-job-button{border:1px solid #bcd0ff;background:#fff;color:#1d4ed8;box-shadow:0 8px 18px rgba(40,86,217,.08)}
 .button.new-job-button:hover{border-color:#2856d9;background:#eef3ff;transform:translateY(-1px)}
 .button.history-button{border:1px solid #cbd7f3;background:#edf3ff;color:#234ec9}
@@ -140,6 +151,7 @@ td small{color:#8a94a5;font-size:9px}
 .sequence-cell{width:68px;text-align:center}
 .row-sequence{display:inline-grid;min-width:32px;height:32px;place-items:center;border-radius:10px;background:#eef3ff;color:var(--blue-deep);font-weight:900}
 input[type=checkbox]{width:16px;height:16px;accent-color:var(--blue)}
+input:disabled,select:disabled,textarea:disabled{cursor:not-allowed;opacity:.58}
 .copy-cell{width:108px;text-align:center}
 .copy-input{width:70px;height:34px;padding:0 8px;border:1px solid #dfe4ed;border-radius:10px;background:#fff;color:var(--ink);font-size:13px;font-weight:800;text-align:center}
 .copy-input:focus{outline:3px solid rgba(45,96,226,.16);border-color:#9fb5f3}
@@ -344,6 +356,7 @@ footer{width:min(2000px,96vw);font-size:12px}
 @keyframes pulse{50%{opacity:.35}
 }
 @media(max-width:1080px){.content-grid{grid-template-columns:1fr}
+.workflow-steps{grid-template-columns:repeat(3,minmax(0,1fr))}
 .print-card{grid-template-columns:1fr}
 .print-overview{padding:0;border:0}
 .print-controls{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -358,6 +371,8 @@ dialog{padding:22px}
 .workspace{width:min(100% - 28px,680px);padding-top:18px}
 .hero{display:block;min-height:auto;border-radius:23px}
 .hero-copy{padding:34px 26px 24px}
+.workflow-steps{grid-template-columns:1fr}
+.workflow-step{justify-content:flex-start}
 .hero h1{font-size:38px}
 .hero p{font-size:15px}
 .preview-panel{width:88%;margin:2px auto 34px}

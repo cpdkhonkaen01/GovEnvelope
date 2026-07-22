@@ -40,7 +40,17 @@
       <section class="hero">
         <div class="hero-copy">
           <span class="eyebrow">งานสารบรรณที่ง่ายขึ้น</span>
-          <h1>เลือกผู้รับ แล้วพิมพ์<br /><em>จ่าหน้าซองได้ทันที</em></h1>
+          <h1>เริ่มชุดงาน แล้วเลือกผู้รับ<br /><em>พิมพ์หน้าซองและใบนำส่งได้ต่อเนื่อง</em></h1>
+          <div class="workflow-panel" aria-label="ขั้นตอนการใช้งาน">
+            <div class="workflow-steps">
+              <span class="workflow-step" data-workflow-step="1"><b>1</b>เริ่มชุดงานใหม่</span>
+              <span class="workflow-step" data-workflow-step="2"><b>2</b>เลือกกลุ่มงาน</span>
+              <span class="workflow-step" data-workflow-step="3"><b>3</b>เลือกผู้รับ</span>
+              <span class="workflow-step" data-workflow-step="4"><b>4</b>พิมพ์หน้าซอง</span>
+              <span class="workflow-step" data-workflow-step="5"><b>5</b>พิมพ์ใบนำส่ง</span>
+            </div>
+            <p id="workflowHint">กด “เริ่มชุดงานใหม่” เพื่อเริ่มงานพิมพ์รอบใหม่</p>
+          </div>
           <label class="job-creator-control is-hidden">
             <span>ผู้สร้างชุดงาน / กลุ่มงาน *</span>
             <select id="printJobCreator" required>
@@ -142,18 +152,16 @@
         <p class="dialog-info" id="recipientDialogInfo">ข้อมูลจะบันทึกลงฐานข้อมูลกลาง ต้องเข้าสู่ระบบผู้ดูแลก่อนเพิ่มหรือแก้ไขข้อมูล</p>
         <div class="form-grid equal single" id="categoryAndPrefixFields">
           <label class="form-field"><span>ประเภทผู้รับ *</span><select name="category" id="recipientCategory" required><option value="">เลือกประเภท</option><option value="หน่วยงานราชการ">หน่วยงานราชการ</option><option value="สหกรณ์และกลุ่มเกษตรกร">สหกรณ์และกลุ่มเกษตรกร</option><option value="ภาคเอกชน">ภาคเอกชน</option><option value="บุคคล">บุคคล</option></select></label>
-          <label class="form-field" id="prefixField" hidden><span>คำนำหน้า</span><select name="prefix"><option value="">ไม่ระบุ</option><option value="นาย">นาย</option><option value="นาง">นาง</option><option value="นางสาว">นางสาว</option></select></label>
         </div>
-        <div class="form-grid equal" id="personNameFields" hidden>
-          <label class="form-field"><span>ชื่อ</span><input name="firstName" type="text" /></label>
-          <label class="form-field"><span>นามสกุล</span><input name="lastName" type="text" /></label>
-        </div>
+        <input name="prefix" type="hidden" value="" />
+        <input name="firstName" type="hidden" value="" />
+        <input name="lastName" type="hidden" value="" />
         <div class="form-grid equal" id="cooperativeClassificationFields" hidden>
           <label class="form-field"><span>กสส. / นิคมฯ ที่รับผิดชอบ *</span><select name="responsibleUnit"><option value="">เลือก กสส. / นิคมฯ</option><option value="กสส.1">กสส.1</option><option value="กสส.2">กสส.2</option><option value="กสส.3">กสส.3</option><option value="กสส.4">กสส.4</option><option value="กสส.5">กสส.5</option><option value="กสส.6">กสส.6</option><option value="กสส.7">กสส.7</option><option value="กสส.8">กสส.8</option><option value="นิคมฯ">นิคมฯ</option></select></label>
           <label class="form-field"><span>ประเภทสหกรณ์</span><select name="cooperativeType"><option value="">ไม่ระบุ</option><option value="กลุ่มเกษตรกร">กลุ่มเกษตรกร</option><option value="สหกรณ์การเกษตร">สหกรณ์การเกษตร</option><option value="สหกรณ์ออมทรัพย์">สหกรณ์ออมทรัพย์</option><option value="สหกรณ์ประมง">สหกรณ์ประมง</option><option value="สหกรณ์ร้านค้า">สหกรณ์ร้านค้า</option><option value="สหกรณ์นิคม">สหกรณ์นิคม</option><option value="สหกรณ์บริการ">สหกรณ์บริการ</option><option value="สหกรณ์เครดิตยูเนี่ยน">สหกรณ์เครดิตยูเนี่ยน</option></select><small>เลือก “กลุ่มเกษตรกร” เพื่อให้ค้นหาและแยกรายการได้ง่าย</small></label>
         </div>
         <div class="form-grid equal">
-          <label class="form-field"><span>ตำแหน่งผู้รับ</span><input name="position" type="text" placeholder="เช่น ผู้อำนวยการ หรือประธานกรรมการ" /></label>
+          <label class="form-field"><span>ตำแหน่งผู้รับ/ชื่อผู้รับ *</span><input name="position" type="text" placeholder="เช่น ประธานกรรมการสหกรณ์การเกษตรเมืองขอนแก่น จำกัด" required /></label>
           <label class="form-field"><span id="departmentFieldLabel">ชื่อหน่วยงาน *</span><input name="department" id="recipientDepartment" type="text" /><small id="departmentFieldHint">จำเป็นสำหรับหน่วยงาน องค์กร และกลุ่ม</small></label>
         </div>
         <label class="form-field"><span>เลขที่ / หมู่ / ถนน *</span><input name="address1" type="text" required /></label>

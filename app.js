@@ -105,7 +105,7 @@ const state = {
     supabaseUrl: defaults.supabaseUrl || "",
     supabaseAdminEmail: String(defaults.supabaseAdminEmail || "").toLowerCase(),
     supabaseRedirectUrl: defaults.supabaseRedirectUrl || "",
-    printJobCreator: savedSettings.printJobCreator || "",
+    printJobCreator: "",
     sender: savedSettings.sender || defaults.sender || "สำนักงานสหกรณ์จังหวัดขอนแก่น",
     senderAddress: savedSettings.senderAddress || defaults.senderAddress || "เลขที่ 1/112 หมู่ที่ 13 ถนนหน้าเมือง ตำบลในเมือง\nอำเภอเมือง จังหวัดขอนแก่น 40000",
     documentNumber: savedSettings.documentNumber ?? defaults.documentNumber ?? "",
@@ -163,6 +163,9 @@ const elements = {
   selectAll: $("#selectAll"),
   heroSelected: $("#heroSelected"),
   sideSelected: $("#sideSelected"),
+  heroPrint: $("#heroPrint"),
+  openManifestDialog: $("#openManifestDialog"),
+  workflowHint: $("#workflowHint"),
   notice: $("#noticeText"),
   status: $("#connectionStatus"),
   empty: $("#emptyState"),
@@ -415,6 +418,50 @@ function focusPrintJobCreator() {
   setPrintJobCreatorVisible(true, { active: true });
   elements.printJobCreator?.scrollIntoView({ behavior: "smooth", block: "center" });
   window.setTimeout(() => elements.printJobCreator?.focus(), 180);
+}
+
+function updateWorkflowUi(selectedCount = state.selected.size) {
+  const hasCreator = Boolean(state.settings.printJobCreator);
+  const job = currentPrintJob();
+  const hasEnvelopePrinted = Boolean(job?.envelopePrintedAt);
+  const showCreator = Boolean(state.currentPrintJobId || hasCreator);
+  setPrintJobCreatorVisible(showCreator, { active: showCreator && !hasCreator });
+
+  let activeStep = 1;
+  let hint = "กด “เริ่มชุดงานใหม่” เพื่อเริ่มงานพิมพ์รอบใหม่";
+  if (showCreator && !hasCreator) {
+    activeStep = 2;
+    hint = "เลือกผู้สร้างชุดงาน / กลุ่มงาน ก่อนเลือกรายชื่อผู้รับ";
+  } else if (hasCreator && selectedCount === 0) {
+    activeStep = 3;
+    hint = "เลือกรายชื่อผู้รับที่ต้องการส่ง และกำหนดจำนวนซองในแต่ละรายชื่อ";
+  } else if (hasCreator && selectedCount > 0 && !hasEnvelopePrinted) {
+    activeStep = 4;
+    hint = "พร้อมพิมพ์หน้าซองจดหมายแล้ว หลังจากพิมพ์หน้าซองจึงไปพิมพ์ใบนำส่ง";
+  } else if (hasCreator && selectedCount > 0) {
+    activeStep = 5;
+    hint = "พิมพ์หน้าซองแล้ว ขั้นต่อไปกรอกเลขลงทะเบียน/EMS และพิมพ์ใบนำส่ง";
+  }
+
+  document.querySelectorAll("[data-workflow-step]").forEach((step) => {
+    const number = Number(step.dataset.workflowStep);
+    step.classList.toggle("is-active", number === activeStep);
+    step.classList.toggle("is-done", number < activeStep);
+  });
+  if (elements.workflowHint) elements.workflowHint.textContent = hint;
+
+  if (elements.heroPrint) {
+    elements.heroPrint.disabled = !hasCreator || selectedCount === 0;
+    elements.heroPrint.title = !hasCreator
+      ? "กรุณาเริ่มชุดงานและเลือกกลุ่มงานก่อน"
+      : (selectedCount === 0 ? "กรุณาเลือกผู้รับก่อนพิมพ์หน้าซอง" : "");
+  }
+  if (elements.openManifestDialog) {
+    elements.openManifestDialog.disabled = !hasCreator || selectedCount === 0 || !hasEnvelopePrinted;
+    elements.openManifestDialog.title = !hasCreator
+      ? "กรุณาเริ่มชุดงานและเลือกกลุ่มงานก่อน"
+      : (selectedCount === 0 ? "กรุณาเลือกผู้รับก่อนพิมพ์ใบนำส่ง" : (!hasEnvelopePrinted ? "กรุณาพิมพ์หน้าซองจดหมายก่อน" : ""));
+  }
 }
 
 function filteredPrintJobs() {
@@ -769,8 +816,14 @@ function handlePrintJobCreatorChange(event) {
   state.settings.printJobCreator = String(event.target.value || "").trim();
   setPrintJobCreatorVisible(true, { active: !state.settings.printJobCreator });
   persistSettings();
-  saveCurrentPrintJobDraft({ creatorGroup: state.settings.printJobCreator });
+  if (state.settings.printJobCreator) {
+    saveCurrentPrintJobDraft({ creatorGroup: state.settings.printJobCreator }, { force: true });
+  } else {
+    saveCurrentPrintJobDraft({ creatorGroup: "" });
+  }
   renderPrintHistory();
+  renderRows();
+  renderSummary();
   if (!state.settings.printJobCreator) {
     setNotice("กรุณาเลือกผู้สร้างชุดงาน");
     return;
@@ -879,12 +932,12 @@ function normalizeRecipient(raw = {}, index = 0) {
 
 function recipientName(item) {
   const name = `${item.prefix}${item.firstName} ${item.lastName}`.trim();
-  return name || item.position || item.department || "ไม่ระบุชื่อผู้รับ";
+  return item.position || name || item.department || "ไม่ระบุชื่อผู้รับ";
 }
 
 function recipientEnvelopeName(item) {
   const name = `${item.prefix}${item.firstName} ${item.lastName}`.trim();
-  return name || item.position || (state.settings.showRecipientDepartment ? item.department : "") || "ไม่ระบุชื่อผู้รับ";
+  return item.position || name || (state.settings.showRecipientDepartment ? item.department : "") || "ไม่ระบุชื่อผู้รับ";
 }
 
 function normalizeRecipientNameBreaks(value = "") {
@@ -1165,11 +1218,7 @@ function downloadRecipientsCsv() {
     "ประเภทผู้รับ",
     "กสส. / นิคมฯ",
     "ประเภทสหกรณ์",
-    "คำนำหน้า",
-    "ชื่อ",
-    "นามสกุล",
-    "ชื่อผู้รับ / ตำแหน่ง",
-    "ตำแหน่ง",
+    "ตำแหน่งผู้รับ/ชื่อผู้รับ",
     "ชื่อหน่วยงาน",
     "เลขที่ / หมู่ / ถนน",
     "ตำบล / แขวง",
@@ -1183,11 +1232,7 @@ function downloadRecipientsCsv() {
     item.category,
     item.responsibleUnit,
     item.cooperativeType,
-    item.prefix,
-    item.firstName,
-    item.lastName,
     recipientName(item),
-    item.position,
     item.department,
     item.address1,
     item.subdistrict,
@@ -1524,6 +1569,7 @@ function renderCooperativeFilterOptions() {
 
 function renderRows() {
   const rows = filteredRecipients();
+  const canSelectRecipients = Boolean(state.settings.printJobCreator);
   elements.rows.innerHTML = rows.map((item, index) => {
     const checked = state.selected.has(item.id);
     const classification = [item.responsibleUnit, item.cooperativeType].filter(Boolean).join(" · ");
@@ -1533,8 +1579,8 @@ function renderRows() {
       : "";
     const copies = recipientEnvelopeCopies(item.id);
     return `<tr class="${checked ? "selected-row" : ""}">
-      <td class="check-cell"><input class="recipient-check" data-id="${escapeHtml(item.id)}" type="checkbox" ${checked ? "checked" : ""} aria-label="เลือก ${escapeHtml(recipientName(item))}"></td>
-      <td class="copy-cell"><input class="copy-input" data-copy-id="${escapeHtml(item.id)}" type="number" min="1" max="20" step="1" value="${copies}" aria-label="จำนวนซองของ ${escapeHtml(recipientName(item))}"></td>
+      <td class="check-cell"><input class="recipient-check" data-id="${escapeHtml(item.id)}" type="checkbox" ${checked ? "checked" : ""} ${canSelectRecipients ? "" : "disabled"} aria-label="เลือก ${escapeHtml(recipientName(item))}"></td>
+      <td class="copy-cell"><input class="copy-input" data-copy-id="${escapeHtml(item.id)}" type="number" min="1" max="20" step="1" value="${copies}" ${canSelectRecipients ? "" : "disabled"} aria-label="จำนวนซองของ ${escapeHtml(recipientName(item))}"></td>
       <td class="sequence-cell"><span class="row-sequence">${index + 1}</span></td>
       <td class="recipient-name-cell"><strong>${escapeHtml(displayName)}</strong>${positionLine}</td>
       <td class="type-cell"><span class="category-badge ${categoryClass(item.category)}">${escapeHtml(item.category)}</span>${classification ? `<small class="recipient-classification">${escapeHtml(classification)}</small>` : ""}</td>
@@ -1575,6 +1621,7 @@ function renderSummary() {
     .reduce((total, item) => total + recipientEnvelopeCopies(item.id), 0);
   elements.heroSelected.textContent = selectedCount;
   elements.sideSelected.textContent = selectedEnvelopeCount;
+  updateWorkflowUi(selectedCount);
   elements.paper.value = state.settings.paperSize;
   elements.recipientFont.value = state.settings.recipientFontPt;
   const paperLabels = {
@@ -1700,6 +1747,7 @@ function render() {
 }
 
 function toggleRecipient(id) {
+  if (!requirePrintJobCreator()) return;
   if (state.selected.has(id)) state.selected.delete(id);
   else state.selected.add(id);
   renderRows();
@@ -1785,19 +1833,16 @@ async function openEditRecipientDialog(id) {
 function updateRecipientFormRequirements() {
   const isPerson = elements.recipientForm.elements.category.value === "บุคคล";
   const isCooperative = elements.recipientForm.elements.category.value === "สหกรณ์และกลุ่มเกษตรกร";
+  const position = elements.recipientForm.elements.position;
   const department = elements.recipientForm.elements.department;
   const responsibleUnit = elements.recipientForm.elements.responsibleUnit;
   const cooperativeClassificationFields = $("#cooperativeClassificationFields");
-  $("#prefixField").hidden = !isPerson;
-  $("#personNameFields").hidden = !isPerson;
   cooperativeClassificationFields.hidden = !isCooperative;
   setGroupDisabled(cooperativeClassificationFields, !isCooperative);
-  $("#categoryAndPrefixFields").classList.toggle("single", !isPerson);
-  if (!isPerson) {
-    elements.recipientForm.elements.prefix.value = "";
-    elements.recipientForm.elements.firstName.value = "";
-    elements.recipientForm.elements.lastName.value = "";
-  }
+  $("#categoryAndPrefixFields").classList.add("single");
+  elements.recipientForm.elements.prefix.value = "";
+  elements.recipientForm.elements.firstName.value = "";
+  elements.recipientForm.elements.lastName.value = "";
   if (!isCooperative) {
     setGroupDisabled(cooperativeClassificationFields, false);
     responsibleUnit.value = "";
@@ -1805,6 +1850,7 @@ function updateRecipientFormRequirements() {
     setGroupDisabled(cooperativeClassificationFields, true);
   }
   responsibleUnit.required = isCooperative;
+  position.required = true;
   department.required = !isPerson;
   $("#departmentFieldLabel").textContent = isPerson ? "หน่วยงาน (ถ้ามี)" : "ชื่อหน่วยงาน *";
   $("#departmentFieldHint").textContent = isPerson
@@ -2028,10 +2074,13 @@ async function handleRecipientSubmit(event) {
     payload.responsibleUnit = "";
     payload.cooperativeType = "";
   }
-  if (payload.category === "บุคคล" && !payload.firstName && !payload.lastName) {
-    elements.recipientFormMessage.textContent = "ประเภทบุคคลต้องระบุชื่อหรือนามสกุล";
+  payload.prefix = "";
+  payload.firstName = "";
+  payload.lastName = "";
+  if (!payload.position) {
+    elements.recipientFormMessage.textContent = "กรุณากรอกตำแหน่งผู้รับ/ชื่อผู้รับ";
     elements.recipientFormMessage.className = "form-message error";
-    elements.recipientForm.elements.firstName.focus();
+    elements.recipientForm.elements.position.focus();
     return;
   }
   if (payload.category !== "บุคคล" && !payload.department) {
@@ -2162,6 +2211,10 @@ function openManifestDialog() {
     return;
   }
   const job = saveCurrentPrintJobDraft({}, { force: true });
+  if (!job?.envelopePrintedAt) {
+    setNotice("กรุณาพิมพ์หน้าซองจดหมายก่อน แล้วค่อยพิมพ์ใบนำส่ง");
+    return;
+  }
   elements.manifestDate.value = job?.manifestDate || localIsoDate();
   elements.manifestPermit.value = defaultManifestPermit();
   elements.manifestRegisteredPrefix.value = state.settings.manifestRegisteredPrefix || "";
@@ -2384,6 +2437,7 @@ function printEnvelopes() {
   popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์จ่าหน้าซอง</title><style>${printFontFaceCss()}@page{size:${width} ${height};margin:0}*{box-sizing:border-box}body{margin:0;color:#17223b;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${width};height:${height};page-break-after:always;overflow:hidden;background:#fff}.envelope:last-child{page-break-after:auto}.sender{position:absolute;top:${senderTopMm}mm;left:${senderLeftMm}mm;width:55%;font-size:${senderFontPt}pt;line-height:${senderLineHeight};color:#111}.sender-content{min-width:0}.sender-address{margin-top:.7mm}.document-number{margin-top:1.2mm;font-weight:700}.garuda{display:block;width:auto;height:${garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm 0}.postage-permit{position:absolute;top:${postagePermitTopMm}mm;right:${postagePermitRightMm}mm;display:flex;width:${POSTAGE_PERMIT_WIDTH_MM}mm;height:${POSTAGE_PERMIT_HEIGHT_MM}mm;align-items:center;justify-content:center;overflow:hidden;padding:1.2mm;border:.35mm solid #111;color:#111;font-size:${postagePermitFontPt}pt;font-weight:700;line-height:${postagePermitLineHeight};text-align:center}.recipient{position:absolute;left:${recipientLeftPercent}%;top:${recipientTopPercent}%;width:calc(100% - ${recipientLeftPercent}% - 8mm);font-size:${recipientFontPt}pt;line-height:${recipientLineHeight}}.recipient-heading{display:flex;align-items:baseline;gap:.55em;line-height:inherit}.recipient-greeting{flex:0 0 auto;color:#667085}.recipient-name{display:block;min-width:0;white-space:nowrap}.recipient-name strong{font-weight:900}.recipient-heading.recipient-name-manual{align-items:flex-start}.recipient-heading.recipient-name-manual .recipient-name{white-space:normal}.recipient-detail{margin-left:2.55em}.recipient-position{margin:0;font-weight:900;white-space:nowrap}.recipient p{margin:0;line-height:inherit}.organization{font-weight:700}@media screen{body{background:#eef2f7;padding:18px}.envelope{margin:0 auto 18px;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${pages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
   popup.document.close();
   saveCurrentPrintJobDraft({ envelopePrintedAt: new Date().toISOString() });
+  renderSummary();
   setNotice(`เตรียมพิมพ์ ${jobs.length} ซอง จาก ${selectedCount} รายชื่อ บน${label} และบันทึกลงประวัติแล้ว`);
 }
 
@@ -2407,6 +2461,10 @@ elements.cooperativeType.addEventListener("change", (event) => {
   renderRows();
 });
 elements.selectAll.addEventListener("change", () => {
+  if (!requirePrintJobCreator()) {
+    elements.selectAll.checked = false;
+    return;
+  }
   const rows = filteredRecipients();
   const allSelected = rows.length > 0 && rows.every((item) => state.selected.has(item.id));
   rows.forEach((item) => {
