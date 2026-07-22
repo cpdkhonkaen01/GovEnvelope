@@ -306,17 +306,23 @@
       </section>
       <div class="print-history-table-wrap">
         <table class="print-history-table">
-          <thead><tr><th>ลำดับ</th><th>วันที่สร้างชุดงาน</th><th>กลุ่มงาน</th><th>รายละเอียด</th><th>การพิมพ์</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+          <thead><tr><th>ลำดับ</th><th>วันที่สร้างชุดงาน</th><th>กลุ่มงาน</th><th>รายละเอียด</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
           <tbody id="printHistoryList"></tbody>
         </table>
       </div>
-      <div class="history-sync-panel" id="historySyncPanel">
-        <div>
-          <strong>บันทึกประวัติลง Supabase อัตโนมัติ</strong>
-          <small id="historySyncHint">เข้าสู่ระบบผู้ดูแลครั้งเดียว หลังจากนั้นระบบจะบันทึกทุกการเปลี่ยนแปลงให้เอง</small>
-        </div>
-      </div>
       <div class="dialog-actions"><button class="button secondary" id="donePrintHistory" type="button">ปิด</button></div>
+    </dialog>
+
+    <dialog id="deletePrintJobDialog" class="confirm-dialog">
+      <form id="deletePrintJobForm">
+        <div class="confirm-icon">!</div>
+        <div class="dialog-title confirm-title"><div><span class="eyebrow danger-text">ยืนยันการลบ</span><h2>ลบประวัติชุดงานพิมพ์</h2></div><button class="close-button" id="closeDeletePrintJobDialog" type="button" aria-label="ปิด">×</button></div>
+        <p class="dialog-info danger-info">ประวัติชุดงานนี้จะถูกลบออกจากระบบและ Supabase กรุณาตรวจสอบให้แน่ใจก่อนดำเนินการ</p>
+        <div class="delete-target" id="deletePrintJobName"></div>
+        <label class="form-field"><span>รหัสยืนยันการลบ *</span><input id="deletePrintJobPassword" type="password" minlength="8" autocomplete="current-password" required placeholder="กรอกรหัสผ่านผู้ดูแล" /><small>ต้องกรอกรหัสผ่านผู้ดูแลอีกครั้ง เพื่อป้องกันการกดลบผิด</small></label>
+        <p class="form-message" id="deletePrintJobMessage" role="status" aria-live="polite"></p>
+        <div class="dialog-actions"><button class="button secondary" id="cancelDeletePrintJob" type="button">ยกเลิก</button><button class="button danger solid" id="confirmDeletePrintJob" type="submit">ยืนยันลบประวัติ</button></div>
+      </form>
     </dialog>
 
     <dialog id="adminAuthDialog" class="confirm-dialog">

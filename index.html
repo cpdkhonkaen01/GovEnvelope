@@ -106,13 +106,13 @@ body.app-locked .login-screen{display:grid}
 .garuda-mini{display:block;width:auto;object-fit:contain;object-position:left top;color:#111}
 .sender-mini{min-width:0;color:#111;font-weight:400;line-height:1.45}
 .sender-mini strong{display:block}
-.sender-address-mini{margin-top:0}
+.sender-address-mini,.sender-document-mini{margin:0;line-height:inherit}
 .sender-document-mini{font-weight:700}
 .receiver-mini{position:absolute;z-index:2;width:68%;color:#17223b}
 .recipient-heading{display:flex;align-items:baseline;gap:.55em}
 .recipient-greeting{flex:0 0 auto;color:#667085}
 .recipient-name{display:block;min-width:0;white-space:nowrap}
-.recipient-name strong{font-weight:900}
+.recipient-heading .recipient-name,.recipient-heading .recipient-name strong{font-weight:900}
 .recipient-heading.recipient-name-manual{align-items:flex-start}
 .recipient-heading.recipient-name-manual .recipient-name{white-space:normal}
 .recipient-detail{margin-left:2.55em}
@@ -122,7 +122,7 @@ body.app-locked .login-screen{display:grid}
 .hero .receiver-mini h1.recipient-name-manual{white-space:normal}
 .hero .receiver-mini p{max-width:none;margin:0;color:inherit;font:inherit;letter-spacing:normal;line-height:inherit}
 .receiver-mini .recipient-position,.receiver-mini .recipient-position strong{font-weight:900}
-.receiver-mini .organization,.receiver-mini .postal-code{font-weight:700}
+.receiver-mini .organization,.receiver-mini .organization strong,.receiver-mini .postal-code,.receiver-mini .postal-code strong{font-weight:900}
 
 .content-grid{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:18px;align-items:start}
 .directory-card,.print-card{border:1px solid var(--line);background:#fff;box-shadow:0 10px 32px rgba(31,46,79,.045)}
@@ -266,8 +266,6 @@ dialog hr{height:1px;margin:20px 0 4px;border:0;background:#edf0f5}
 .history-actions button{min-height:40px;padding:0 13px;border:1px solid #d9dfeb;border-radius:10px;background:#fff;color:#344054;font-size:13px;font-weight:800}
 .history-actions .resume{border-color:#2856d9;background:#2856d9;color:#fff}
 .history-actions .delete{border-color:#ffd2d2;color:#b42318}
-.history-sync-panel{display:block;margin-top:18px;padding:16px;border:1px solid #bfe7d8;border-radius:16px;background:#f0fbf7}
-.history-sync-panel strong,.history-sync-panel small{display:block}.history-sync-panel small{margin-top:4px;color:#667085;line-height:1.5}.history-sync-panel .form-field span{font-size:12px}
 .history-dialog{width:min(1500px,calc(100% - 28px))!important}
 .history-filter-panel{margin:16px 0 18px;padding:18px;border:1px solid #dfe6f3;border-radius:18px;background:#f7f9fd}
 .history-filter-grid{display:grid;grid-template-columns:minmax(240px,1.5fr) minmax(180px,.8fr) minmax(180px,.8fr) auto;gap:14px;align-items:end}
@@ -277,14 +275,14 @@ dialog hr{height:1px;margin:20px 0 4px;border:0;background:#edf0f5}
 .history-summary-grid>div{min-height:78px;padding:13px 16px;border:1px solid #e1e7f2;border-radius:14px;background:#fff}
 .history-summary-grid span{display:block;color:#667085;font-size:13px}.history-summary-grid strong{display:block;margin-top:4px;color:#193b9b;font-size:25px;line-height:1.15}
 .history-summary-grid .history-result-label{overflow:hidden;font-size:15px;line-height:1.35;text-overflow:ellipsis}
-.print-history-table-wrap{max-height:52vh;overflow:auto;border:1px solid #dfe5ef;border-radius:16px;background:#fff}
-.print-history-table{width:100%;min-width:1260px;border-collapse:separate;border-spacing:0;table-layout:fixed}
+.print-history-table-wrap{max-height:62vh;overflow:auto;border:1px solid #dfe5ef;border-radius:16px;background:#fff}
+.print-history-table{width:100%;min-width:1080px;border-collapse:separate;border-spacing:0;table-layout:fixed}
 .print-history-table th{position:sticky;top:0;z-index:3;padding:13px 12px;border-bottom:1px solid #dfe5ef;background:#eef3ff;color:#344054;font-size:13px;text-align:left;white-space:nowrap}
 .print-history-table td{padding:14px 12px;border-bottom:1px solid #e8ecf3;color:#344054;font-size:13px;line-height:1.45;vertical-align:top}
 .print-history-table tr:last-child td{border-bottom:0}.print-history-table th:first-child,.print-history-table td:first-child{width:64px;text-align:center}
-.print-history-table th:nth-child(2),.print-history-table td:nth-child(2){width:190px}.print-history-table th:nth-child(3),.print-history-table td:nth-child(3){width:230px}
-.print-history-table th:nth-child(4),.print-history-table td:nth-child(4){width:310px}.print-history-table th:nth-child(5),.print-history-table td:nth-child(5){width:210px}
-.print-history-table th:nth-child(6),.print-history-table td:nth-child(6){width:125px}.print-history-table th:nth-child(7),.print-history-table td:nth-child(7){width:170px}
+.print-history-table th:nth-child(2),.print-history-table td:nth-child(2){width:200px}.print-history-table th:nth-child(3),.print-history-table td:nth-child(3){width:240px}
+.print-history-table th:nth-child(4),.print-history-table td:nth-child(4){width:320px}.print-history-table th:nth-child(5),.print-history-table td:nth-child(5){width:135px}
+.print-history-table th:nth-child(6),.print-history-table td:nth-child(6){width:180px}
 .print-history-table td>strong,.print-history-table td>small{display:block}.print-history-table td>small{margin-top:4px;color:#7a8497;font-size:11px}
 .print-history-table .history-item{display:table-row}.print-history-table .history-item.current td{background:#f4f7ff}.print-history-table .history-item.current td:first-child{box-shadow:inset 4px 0 0 #2856d9}
 .history-sequence{color:#2856d9!important;font-size:16px!important;font-weight:900}.history-counts{margin-bottom:7px}.history-counts b{color:#193b9b;font-size:16px}
@@ -396,7 +394,6 @@ table{min-width:600px}
 .print-controls{grid-template-columns:1fr}
 .print-controls .paper-size-option{grid-column:auto}
 .form-grid{grid-template-columns:1fr}
-.history-sync-panel{grid-template-columns:1fr}
 .history-item{grid-template-columns:1fr}
 .history-actions{justify-content:flex-start}
 .history-filter-grid,.history-summary-grid{grid-template-columns:1fr 1fr}
@@ -718,17 +715,23 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
       </section>
       <div class="print-history-table-wrap">
         <table class="print-history-table">
-          <thead><tr><th>ลำดับ</th><th>วันที่สร้างชุดงาน</th><th>กลุ่มงาน</th><th>รายละเอียด</th><th>การพิมพ์</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+          <thead><tr><th>ลำดับ</th><th>วันที่สร้างชุดงาน</th><th>กลุ่มงาน</th><th>รายละเอียด</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
           <tbody id="printHistoryList"></tbody>
         </table>
       </div>
-      <div class="history-sync-panel" id="historySyncPanel">
-        <div>
-          <strong>บันทึกประวัติลง Supabase อัตโนมัติ</strong>
-          <small id="historySyncHint">เข้าสู่ระบบผู้ดูแลครั้งเดียว หลังจากนั้นระบบจะบันทึกทุกการเปลี่ยนแปลงให้เอง</small>
-        </div>
-      </div>
       <div class="dialog-actions"><button class="button secondary" id="donePrintHistory" type="button">ปิด</button></div>
+    </dialog>
+
+    <dialog id="deletePrintJobDialog" class="confirm-dialog">
+      <form id="deletePrintJobForm">
+        <div class="confirm-icon">!</div>
+        <div class="dialog-title confirm-title"><div><span class="eyebrow danger-text">ยืนยันการลบ</span><h2>ลบประวัติชุดงานพิมพ์</h2></div><button class="close-button" id="closeDeletePrintJobDialog" type="button" aria-label="ปิด">×</button></div>
+        <p class="dialog-info danger-info">ประวัติชุดงานนี้จะถูกลบออกจากระบบและ Supabase กรุณาตรวจสอบให้แน่ใจก่อนดำเนินการ</p>
+        <div class="delete-target" id="deletePrintJobName"></div>
+        <label class="form-field"><span>รหัสยืนยันการลบ *</span><input id="deletePrintJobPassword" type="password" minlength="8" autocomplete="current-password" required placeholder="กรอกรหัสผ่านผู้ดูแล" /><small>ต้องกรอกรหัสผ่านผู้ดูแลอีกครั้ง เพื่อป้องกันการกดลบผิด</small></label>
+        <p class="form-message" id="deletePrintJobMessage" role="status" aria-live="polite"></p>
+        <div class="dialog-actions"><button class="button secondary" id="cancelDeletePrintJob" type="button">ยกเลิก</button><button class="button danger solid" id="confirmDeletePrintJob" type="submit">ยืนยันลบประวัติ</button></div>
+      </form>
     </dialog>
 
     <dialog id="adminAuthDialog" class="confirm-dialog">
@@ -780,7 +783,7 @@ window.ENVELOPE_APP_CONFIG = {
 
     </script>
     <script id="app-script">
-const CATEGORIES = ["หน่วยงานราชการ", "สหกรณ์และกลุ่มเกษตรกร", "ภาคเอกชน", "บุคคล"];
+﻿const CATEGORIES = ["หน่วยงานราชการ", "สหกรณ์และกลุ่มเกษตรกร", "ภาคเอกชน", "บุคคล"];
 const defaults = window.ENVELOPE_APP_CONFIG || {};
 const supabaseClient = window.supabase?.createClient(
   defaults.supabaseUrl || "",
@@ -1000,7 +1003,12 @@ const elements = {
   historyEnvelopeTotal: $("#historyEnvelopeTotal"),
   historyResultLabel: $("#historyResultLabel"),
   historySaveStatus: $("#historySaveStatus"),
-  historySyncHint: $("#historySyncHint"),
+  deletePrintJobDialog: $("#deletePrintJobDialog"),
+  deletePrintJobForm: $("#deletePrintJobForm"),
+  deletePrintJobName: $("#deletePrintJobName"),
+  deletePrintJobPassword: $("#deletePrintJobPassword"),
+  deletePrintJobMessage: $("#deletePrintJobMessage"),
+  confirmDeletePrintJob: $("#confirmDeletePrintJob"),
   printJobCreator: $("#printJobCreator"),
   loginScreen: $("#loginScreen"),
   loginGateForm: $("#loginGateForm"),
@@ -1365,14 +1373,14 @@ function buildHistoryEnvelopePdf(job) {
     const rawName = recipientEnvelopeName(item);
     const locality = [formatAddressArea("ตำบล", item.subdistrict), formatAddressArea("อำเภอ", item.district)].filter(Boolean).join(" ");
     const province = formatAddressArea("จังหวัด", item.province);
-    const department = state.settings.showRecipientDepartment && item.department && rawName !== item.department ? `<p class="organization">${escapeHtml(item.department)}</p>` : "";
+    const department = state.settings.showRecipientDepartment && item.department && rawName !== item.department ? `<p class="organization" style="font-weight:900">${escapeHtml(item.department)}</p>` : "";
     const address = state.settings.showRecipientAddress
-      ? `<p>${escapeHtml(item.address1 || "")}</p><p>${escapeHtml(locality)}</p><p>${escapeHtml(province)}</p>${item.postalCode ? `<p class="postal-code"><strong>${escapeHtml(item.postalCode)}</strong></p>` : ""}`
+      ? `<p>${escapeHtml(item.address1 || "")}</p><p>${escapeHtml(locality)}</p><p>${escapeHtml(province)}</p>${item.postalCode ? `<p class="postal-code" style="font-weight:900"><strong>${escapeHtml(item.postalCode)}</strong></p>` : ""}`
       : "";
     return `<section class="envelope pdf-page">${senderBlock}${permit}<div class="recipient">${recipientEnvelopeBlockHtml(item, { fontPt: state.settings.recipientFontPt })}<div class="recipient-detail">${department}${address}</div></div></section>`;
   }).join("");
   const container = document.createElement("div");
-  container.innerHTML = `<style>${printFontFaceCss()}*{box-sizing:border-box}.pdf-envelope-document{margin:0;color:#17223b;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${widthMm}mm;height:${heightMm}mm;overflow:hidden;background:#fff}.sender{position:absolute;top:${state.settings.senderTopMm}mm;left:${state.settings.senderLeftMm}mm;width:55%;font-size:${state.settings.senderFontPt}pt;line-height:${state.settings.senderLineHeight};color:#111}.sender-content{min-width:0}.sender-address{margin-top:.7mm}.document-number{margin-top:1.2mm;font-weight:700}.garuda{display:block;width:auto;height:${state.settings.garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${state.settings.senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm}.postage-permit{position:absolute;top:${state.settings.postagePermitTopMm}mm;right:${state.settings.postagePermitRightMm}mm;display:flex;width:${POSTAGE_PERMIT_WIDTH_MM}mm;height:${POSTAGE_PERMIT_HEIGHT_MM}mm;align-items:center;justify-content:center;overflow:hidden;padding:1.2mm;border:.35mm solid #111;color:#111;font-size:${state.settings.postagePermitFontPt}pt;font-weight:700;line-height:${state.settings.postagePermitLineHeight};text-align:center}.recipient{position:absolute;left:${state.settings.recipientLeftPercent}%;top:${state.settings.recipientTopPercent}%;width:calc(100% - ${state.settings.recipientLeftPercent}% - 8mm);font-size:${state.settings.recipientFontPt}pt;line-height:${state.settings.recipientLineHeight}}.recipient-heading{display:flex;align-items:baseline;gap:.55em;line-height:inherit}.recipient-greeting{flex:0 0 auto;color:#667085}.recipient-name{display:block;min-width:0;white-space:nowrap}.recipient-name strong{font-weight:900}.recipient-heading.recipient-name-manual{align-items:flex-start}.recipient-heading.recipient-name-manual .recipient-name{white-space:normal}.recipient-detail{margin-left:2.55em}.recipient-position{margin:0;font-weight:900;white-space:nowrap}.recipient p{margin:0;line-height:inherit}.organization{font-weight:700}.pdf-page{break-after:page;page-break-after:always}.pdf-page:last-child{break-after:auto;page-break-after:auto}</style><div class="pdf-envelope-document">${pages}</div>`;
+  container.innerHTML = `<style>${printFontFaceCss()}*{box-sizing:border-box}.pdf-envelope-document{margin:0;color:#17223b;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${widthMm}mm;height:${heightMm}mm;overflow:hidden;background:#fff}.sender{position:absolute;top:${state.settings.senderTopMm}mm;left:${state.settings.senderLeftMm}mm;width:55%;font-size:${state.settings.senderFontPt}pt;line-height:${state.settings.senderLineHeight};color:#111}.sender-content{min-width:0}.sender-address,.document-number{margin:0;line-height:inherit}.document-number{font-weight:700}.garuda{display:block;width:auto;height:${state.settings.garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${state.settings.senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm}.postage-permit{position:absolute;top:${state.settings.postagePermitTopMm}mm;right:${state.settings.postagePermitRightMm}mm;display:flex;width:${POSTAGE_PERMIT_WIDTH_MM}mm;height:${POSTAGE_PERMIT_HEIGHT_MM}mm;align-items:center;justify-content:center;overflow:hidden;padding:1.2mm;border:.35mm solid #111;color:#111;font-size:${state.settings.postagePermitFontPt}pt;font-weight:700;line-height:${state.settings.postagePermitLineHeight};text-align:center}.recipient{position:absolute;left:${state.settings.recipientLeftPercent}%;top:${state.settings.recipientTopPercent}%;width:calc(100% - ${state.settings.recipientLeftPercent}% - 8mm);font-size:${state.settings.recipientFontPt}pt;line-height:${state.settings.recipientLineHeight}}.recipient-heading{display:flex;align-items:baseline;gap:.55em;line-height:inherit}.recipient-greeting{flex:0 0 auto;color:#667085}.recipient-name{display:block;min-width:0;white-space:nowrap}.recipient-name strong{font-weight:900}.recipient-heading.recipient-name-manual{align-items:flex-start}.recipient-heading.recipient-name-manual .recipient-name{white-space:normal}.recipient-detail{margin-left:2.55em}.recipient-position{margin:0;font-weight:900;white-space:nowrap}.recipient p{margin:0;line-height:inherit}.organization{font-weight:700}.pdf-page{break-after:page;page-break-after:always}.pdf-page:last-child{break-after:auto;page-break-after:auto}</style><div class="pdf-envelope-document">${pages}</div>`;
   return { container, format: [widthMm, heightMm], orientation: "landscape" };
 }
 
@@ -1452,24 +1460,17 @@ function renderPrintHistory() {
     const message = state.printJobs.length
       ? "ไม่พบชุดงานที่ตรงกับตัวกรอง กรุณาเปลี่ยนเดือน วันที่ หรือกลุ่มงาน"
       : "ยังไม่มีประวัติ เมื่อเลือกรายชื่อ ระบบจะเริ่มบันทึกชุดงานให้อัตโนมัติ";
-    elements.printHistoryList.innerHTML = `<tr><td colspan="7"><div class="history-empty">${message}</div></td></tr>`;
+    elements.printHistoryList.innerHTML = `<tr><td colspan="6"><div class="history-empty">${message}</div></td></tr>`;
     return;
   }
   elements.printHistoryList.innerHTML = jobs.map((job, index) => {
     const status = printJobStatus(job);
     const { recipientCount, envelopeCount } = printJobCounts(job);
-    const printEvents = [
-      job.envelopePrintedAt ? `หน้าซอง ${formatPrintJobDate(job.envelopePrintedAt)}` : "",
-      job.manifestPrintedAt ? `ใบนำส่ง ${formatPrintJobDate(job.manifestPrintedAt)}` : "",
-    ].filter(Boolean);
     return `<tr class="history-item ${job.id === state.currentPrintJobId ? "current" : ""}">
       <td class="history-sequence">${index + 1}</td>
       <td><strong>${escapeHtml(formatPrintJobDate(job.createdAt))}</strong><small>แก้ไขล่าสุด ${escapeHtml(formatPrintJobDate(job.updatedAt))}</small></td>
-      <td><strong>${escapeHtml(job.creatorGroup || "ไม่ระบุกลุ่มงาน")}</strong><small>รหัสชุด ${escapeHtml(job.id)}</small></td>
-      <td><div class="history-counts"><b>${recipientCount}</b> รายชื่อ · <b>${envelopeCount}</b> ซอง · ${escapeHtml(job.paperSize || "DL")}</div>
-        <details class="history-details"><summary>ดูรายชื่อและเลขไปรษณีย์</summary><div class="history-details-content">${historyRecipientDetails(job)}${historyTrackingSummary(job)}</div></details>
-      </td>
-      <td>${printEvents.length ? printEvents.map((item) => `<span class="history-print-event">${escapeHtml(item)}</span>`).join("") : '<span class="history-muted">ยังไม่ได้พิมพ์</span>'}<small>วันที่ใบนำส่ง ${escapeHtml(job.manifestDate || "-")}</small></td>
+      <td><strong>${escapeHtml(job.creatorGroup || "ไม่ระบุกลุ่มงาน")}</strong></td>
+      <td><div class="history-counts"><b>${recipientCount}</b> รายชื่อ · <b>${envelopeCount}</b> ซอง · ${escapeHtml(job.paperSize || "DL")}</div></td>
       <td><span class="history-status ${status.className}">${status.label}</span></td>
       <td><div class="history-actions">
         <button class="resume" data-resume-job="${escapeHtml(job.id)}" type="button">ดำเนินการต่อ</button>
@@ -1542,21 +1543,61 @@ function completePrintJob(id) {
 }
 
 function requestDeletePrintJob(button) {
-  if (button.dataset.confirmDelete !== "true") {
-    button.dataset.confirmDelete = "true";
-    button.textContent = "กดอีกครั้งเพื่อยืนยันลบ";
-    setTimeout(() => {
-      if (button.isConnected) {
-        button.dataset.confirmDelete = "false";
-        button.textContent = "ลบประวัติ";
-      }
-    }, 3500);
+  const id = button.dataset.deleteJob || "";
+  const job = state.printJobs.find((item) => item.id === id);
+  if (!job) {
+    setNotice("ไม่พบประวัติชุดงานที่ต้องการลบ");
     return;
   }
-  deletePrintJob(button.dataset.deleteJob);
+  const { recipientCount, envelopeCount } = printJobCounts(job);
+  elements.deletePrintJobName.textContent = `${job.creatorGroup || "ไม่ระบุกลุ่มงาน"} · ${recipientCount} รายชื่อ · ${envelopeCount} ซอง`;
+  elements.deletePrintJobMessage.textContent = "";
+  elements.deletePrintJobMessage.className = "form-message";
+  elements.deletePrintJobForm.reset();
+  elements.deletePrintJobDialog.dataset.printJobId = id;
+  elements.deletePrintJobDialog.showModal();
+  elements.deletePrintJobPassword.focus();
 }
 
-function deletePrintJob(id) {
+async function handleDeletePrintJobSubmit(event) {
+  event.preventDefault();
+  if (!elements.deletePrintJobForm.reportValidity()) return;
+  const id = elements.deletePrintJobDialog.dataset.printJobId || "";
+  if (!state.printJobs.some((job) => job.id === id)) {
+    elements.deletePrintJobMessage.textContent = "ไม่พบประวัติชุดงานที่ต้องการลบ";
+    elements.deletePrintJobMessage.className = "form-message error";
+    return;
+  }
+  elements.confirmDeletePrintJob.disabled = true;
+  elements.confirmDeletePrintJob.textContent = "กำลังตรวจสอบ…";
+  elements.deletePrintJobMessage.textContent = "กำลังตรวจสอบรหัสยืนยันการลบ…";
+  elements.deletePrintJobMessage.className = "form-message";
+  try {
+    try {
+      await signInAdminWithPassword(elements.deletePrintJobPassword.value);
+    } catch (error) {
+      elements.deletePrintJobMessage.textContent = "รหัสยืนยันการลบไม่ถูกต้อง กรุณาตรวจสอบแล้วลองใหม่";
+      elements.deletePrintJobMessage.className = "form-message error";
+      elements.deletePrintJobPassword.select();
+      return;
+    }
+    elements.confirmDeletePrintJob.textContent = "กำลังลบ…";
+    const { error } = await requireSupabase().from("print_jobs").delete().eq("id", id);
+    if (error) throw error;
+    deletePrintJobLocally(id);
+    closeDeletePrintJobDialog();
+    setNotice("ลบประวัติชุดงานแล้ว");
+  } catch (error) {
+    console.error(error);
+    elements.deletePrintJobMessage.textContent = `ลบประวัติไม่สำเร็จ: ${error.message}`;
+    elements.deletePrintJobMessage.className = "form-message error";
+  } finally {
+    elements.confirmDeletePrintJob.disabled = false;
+    elements.confirmDeletePrintJob.textContent = "ยืนยันลบประวัติ";
+  }
+}
+
+function deletePrintJobLocally(id) {
   state.printJobs = state.printJobs.filter((job) => job.id !== id);
   if (state.currentPrintJobId === id) {
     state.currentPrintJobId = "";
@@ -1564,8 +1605,11 @@ function deletePrintJob(id) {
   }
   persistPrintHistory();
   renderPrintHistory();
-  queuePrintJobCloudDelete(id);
-  setNotice("ลบประวัติชุดงานแล้ว");
+}
+
+function closeDeletePrintJobDialog() {
+  if (elements.deletePrintJobDialog.open) elements.deletePrintJobDialog.close();
+  elements.deletePrintJobDialog.dataset.printJobId = "";
 }
 
 function startNewPrintJob() {
@@ -1749,7 +1793,7 @@ function recipientEnvelopeBlockHtml(item, options = {}) {
   const rawName = recipientEnvelopeName(item);
   const displayName = recipientEnvelopeDisplayName(item);
   const manualClass = displayName.includes("\n") ? " recipient-name-manual" : "";
-  const fontStyle = options.fontPt ? ` style="font-size:${options.fontPt}pt"` : "";
+  const fontStyle = ` style="${options.fontPt ? `font-size:${options.fontPt}pt;` : ""}font-weight:900"`;
   const position = item.position && rawName !== item.position
     ? `<p class="recipient-position"><strong>${escapeHtml(item.position)}</strong></p>`
     : "";
@@ -2067,9 +2111,6 @@ function updateAdminAuthUi() {
   if (elements.loginScreen) elements.loginScreen.setAttribute("aria-hidden", signedIn ? "true" : "false");
   if (signedIn && elements.loginGatePassword) elements.loginGatePassword.value = "";
   if (elements.adminAuthButton) elements.adminAuthButton.textContent = signedIn ? "ออกจากระบบผู้ดูแล" : "เข้าสู่ระบบผู้ดูแล";
-  if (elements.historySyncHint) elements.historySyncHint.textContent = signedIn
-    ? "เชื่อมต่อแล้ว ระบบบันทึกทุกการเปลี่ยนแปลงลง Supabase ให้เอง"
-    : "เข้าสู่ระบบผู้ดูแลครั้งเดียว หลังจากนั้นระบบจะบันทึกทุกการเปลี่ยนแปลงให้เอง";
 }
 
 function setLoginGateMessage(message = "", type = "") {
@@ -2448,9 +2489,13 @@ function renderSummary() {
   senderPreview.style.paddingLeft = "0";
   senderPreview.style.lineHeight = state.settings.senderLineHeight;
   senderPreviewBlock.style.gap = state.settings.garudaPlacement === "left" ? `${3 * previewScale}px` : "0";
-  senderPreview.querySelector(".sender-address-mini").style.marginTop = `${0.7 * previewScale}px`;
+  senderPreview.querySelector(".sender-address-mini").style.marginTop = "0";
+  senderPreview.querySelector(".sender-address-mini").style.lineHeight = state.settings.senderLineHeight;
   const senderDocumentPreview = senderPreview.querySelector(".sender-document-mini");
-  if (senderDocumentPreview) senderDocumentPreview.style.marginTop = `${1.2 * previewScale}px`;
+  if (senderDocumentPreview) {
+    senderDocumentPreview.style.marginTop = "0";
+    senderDocumentPreview.style.lineHeight = state.settings.senderLineHeight;
+  }
   postagePermitPreview.textContent = state.settings.postagePermitText;
   postagePermitPreview.style.display = state.settings.showPostagePermit ? "flex" : "none";
   postagePermitPreview.style.top = `${state.settings.postagePermitTopMm * previewScale}px`;
@@ -2481,10 +2526,10 @@ function renderSummary() {
     const previewProvince = formatAddressArea("จังหวัด", previewRecipient.province);
     const previewRecipientName = recipientEnvelopeName(previewRecipient);
     const previewDepartmentHtml = state.settings.showRecipientDepartment && previewRecipient.department && previewRecipientName !== previewRecipient.department
-      ? `<p class="organization">${escapeHtml(previewRecipient.department)}</p>`
+      ? `<p class="organization" style="font-weight:900">${escapeHtml(previewRecipient.department)}</p>`
       : "";
     const previewAddressHtml = state.settings.showRecipientAddress
-      ? `<p>${escapeHtml(previewRecipient.address1)}</p><p>${escapeHtml(previewLocality)}</p><p>${escapeHtml(previewProvince)}</p>${previewRecipient.postalCode ? `<p class="postal-code">${escapeHtml(previewRecipient.postalCode)}</p>` : ""}`
+      ? `<p>${escapeHtml(previewRecipient.address1)}</p><p>${escapeHtml(previewLocality)}</p><p>${escapeHtml(previewProvince)}</p>${previewRecipient.postalCode ? `<p class="postal-code" style="font-weight:900">${escapeHtml(previewRecipient.postalCode)}</p>` : ""}`
       : "";
     receiverPreview.innerHTML = `${recipientEnvelopeBlockHtml(previewRecipient)}<div class="recipient-detail">${previewDepartmentHtml}${previewAddressHtml}</div>`;
   } else {
@@ -2504,8 +2549,12 @@ function renderSummary() {
     receiverHeading.style.fontSize = `${recipientPreviewFontPx}px`;
   }
   receiverPreview.querySelectorAll("p").forEach((line) => {
-    line.style.margin = `${0.4 * previewScale}px 0`;
+    line.style.margin = "0";
     line.style.fontSize = `${recipientPreviewFontPx}px`;
+    line.style.lineHeight = state.settings.recipientLineHeight;
+    if (line.classList.contains("organization") || line.classList.contains("postal-code")) {
+      line.style.fontWeight = "900";
+    }
   });
   if (state.settings.showSender && state.settings.garudaImage) {
     garudaPreview.src = state.settings.garudaImage;
@@ -3203,10 +3252,10 @@ function printEnvelopes() {
     const province = formatAddressArea("จังหวัด", item.province);
     const envelopeRecipientName = recipientEnvelopeName(item);
     const recipientDepartmentHtml = state.settings.showRecipientDepartment && item.department && envelopeRecipientName !== item.department
-      ? `<p class="organization">${escapeHtml(item.department)}</p>`
+      ? `<p class="organization" style="font-weight:900">${escapeHtml(item.department)}</p>`
       : "";
     const recipientAddressHtml = state.settings.showRecipientAddress
-      ? `<p>${escapeHtml(item.address1)}</p><p>${escapeHtml(locality)}</p><p>${escapeHtml(province)}</p>${item.postalCode ? `<p class="postal-code"><strong>${escapeHtml(item.postalCode)}</strong></p>` : ""}`
+      ? `<p>${escapeHtml(item.address1)}</p><p>${escapeHtml(locality)}</p><p>${escapeHtml(province)}</p>${item.postalCode ? `<p class="postal-code" style="font-weight:900"><strong>${escapeHtml(item.postalCode)}</strong></p>` : ""}`
       : "";
     return `<section class="envelope">${senderBlockHtml}${postagePermitBlockHtml}<div class="recipient">${recipientEnvelopeBlockHtml(item, { fontPt: recipientFontPt })}<div class="recipient-detail">${recipientDepartmentHtml}${recipientAddressHtml}</div></div></section>`;
   }).join("");
@@ -3216,7 +3265,7 @@ function printEnvelopes() {
     return;
   }
   popup.opener = null;
-  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์จ่าหน้าซอง</title><style>${printFontFaceCss()}@page{size:${width} ${height};margin:0}*{box-sizing:border-box}body{margin:0;color:#17223b;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${width};height:${height};page-break-after:always;overflow:hidden;background:#fff}.envelope:last-child{page-break-after:auto}.sender{position:absolute;top:${senderTopMm}mm;left:${senderLeftMm}mm;width:55%;font-size:${senderFontPt}pt;line-height:${senderLineHeight};color:#111}.sender-content{min-width:0}.sender-address{margin-top:.7mm}.document-number{margin-top:1.2mm;font-weight:700}.garuda{display:block;width:auto;height:${garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm 0}.postage-permit{position:absolute;top:${postagePermitTopMm}mm;right:${postagePermitRightMm}mm;display:flex;width:${POSTAGE_PERMIT_WIDTH_MM}mm;height:${POSTAGE_PERMIT_HEIGHT_MM}mm;align-items:center;justify-content:center;overflow:hidden;padding:1.2mm;border:.35mm solid #111;color:#111;font-size:${postagePermitFontPt}pt;font-weight:700;line-height:${postagePermitLineHeight};text-align:center}.recipient{position:absolute;left:${recipientLeftPercent}%;top:${recipientTopPercent}%;width:calc(100% - ${recipientLeftPercent}% - 8mm);font-size:${recipientFontPt}pt;line-height:${recipientLineHeight}}.recipient-heading{display:flex;align-items:baseline;gap:.55em;line-height:inherit}.recipient-greeting{flex:0 0 auto;color:#667085}.recipient-name{display:block;min-width:0;white-space:nowrap}.recipient-name strong{font-weight:900}.recipient-heading.recipient-name-manual{align-items:flex-start}.recipient-heading.recipient-name-manual .recipient-name{white-space:normal}.recipient-detail{margin-left:2.55em}.recipient-position{margin:0;font-weight:900;white-space:nowrap}.recipient p{margin:0;line-height:inherit}.organization{font-weight:700}@media screen{body{background:#eef2f7;padding:18px}.envelope{margin:0 auto 18px;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${pages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
+  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์จ่าหน้าซอง</title><style>${printFontFaceCss()}@page{size:${width} ${height};margin:0}*{box-sizing:border-box}body{margin:0;color:#17223b;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${width};height:${height};page-break-after:always;overflow:hidden;background:#fff}.envelope:last-child{page-break-after:auto}.sender{position:absolute;top:${senderTopMm}mm;left:${senderLeftMm}mm;width:55%;font-size:${senderFontPt}pt;line-height:${senderLineHeight};color:#111}.sender-content{min-width:0}.sender-address,.document-number{margin:0;line-height:inherit}.document-number{font-weight:700}.garuda{display:block;width:auto;height:${garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm 0}.postage-permit{position:absolute;top:${postagePermitTopMm}mm;right:${postagePermitRightMm}mm;display:flex;width:${POSTAGE_PERMIT_WIDTH_MM}mm;height:${POSTAGE_PERMIT_HEIGHT_MM}mm;align-items:center;justify-content:center;overflow:hidden;padding:1.2mm;border:.35mm solid #111;color:#111;font-size:${postagePermitFontPt}pt;font-weight:700;line-height:${postagePermitLineHeight};text-align:center}.recipient{position:absolute;left:${recipientLeftPercent}%;top:${recipientTopPercent}%;width:calc(100% - ${recipientLeftPercent}% - 8mm);font-size:${recipientFontPt}pt;line-height:${recipientLineHeight}}.recipient-heading{display:flex;align-items:baseline;gap:.55em;line-height:inherit}.recipient-greeting{flex:0 0 auto;color:#667085}.recipient-name{display:block;min-width:0;white-space:nowrap}.recipient-name strong{font-weight:900}.recipient-heading.recipient-name-manual{align-items:flex-start}.recipient-heading.recipient-name-manual .recipient-name{white-space:normal}.recipient-detail{margin-left:2.55em}.recipient-position{margin:0;font-weight:900;white-space:nowrap}.recipient p{margin:0;line-height:inherit}.organization{font-weight:700}@media screen{body{background:#eef2f7;padding:18px}.envelope{margin:0 auto 18px;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${pages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
   popup.document.close();
   saveCurrentPrintJobDraft({ envelopePrintedAt: new Date().toISOString() });
   renderSummary();
@@ -3363,6 +3412,9 @@ elements.historyDateFilter.addEventListener("change", () => {
   handleHistoryFilterChange();
 });
 $("#resetHistoryFilters").addEventListener("click", resetHistoryFilters);
+$("#closeDeletePrintJobDialog").addEventListener("click", closeDeletePrintJobDialog);
+$("#cancelDeletePrintJob").addEventListener("click", closeDeletePrintJobDialog);
+elements.deletePrintJobForm.addEventListener("submit", handleDeletePrintJobSubmit);
 elements.printJobCreator.addEventListener("change", handlePrintJobCreatorChange);
 elements.loginGateForm.addEventListener("submit", handleLoginGateSubmit);
 elements.adminAuthButton.addEventListener("click", toggleAdminAuth);
