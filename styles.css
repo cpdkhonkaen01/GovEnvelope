@@ -106,14 +106,15 @@ body.app-locked .login-screen{display:grid}
 .recipient-heading .recipient-name,.recipient-heading .recipient-name strong{font-weight:900}
 .recipient-heading.recipient-name-manual{align-items:flex-start}
 .recipient-heading.recipient-name-manual .recipient-name{white-space:normal}
-.recipient-detail{margin-left:2.55em}
-.receiver-mini .recipient-heading,.receiver-mini .recipient-position,.receiver-mini .recipient-detail p{margin:0;line-height:inherit}
+.recipient-detail{margin-left:2em}
+.receiver-mini .recipient-heading,.receiver-mini .recipient-detail p{margin:0;line-height:inherit}
+.receiver-mini .recipient-position{margin:0 0 0 2em;line-height:inherit}
 .receiver-mini small{display:block;color:#667085}
 .hero .receiver-mini h1{max-width:none;margin:0;color:inherit;font:inherit;font-weight:800;letter-spacing:normal;line-height:inherit;white-space:nowrap}
 .hero .receiver-mini h1.recipient-name-manual{white-space:normal}
 .hero .receiver-mini p{max-width:none;margin:0;color:inherit;font:inherit;letter-spacing:normal;line-height:inherit}
 .receiver-mini .recipient-position,.receiver-mini .recipient-position strong{font-weight:900}
-.receiver-mini .organization,.receiver-mini .organization strong,.receiver-mini .postal-code,.receiver-mini .postal-code strong{font-weight:900}
+.receiver-mini .organization,.receiver-mini .organization strong,.receiver-mini .postal-code,.receiver-mini .postal-code strong{font-weight:400}
 
 .content-grid{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:18px;align-items:start}
 .directory-card,.print-card{border:1px solid var(--line);background:#fff;box-shadow:0 10px 32px rgba(31,46,79,.045)}

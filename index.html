@@ -115,14 +115,15 @@ body.app-locked .login-screen{display:grid}
 .recipient-heading .recipient-name,.recipient-heading .recipient-name strong{font-weight:900}
 .recipient-heading.recipient-name-manual{align-items:flex-start}
 .recipient-heading.recipient-name-manual .recipient-name{white-space:normal}
-.recipient-detail{margin-left:2.55em}
-.receiver-mini .recipient-heading,.receiver-mini .recipient-position,.receiver-mini .recipient-detail p{margin:0;line-height:inherit}
+.recipient-detail{margin-left:2em}
+.receiver-mini .recipient-heading,.receiver-mini .recipient-detail p{margin:0;line-height:inherit}
+.receiver-mini .recipient-position{margin:0 0 0 2em;line-height:inherit}
 .receiver-mini small{display:block;color:#667085}
 .hero .receiver-mini h1{max-width:none;margin:0;color:inherit;font:inherit;font-weight:800;letter-spacing:normal;line-height:inherit;white-space:nowrap}
 .hero .receiver-mini h1.recipient-name-manual{white-space:normal}
 .hero .receiver-mini p{max-width:none;margin:0;color:inherit;font:inherit;letter-spacing:normal;line-height:inherit}
 .receiver-mini .recipient-position,.receiver-mini .recipient-position strong{font-weight:900}
-.receiver-mini .organization,.receiver-mini .organization strong,.receiver-mini .postal-code,.receiver-mini .postal-code strong{font-weight:900}
+.receiver-mini .organization,.receiver-mini .organization strong,.receiver-mini .postal-code,.receiver-mini .postal-code strong{font-weight:400}
 
 .content-grid{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:18px;align-items:start}
 .directory-card,.print-card{border:1px solid var(--line);background:#fff;box-shadow:0 10px 32px rgba(31,46,79,.045)}
@@ -1373,11 +1374,11 @@ function buildHistoryEnvelopePdf(job) {
     const rawName = recipientEnvelopeName(item);
     const locality = [formatAddressArea("ตำบล", item.subdistrict), formatAddressArea("อำเภอ", item.district)].filter(Boolean).join(" ");
     const province = formatAddressArea("จังหวัด", item.province);
-    const department = state.settings.showRecipientDepartment && item.department && rawName !== item.department ? `<p class="organization" style="font-weight:900">${escapeHtml(item.department)}</p>` : "";
+    const department = state.settings.showRecipientDepartment && item.department && rawName !== item.department ? `<p class="organization" style="font-weight:400">${escapeHtml(item.department)}</p>` : "";
     const address = state.settings.showRecipientAddress
-      ? `<p>${escapeHtml(item.address1 || "")}</p><p>${escapeHtml(locality)}</p><p>${escapeHtml(province)}</p>${item.postalCode ? `<p class="postal-code" style="font-weight:900"><strong>${escapeHtml(item.postalCode)}</strong></p>` : ""}`
+      ? `<p>${escapeHtml(item.address1 || "")}</p><p>${escapeHtml(locality)}</p><p>${escapeHtml(province)}</p>${item.postalCode ? `<p class="postal-code">${escapeHtml(item.postalCode)}</p>` : ""}`
       : "";
-    return `<section class="envelope pdf-page">${senderBlock}${permit}<div class="recipient">${recipientEnvelopeBlockHtml(item, { fontPt: state.settings.recipientFontPt })}<div class="recipient-detail">${department}${address}</div></div></section>`;
+    return `<section class="envelope pdf-page">${senderBlock}${permit}<div class="recipient">${recipientEnvelopeBlockHtml(item, { fontPt: state.settings.recipientFontPt })}<div class="recipient-detail" style="margin-left:2em">${department}${address}</div></div></section>`;
   }).join("");
   const container = document.createElement("div");
   container.innerHTML = `<style>${printFontFaceCss()}*{box-sizing:border-box}.pdf-envelope-document{margin:0;color:#17223b;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${widthMm}mm;height:${heightMm}mm;overflow:hidden;background:#fff}.sender{position:absolute;top:${state.settings.senderTopMm}mm;left:${state.settings.senderLeftMm}mm;width:55%;font-size:${state.settings.senderFontPt}pt;line-height:${state.settings.senderLineHeight};color:#111}.sender-content{min-width:0}.sender-address,.document-number{margin:0;line-height:inherit}.document-number{font-weight:700}.garuda{display:block;width:auto;height:${state.settings.garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${state.settings.senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm}.postage-permit{position:absolute;top:${state.settings.postagePermitTopMm}mm;right:${state.settings.postagePermitRightMm}mm;display:flex;width:${POSTAGE_PERMIT_WIDTH_MM}mm;height:${POSTAGE_PERMIT_HEIGHT_MM}mm;align-items:center;justify-content:center;overflow:hidden;padding:1.2mm;border:.35mm solid #111;color:#111;font-size:${state.settings.postagePermitFontPt}pt;font-weight:700;line-height:${state.settings.postagePermitLineHeight};text-align:center}.recipient{position:absolute;left:${state.settings.recipientLeftPercent}%;top:${state.settings.recipientTopPercent}%;width:calc(100% - ${state.settings.recipientLeftPercent}% - 8mm);font-size:${state.settings.recipientFontPt}pt;line-height:${state.settings.recipientLineHeight}}.recipient-heading{display:flex;align-items:baseline;gap:.55em;line-height:inherit}.recipient-greeting{flex:0 0 auto;color:#667085}.recipient-name{display:block;min-width:0;white-space:nowrap}.recipient-name strong{font-weight:900}.recipient-heading.recipient-name-manual{align-items:flex-start}.recipient-heading.recipient-name-manual .recipient-name{white-space:normal}.recipient-detail{margin-left:2.55em}.recipient-position{margin:0;font-weight:900;white-space:nowrap}.recipient p{margin:0;line-height:inherit}.organization{font-weight:700}.pdf-page{break-after:page;page-break-after:always}.pdf-page:last-child{break-after:auto;page-break-after:auto}</style><div class="pdf-envelope-document">${pages}</div>`;
@@ -1795,7 +1796,7 @@ function recipientEnvelopeBlockHtml(item, options = {}) {
   const manualClass = displayName.includes("\n") ? " recipient-name-manual" : "";
   const fontStyle = ` style="${options.fontPt ? `font-size:${options.fontPt}pt;` : ""}font-weight:900"`;
   const position = item.position && rawName !== item.position
-    ? `<p class="recipient-position"><strong>${escapeHtml(item.position)}</strong></p>`
+    ? `<p class="recipient-position" style="margin-left:2em"><strong>${escapeHtml(item.position)}</strong></p>`
     : "";
   return `<div class="recipient-heading${manualClass}"><span class="recipient-greeting">เรียน</span><span class="recipient-name"${fontStyle}><strong>${recipientEnvelopeNameHtml(item)}</strong></span></div>${position}`;
 }
@@ -2526,12 +2527,12 @@ function renderSummary() {
     const previewProvince = formatAddressArea("จังหวัด", previewRecipient.province);
     const previewRecipientName = recipientEnvelopeName(previewRecipient);
     const previewDepartmentHtml = state.settings.showRecipientDepartment && previewRecipient.department && previewRecipientName !== previewRecipient.department
-      ? `<p class="organization" style="font-weight:900">${escapeHtml(previewRecipient.department)}</p>`
+      ? `<p class="organization" style="font-weight:400">${escapeHtml(previewRecipient.department)}</p>`
       : "";
     const previewAddressHtml = state.settings.showRecipientAddress
-      ? `<p>${escapeHtml(previewRecipient.address1)}</p><p>${escapeHtml(previewLocality)}</p><p>${escapeHtml(previewProvince)}</p>${previewRecipient.postalCode ? `<p class="postal-code" style="font-weight:900">${escapeHtml(previewRecipient.postalCode)}</p>` : ""}`
+      ? `<p>${escapeHtml(previewRecipient.address1)}</p><p>${escapeHtml(previewLocality)}</p><p>${escapeHtml(previewProvince)}</p>${previewRecipient.postalCode ? `<p class="postal-code">${escapeHtml(previewRecipient.postalCode)}</p>` : ""}`
       : "";
-    receiverPreview.innerHTML = `${recipientEnvelopeBlockHtml(previewRecipient)}<div class="recipient-detail">${previewDepartmentHtml}${previewAddressHtml}</div>`;
+    receiverPreview.innerHTML = `${recipientEnvelopeBlockHtml(previewRecipient)}<div class="recipient-detail" style="margin-left:2em">${previewDepartmentHtml}${previewAddressHtml}</div>`;
   } else {
     receiverPreview.innerHTML = '<div class="recipient-heading"><span class="recipient-greeting">เรียน</span><span class="recipient-name"><strong>เลือกผู้รับเพื่อดูตัวอย่าง</strong></span></div>';
   }
@@ -2552,8 +2553,9 @@ function renderSummary() {
     line.style.margin = "0";
     line.style.fontSize = `${recipientPreviewFontPx}px`;
     line.style.lineHeight = state.settings.recipientLineHeight;
+    if (line.classList.contains("recipient-position")) line.style.marginLeft = "2em";
     if (line.classList.contains("organization") || line.classList.contains("postal-code")) {
-      line.style.fontWeight = "900";
+      line.style.fontWeight = "400";
     }
   });
   if (state.settings.showSender && state.settings.garudaImage) {
@@ -3252,12 +3254,12 @@ function printEnvelopes() {
     const province = formatAddressArea("จังหวัด", item.province);
     const envelopeRecipientName = recipientEnvelopeName(item);
     const recipientDepartmentHtml = state.settings.showRecipientDepartment && item.department && envelopeRecipientName !== item.department
-      ? `<p class="organization" style="font-weight:900">${escapeHtml(item.department)}</p>`
+      ? `<p class="organization" style="font-weight:400">${escapeHtml(item.department)}</p>`
       : "";
     const recipientAddressHtml = state.settings.showRecipientAddress
-      ? `<p>${escapeHtml(item.address1)}</p><p>${escapeHtml(locality)}</p><p>${escapeHtml(province)}</p>${item.postalCode ? `<p class="postal-code" style="font-weight:900"><strong>${escapeHtml(item.postalCode)}</strong></p>` : ""}`
+      ? `<p>${escapeHtml(item.address1)}</p><p>${escapeHtml(locality)}</p><p>${escapeHtml(province)}</p>${item.postalCode ? `<p class="postal-code">${escapeHtml(item.postalCode)}</p>` : ""}`
       : "";
-    return `<section class="envelope">${senderBlockHtml}${postagePermitBlockHtml}<div class="recipient">${recipientEnvelopeBlockHtml(item, { fontPt: recipientFontPt })}<div class="recipient-detail">${recipientDepartmentHtml}${recipientAddressHtml}</div></div></section>`;
+    return `<section class="envelope">${senderBlockHtml}${postagePermitBlockHtml}<div class="recipient">${recipientEnvelopeBlockHtml(item, { fontPt: recipientFontPt })}<div class="recipient-detail" style="margin-left:2em">${recipientDepartmentHtml}${recipientAddressHtml}</div></div></section>`;
   }).join("");
   const popup = window.open("", "_blank");
   if (!popup) {
