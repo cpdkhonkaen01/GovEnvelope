@@ -1,0 +1,31 @@
+name: Validate website for Vercel
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check JavaScript syntax
+        shell: bash
+        run: |
+          node --check config.js
+          node --check assets/app.js
+          node --check scripts/build-standalone.mjs
+          cp apps-script/Code.gs "$RUNNER_TEMP/Code.js"
+          node --check "$RUNNER_TEMP/Code.js"
+      - name: Build standalone index
+        run: node scripts/build-standalone.mjs
