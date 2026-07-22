@@ -153,6 +153,7 @@ function setGroupDisabled(container, disabled) {
 
 const elements = {
   rows: $("#recipientRows"),
+  downloadRecipientsCsv: $("#downloadRecipientsCsv"),
   search: $("#searchInput"),
   category: $("#categoryFilter"),
   responsibleUnit: $("#responsibleUnitFilter"),
@@ -184,6 +185,7 @@ const elements = {
   deleteRecipientDialog: $("#deleteRecipientDialog"),
   deleteRecipientForm: $("#deleteRecipientForm"),
   deleteRecipientName: $("#deleteRecipientName"),
+  deleteRecipientPassword: $("#deleteRecipientPassword"),
   deleteRecipientMessage: $("#deleteRecipientMessage"),
   confirmDeleteRecipient: $("#confirmDeleteRecipient"),
   recipientLayoutDialog: $("#recipientLayoutDialog"),
@@ -402,6 +404,19 @@ function syncHistoryGroupOptions() {
   state.historyFilters.group = elements.historyGroupFilter.value;
 }
 
+function setPrintJobCreatorVisible(visible, options = {}) {
+  const wrapper = elements.printJobCreator?.closest(".job-creator-control");
+  if (!wrapper) return;
+  wrapper.classList.toggle("is-hidden", !visible);
+  wrapper.classList.toggle("is-active", visible && Boolean(options.active));
+}
+
+function focusPrintJobCreator() {
+  setPrintJobCreatorVisible(true, { active: true });
+  elements.printJobCreator?.scrollIntoView({ behavior: "smooth", block: "center" });
+  window.setTimeout(() => elements.printJobCreator?.focus(), 180);
+}
+
 function filteredPrintJobs() {
   const { group, month, date } = state.historyFilters;
   return [...state.printJobs]
@@ -528,7 +543,7 @@ function buildHistoryEnvelopePdf(job) {
     return `<section class="envelope pdf-page">${senderBlock}${permit}<div class="recipient">${recipientEnvelopeBlockHtml(item, { fontPt: state.settings.recipientFontPt })}<div class="recipient-detail">${department}${address}</div></div></section>`;
   }).join("");
   const container = document.createElement("div");
-  container.innerHTML = `<style>${printFontFaceCss()}*{box-sizing:border-box}.pdf-envelope-document{margin:0;color:#17223b;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${widthMm}mm;height:${heightMm}mm;overflow:hidden;background:#fff}.sender{position:absolute;top:${state.settings.senderTopMm}mm;left:${state.settings.senderLeftMm}mm;width:55%;font-size:${state.settings.senderFontPt}pt;line-height:${state.settings.senderLineHeight};color:#111}.sender-content{min-width:0}.sender-address{margin-top:.7mm}.document-number{margin-top:1.2mm;font-weight:700}.garuda{display:block;width:auto;height:${state.settings.garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${state.settings.senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm}.postage-permit{position:absolute;top:${state.settings.postagePermitTopMm}mm;right:${state.settings.postagePermitRightMm}mm;display:flex;width:${POSTAGE_PERMIT_WIDTH_MM}mm;height:${POSTAGE_PERMIT_HEIGHT_MM}mm;align-items:center;justify-content:center;overflow:hidden;padding:1.2mm;border:.35mm solid #111;color:#111;font-size:${state.settings.postagePermitFontPt}pt;font-weight:700;line-height:${state.settings.postagePermitLineHeight};text-align:center}.recipient{position:absolute;left:${state.settings.recipientLeftPercent}%;top:${state.settings.recipientTopPercent}%;width:calc(100% - ${state.settings.recipientLeftPercent}% - 8mm);font-size:${state.settings.recipientFontPt}pt;line-height:${state.settings.recipientLineHeight}}.recipient-heading{display:flex;align-items:baseline;gap:.55em}.recipient-greeting{flex:0 0 auto;color:#667085}.recipient-name{display:block;min-width:0;white-space:nowrap}.recipient-name strong{font-weight:800}.recipient-heading.recipient-name-manual{align-items:flex-start}.recipient-heading.recipient-name-manual .recipient-name{white-space:normal}.recipient-detail{margin-left:2.55em}.recipient-position{font-weight:800}.recipient p{margin:.4mm 0}.organization{font-weight:700}.pdf-page{break-after:page;page-break-after:always}.pdf-page:last-child{break-after:auto;page-break-after:auto}</style><div class="pdf-envelope-document">${pages}</div>`;
+  container.innerHTML = `<style>${printFontFaceCss()}*{box-sizing:border-box}.pdf-envelope-document{margin:0;color:#17223b;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${widthMm}mm;height:${heightMm}mm;overflow:hidden;background:#fff}.sender{position:absolute;top:${state.settings.senderTopMm}mm;left:${state.settings.senderLeftMm}mm;width:55%;font-size:${state.settings.senderFontPt}pt;line-height:${state.settings.senderLineHeight};color:#111}.sender-content{min-width:0}.sender-address{margin-top:.7mm}.document-number{margin-top:1.2mm;font-weight:700}.garuda{display:block;width:auto;height:${state.settings.garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${state.settings.senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm}.postage-permit{position:absolute;top:${state.settings.postagePermitTopMm}mm;right:${state.settings.postagePermitRightMm}mm;display:flex;width:${POSTAGE_PERMIT_WIDTH_MM}mm;height:${POSTAGE_PERMIT_HEIGHT_MM}mm;align-items:center;justify-content:center;overflow:hidden;padding:1.2mm;border:.35mm solid #111;color:#111;font-size:${state.settings.postagePermitFontPt}pt;font-weight:700;line-height:${state.settings.postagePermitLineHeight};text-align:center}.recipient{position:absolute;left:${state.settings.recipientLeftPercent}%;top:${state.settings.recipientTopPercent}%;width:calc(100% - ${state.settings.recipientLeftPercent}% - 8mm);font-size:${state.settings.recipientFontPt}pt;line-height:${state.settings.recipientLineHeight}}.recipient-heading{display:flex;align-items:baseline;gap:.55em;line-height:inherit}.recipient-greeting{flex:0 0 auto;color:#667085}.recipient-name{display:block;min-width:0;white-space:nowrap}.recipient-name strong{font-weight:900}.recipient-heading.recipient-name-manual{align-items:flex-start}.recipient-heading.recipient-name-manual .recipient-name{white-space:normal}.recipient-detail{margin-left:2.55em}.recipient-position{margin:0;font-weight:900;white-space:nowrap}.recipient p{margin:0;line-height:inherit}.organization{font-weight:700}.pdf-page{break-after:page;page-break-after:always}.pdf-page:last-child{break-after:auto;page-break-after:auto}</style><div class="pdf-envelope-document">${pages}</div>`;
   return { container, format: [widthMm, heightMm], orientation: "landscape" };
 }
 
@@ -676,6 +691,7 @@ function restorePrintJob(id, options = {}) {
   }
   persistSettings();
   persistPrintHistory();
+  setPrintJobCreatorVisible(true);
   if (elements.manifestRows?.dataset.printJobId !== job.id) {
     elements.manifestRows.innerHTML = "";
     elements.manifestRows.dataset.printJobId = "";
@@ -727,26 +743,31 @@ function startNewPrintJob() {
   saveCurrentPrintJobDraft();
   state.currentPrintJobId = "";
   state.selected.clear();
+  state.settings.printJobCreator = "";
   state.settings.envelopeCopiesById = {};
   state.previewRecipientIndex = 0;
+  if (elements.printJobCreator) elements.printJobCreator.value = "";
   elements.manifestRows.innerHTML = "";
   elements.manifestRows.dataset.printJobId = "";
   elements.manifestDate.value = "";
+  persistSettings();
   persistPrintHistory();
   render();
   elements.printHistoryDialog?.close();
-  setNotice("เริ่มชุดงานใหม่แล้ว กรุณาเลือกรายชื่อผู้รับ");
+  focusPrintJobCreator();
+  setNotice("เริ่มชุดงานใหม่แล้ว กรุณาเลือกกลุ่มงานก่อนเลือกรายชื่อผู้รับ");
 }
 
 function requirePrintJobCreator() {
   if (state.settings.printJobCreator) return true;
-  elements.printJobCreator?.focus();
-  setNotice("กรุณาเลือกผู้สร้างชุดงานก่อนพิมพ์");
+  focusPrintJobCreator();
+  setNotice("กรุณาเลือกกลุ่มงานก่อนพิมพ์");
   return false;
 }
 
 function handlePrintJobCreatorChange(event) {
   state.settings.printJobCreator = String(event.target.value || "").trim();
+  setPrintJobCreatorVisible(true, { active: !state.settings.printJobCreator });
   persistSettings();
   saveCurrentPrintJobDraft({ creatorGroup: state.settings.printJobCreator });
   renderPrintHistory();
@@ -1126,6 +1147,65 @@ function filteredRecipients() {
     const cooperativeTypeMatches = !cooperativeFiltersActive || state.cooperativeType === "ทั้งหมด" || item.cooperativeType === state.cooperativeType;
     return categoryMatches && responsibleUnitMatches && cooperativeTypeMatches && (!query || text.includes(query));
   });
+}
+
+function csvCell(value) {
+  const text = String(value ?? "").replace(/\r?\n/g, " ").trim();
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
+function downloadRecipientsCsv() {
+  const rows = filteredRecipients();
+  if (!rows.length) {
+    setNotice("ไม่มีรายชื่อให้ดาวน์โหลด กรุณาล้างตัวกรองหรือโหลดฐานข้อมูลใหม่");
+    return;
+  }
+  const headers = [
+    "ลำดับ",
+    "ประเภทผู้รับ",
+    "กสส. / นิคมฯ",
+    "ประเภทสหกรณ์",
+    "คำนำหน้า",
+    "ชื่อ",
+    "นามสกุล",
+    "ชื่อผู้รับ / ตำแหน่ง",
+    "ตำแหน่ง",
+    "ชื่อหน่วยงาน",
+    "เลขที่ / หมู่ / ถนน",
+    "ตำบล / แขวง",
+    "อำเภอ / เขต",
+    "จังหวัด",
+    "รหัสไปรษณีย์",
+    "ที่อยู่เต็ม",
+  ];
+  const body = rows.map((item, index) => [
+    index + 1,
+    item.category,
+    item.responsibleUnit,
+    item.cooperativeType,
+    item.prefix,
+    item.firstName,
+    item.lastName,
+    recipientName(item),
+    item.position,
+    item.department,
+    item.address1,
+    item.subdistrict,
+    item.district,
+    item.province,
+    item.postalCode,
+    recipientFullAddress(item),
+  ].map(csvCell).join(","));
+  const csv = `\uFEFF${headers.map(csvCell).join(",")}\r\n${body.join("\r\n")}`;
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `recipients-${localIsoDate()}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  URL.revokeObjectURL(link.href);
+  link.remove();
+  setNotice(`ดาวน์โหลดรายชื่อ ${rows.length} รายการ เป็นไฟล์ CSV แล้ว`);
 }
 
 function setNotice(message) {
@@ -2011,6 +2091,7 @@ async function deleteRecipient(id) {
   elements.deleteRecipientForm.reset();
   elements.deleteRecipientDialog.dataset.recipientId = id;
   elements.deleteRecipientDialog.showModal();
+  elements.deleteRecipientPassword?.focus();
 }
 
 async function handleDeleteRecipientSubmit(event) {
@@ -2026,13 +2107,26 @@ async function handleDeleteRecipientSubmit(event) {
   }
 
   const name = recipientName(recipient);
+  const deletePassword = elements.deleteRecipientPassword.value;
   elements.confirmDeleteRecipient.disabled = true;
-  elements.confirmDeleteRecipient.textContent = "กำลังลบ…";
-  elements.deleteRecipientMessage.textContent = `กำลังลบ ${name} จาก Supabase…`;
+  elements.confirmDeleteRecipient.textContent = "กำลังตรวจสอบ…";
+  elements.deleteRecipientMessage.textContent = "กำลังตรวจสอบรหัสยืนยันการลบ…";
   elements.deleteRecipientMessage.className = "form-message";
-  setNotice(`กำลังลบ ${name} จาก Supabase…`);
+  setNotice("กำลังตรวจสอบรหัสยืนยันการลบ…");
 
   try {
+    try {
+      await signInAdminWithPassword(deletePassword);
+    } catch (error) {
+      elements.deleteRecipientMessage.textContent = "รหัสยืนยันการลบไม่ถูกต้อง กรุณาตรวจสอบแล้วลองใหม่";
+      elements.deleteRecipientMessage.className = "form-message error";
+      elements.deleteRecipientPassword.select();
+      setNotice("รหัสยืนยันการลบไม่ถูกต้อง");
+      return;
+    }
+    elements.confirmDeleteRecipient.textContent = "กำลังลบ…";
+    elements.deleteRecipientMessage.textContent = `กำลังลบ ${name} จาก Supabase…`;
+    setNotice(`กำลังลบ ${name} จาก Supabase…`);
     const { error } = await requireSupabase().from("recipients").delete().eq("id", id);
     if (error) throw error;
     const rows = await requestRecipients();
@@ -2287,7 +2381,7 @@ function printEnvelopes() {
     return;
   }
   popup.opener = null;
-  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์จ่าหน้าซอง</title><style>${printFontFaceCss()}@page{size:${width} ${height};margin:0}*{box-sizing:border-box}body{margin:0;color:#17223b;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${width};height:${height};page-break-after:always;overflow:hidden;background:#fff}.envelope:last-child{page-break-after:auto}.sender{position:absolute;top:${senderTopMm}mm;left:${senderLeftMm}mm;width:55%;font-size:${senderFontPt}pt;line-height:${senderLineHeight};color:#111}.sender-content{min-width:0}.sender-address{margin-top:.7mm}.document-number{margin-top:1.2mm;font-weight:700}.garuda{display:block;width:auto;height:${garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm 0}.postage-permit{position:absolute;top:${postagePermitTopMm}mm;right:${postagePermitRightMm}mm;display:flex;width:${POSTAGE_PERMIT_WIDTH_MM}mm;height:${POSTAGE_PERMIT_HEIGHT_MM}mm;align-items:center;justify-content:center;overflow:hidden;padding:1.2mm;border:.35mm solid #111;color:#111;font-size:${postagePermitFontPt}pt;font-weight:700;line-height:${postagePermitLineHeight};text-align:center}.recipient{position:absolute;left:${recipientLeftPercent}%;top:${recipientTopPercent}%;width:calc(100% - ${recipientLeftPercent}% - 8mm);font-size:${recipientFontPt}pt;line-height:${recipientLineHeight}}.recipient-heading{display:flex;align-items:baseline;gap:.55em}.recipient-greeting{flex:0 0 auto;color:#667085}.recipient-name{display:block;min-width:0;white-space:nowrap}.recipient-name strong{font-weight:800}.recipient-heading.recipient-name-manual{align-items:flex-start}.recipient-heading.recipient-name-manual .recipient-name{white-space:normal}.recipient-detail{margin-left:2.55em}.recipient-position{font-weight:800;white-space:nowrap}.recipient p{margin:.4mm 0}.organization{font-weight:700}@media screen{body{background:#eef2f7;padding:18px}.envelope{margin:0 auto 18px;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${pages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
+  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์จ่าหน้าซอง</title><style>${printFontFaceCss()}@page{size:${width} ${height};margin:0}*{box-sizing:border-box}body{margin:0;color:#17223b;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${width};height:${height};page-break-after:always;overflow:hidden;background:#fff}.envelope:last-child{page-break-after:auto}.sender{position:absolute;top:${senderTopMm}mm;left:${senderLeftMm}mm;width:55%;font-size:${senderFontPt}pt;line-height:${senderLineHeight};color:#111}.sender-content{min-width:0}.sender-address{margin-top:.7mm}.document-number{margin-top:1.2mm;font-weight:700}.garuda{display:block;width:auto;height:${garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm 0}.postage-permit{position:absolute;top:${postagePermitTopMm}mm;right:${postagePermitRightMm}mm;display:flex;width:${POSTAGE_PERMIT_WIDTH_MM}mm;height:${POSTAGE_PERMIT_HEIGHT_MM}mm;align-items:center;justify-content:center;overflow:hidden;padding:1.2mm;border:.35mm solid #111;color:#111;font-size:${postagePermitFontPt}pt;font-weight:700;line-height:${postagePermitLineHeight};text-align:center}.recipient{position:absolute;left:${recipientLeftPercent}%;top:${recipientTopPercent}%;width:calc(100% - ${recipientLeftPercent}% - 8mm);font-size:${recipientFontPt}pt;line-height:${recipientLineHeight}}.recipient-heading{display:flex;align-items:baseline;gap:.55em;line-height:inherit}.recipient-greeting{flex:0 0 auto;color:#667085}.recipient-name{display:block;min-width:0;white-space:nowrap}.recipient-name strong{font-weight:900}.recipient-heading.recipient-name-manual{align-items:flex-start}.recipient-heading.recipient-name-manual .recipient-name{white-space:normal}.recipient-detail{margin-left:2.55em}.recipient-position{margin:0;font-weight:900;white-space:nowrap}.recipient p{margin:0;line-height:inherit}.organization{font-weight:700}@media screen{body{background:#eef2f7;padding:18px}.envelope{margin:0 auto 18px;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${pages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
   popup.document.close();
   saveCurrentPrintJobDraft({ envelopePrintedAt: new Date().toISOString() });
   setNotice(`เตรียมพิมพ์ ${jobs.length} ซอง จาก ${selectedCount} รายชื่อ บน${label} และบันทึกลงประวัติแล้ว`);
@@ -2323,6 +2417,7 @@ elements.selectAll.addEventListener("change", () => {
   renderSummary();
   saveCurrentPrintJobDraft();
 });
+elements.downloadRecipientsCsv.addEventListener("click", downloadRecipientsCsv);
 elements.paper.addEventListener("change", (event) => {
   const nextPaperSize = PAPER_SIZE_KEYS.includes(event.target.value) ? event.target.value : "DL";
   rememberCurrentPaperLayout();
@@ -2434,7 +2529,6 @@ elements.adminAuthButton.addEventListener("click", toggleAdminAuth);
 elements.adminAuthForm.addEventListener("submit", handleAdminAuthSubmit);
 $("#closeAdminAuth").addEventListener("click", closeAdminAuthDialog);
 $("#cancelAdminAuth").addEventListener("click", closeAdminAuthDialog);
-$("#printButton").addEventListener("click", printEnvelopes);
 $("#heroPrint").addEventListener("click", printEnvelopes);
 elements.previewPrevious.addEventListener("click", () => {
   const count = state.recipients.filter((item) => state.selected.has(item.id)).length;
