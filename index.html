@@ -603,8 +603,8 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
           <label class="form-field"><span>ใบอนุญาต/ไปรษณีย์</span><input name="manifestPermit" id="manifestPermit" type="text" value="ใบอนุญาตเลขที่ 3/2521 ไปรษณีย์เทพารักษ์" readonly /></label>
         </div>
         <div class="form-grid equal manifest-prefix-fields">
-          <label class="form-field"><span>ล็อกเลขนำหน้าลงทะเบียน 6 หลัก</span><input id="manifestRegisteredPrefix" type="text" inputmode="numeric" autocomplete="off" maxlength="6" pattern="[0-9๐-๙]{6}" placeholder="เช่น 002350" /><small>เมื่อกรอกครบ 6 หลัก แต่ละแถวกรอกเฉพาะ 3 ตัวท้าย</small></label>
-          <label class="form-field"><span>ล็อกเลขนำหน้า EMS 6 หลัก</span><input id="manifestEmsPrefix" type="text" inputmode="numeric" autocomplete="off" maxlength="6" pattern="[0-9๐-๙]{6}" placeholder="เช่น 122386" /><small>เมื่อกรอกครบ 6 หลัก แต่ละแถวกรอกเฉพาะ 3 ตัวท้าย</small></label>
+          <label class="form-field"><span>ล็อกเลขนำหน้าลงทะเบียน 5 หลัก</span><input id="manifestRegisteredPrefix" type="text" inputmode="text" autocomplete="off" maxlength="7" pattern="[A-Za-z]{2}[0-9๐-๙]{5}" placeholder="เช่น RJ00235" /><small>ใส่ตัวอังกฤษ 2 ตัว + เลขนำหน้า 5 หลัก แล้วแต่ละแถวกรอกเฉพาะ 4 ตัวท้าย</small></label>
+          <label class="form-field"><span>ล็อกเลขนำหน้า EMS 5 หลัก</span><input id="manifestEmsPrefix" type="text" inputmode="text" autocomplete="off" maxlength="7" pattern="[A-Za-z]{2}[0-9๐-๙]{5}" placeholder="เช่น EQ12238" /><small>ใส่ตัวอังกฤษ 2 ตัว + เลขนำหน้า 5 หลัก แล้วแต่ละแถวกรอกเฉพาะ 4 ตัวท้าย</small></label>
         </div>
         <div class="manifest-table-wrap">
           <table class="manifest-entry-table">
@@ -822,8 +822,8 @@ const state = {
     recipientNameBreaksById: savedSettings.recipientNameBreaksById && typeof savedSettings.recipientNameBreaksById === "object"
       ? { ...savedSettings.recipientNameBreaksById }
       : {},
-    manifestRegisteredPrefix: normalizeTrackingDigits(savedSettings.manifestRegisteredPrefix || "").slice(0, 6),
-    manifestEmsPrefix: normalizeTrackingDigits(savedSettings.manifestEmsPrefix || "").slice(0, 6),
+    manifestRegisteredPrefix: normalizeManifestPrefix(savedSettings.manifestRegisteredPrefix || "", "RJ"),
+    manifestEmsPrefix: normalizeManifestPrefix(savedSettings.manifestEmsPrefix || "", "EQ"),
     paperLayouts: initialPaperLayouts,
     garudaImage: resolveAssetUrl(defaults.garudaImage),
     showRecipientDepartment: savedSettings.showRecipientDepartment !== undefined ? Boolean(savedSettings.showRecipientDepartment) : defaults.showRecipientDepartment !== false,
@@ -1124,8 +1124,8 @@ function historyTrackingSummary(job) {
   const ems = codes.map((item) => item.ems).filter(Boolean);
   if (!registered.length && !ems.length) return '<span class="history-muted">ยังไม่มีเลขลงทะเบียน/EMS</span>';
   return `<div class="history-tracking-list">
-    ${registered.length ? `<span><b>ลงทะเบียน:</b> ${registered.map((code) => `RJ ${escapeHtml(code)} TH`).join(", ")}</span>` : ""}
-    ${ems.length ? `<span><b>EMS:</b> ${ems.map((code) => `EQ ${escapeHtml(code)} TH`).join(", ")}</span>` : ""}
+    ${registered.length ? `<span><b>ลงทะเบียน:</b> ${registered.map((code) => escapeHtml(formatTrackingCode(code, "RJ"))).join(", ")}</span>` : ""}
+    ${ems.length ? `<span><b>EMS:</b> ${ems.map((code) => escapeHtml(formatTrackingCode(code, "EQ"))).join(", ")}</span>` : ""}
   </div>`;
 }
 
@@ -1668,6 +1668,9 @@ function parseTrackingCode(value = "", defaultPrefix = "") {
 }
 
 function formatTrackingCode(value = "", defaultPrefix = "") {
+  const compact = String(value).trim().toUpperCase().replace(/[\s-]/g, "");
+  const full = compact.match(/^([A-Z]{2})([0-9๐-๙]{8})([0-9๐-๙])(?:TH)?$/);
+  if (full) return `${full[1]} ${full[2]} ${full[3]} TH`;
   const digits = normalizeTrackingDigits(value);
   if (!digits) return "";
   const firstEight = digits.slice(0, 8);
@@ -1677,6 +1680,25 @@ function formatTrackingCode(value = "", defaultPrefix = "") {
 
 function normalizeTrackingDigits(value = "") {
   return String(value).trim().toUpperCase().replace(/[\s-]/g, "").replace(/^[A-Z]{2}/, "").replace(/[A-Z]{2}$/, "").replace(/[^0-9๐-๙]/g, "").slice(0, 9);
+}
+
+function normalizeManifestPrefix(value = "", defaultLetters = "") {
+  const compact = String(value).trim().toUpperCase().replace(/[\s-]/g, "").replace(/[^A-Z0-9๐-๙]/g, "");
+  const full = compact.match(/^([A-Z]{0,2})([0-9๐-๙]{0,5})/);
+  if (full?.[1]) return `${full[1].slice(0, 2)}${full[2].slice(0, 5)}`.slice(0, 7);
+  const digits = normalizeTrackingDigits(compact).slice(0, 5);
+  return digits ? `${String(defaultLetters || "").toUpperCase().slice(0, 2)}${digits}` : "";
+}
+
+function manifestPrefixLetters(type = "") {
+  return type === "ems" ? "EQ" : "RJ";
+}
+
+function limitManifestPrefixInput(event) {
+  const type = event.target === elements.manifestEmsPrefix ? "ems" : "registered";
+  const cleaned = normalizeManifestPrefix(event.target.value, manifestPrefixLetters(type));
+  if (event.target.value !== cleaned) event.target.value = cleaned;
+  event.target.setCustomValidity("");
 }
 
 function limitTrackingInput(event) {
@@ -1690,21 +1712,22 @@ function manifestPrefixForInput(input) {
   const prefixInput = input?.dataset.trackingType === "ems"
     ? elements.manifestEmsPrefix
     : elements.manifestRegisteredPrefix;
-  const prefix = normalizeTrackingDigits(prefixInput?.value || "").slice(0, 6);
-  return prefix.length === 6 ? prefix : "";
+  const type = input?.dataset.trackingType || "";
+  const prefix = normalizeManifestPrefix(prefixInput?.value || "", manifestPrefixLetters(type));
+  return /^[A-Z]{2}[0-9๐-๙]{5}$/.test(prefix) ? prefix : "";
 }
 
 function fullManifestTrackingValue(input) {
   if (!input) return "";
   const value = normalizeTrackingDigits(input.value);
   const prefix = manifestPrefixForInput(input);
-  return prefix && value ? `${prefix}${value.slice(0, 3)}` : value;
+  return prefix && value ? `${prefix}${value.slice(0, 4)}` : value;
 }
 
 function manifestTrackingEntryValue(savedValue = "", prefix = "") {
   const digits = normalizeTrackingDigits(savedValue);
-  const lockedPrefix = normalizeTrackingDigits(prefix).slice(0, 6);
-  return lockedPrefix.length === 6 && digits.startsWith(lockedPrefix) ? digits.slice(6, 9) : digits;
+  const lockedDigits = normalizeTrackingDigits(prefix).slice(0, 5);
+  return lockedDigits.length === 5 && digits.startsWith(lockedDigits) ? digits.slice(5, 9) : digits;
 }
 
 function updateManifestRowTrackingState(row, activeInput = null) {
@@ -1725,7 +1748,7 @@ function updateManifestRowTrackingState(row, activeInput = null) {
 }
 
 function focusNextManifestTrackingInput(input) {
-  if (!input || input.maxLength !== 3 || normalizeTrackingDigits(input.value).length !== 3) return;
+  if (!input || input.maxLength !== 4 || normalizeTrackingDigits(input.value).length !== 4) return;
   const type = input.dataset.trackingType;
   const inputs = [...elements.manifestRows.querySelectorAll(`[data-tracking-type="${type}"]`)];
   const next = inputs.slice(inputs.indexOf(input) + 1).find((candidate) => !candidate.disabled);
@@ -1737,21 +1760,23 @@ function focusNextManifestTrackingInput(input) {
 
 function applyManifestPrefixMode(type) {
   const prefixInput = type === "ems" ? elements.manifestEmsPrefix : elements.manifestRegisteredPrefix;
-  const prefix = normalizeTrackingDigits(prefixInput.value).slice(0, 6);
+  const prefix = normalizeManifestPrefix(prefixInput.value, manifestPrefixLetters(type));
   prefixInput.value = prefix;
   state.settings[type === "ems" ? "manifestEmsPrefix" : "manifestRegisteredPrefix"] = prefix;
   elements.manifestRows.querySelectorAll(`[data-tracking-type="${type}"]`).forEach((input) => {
     const previousPrefix = input.dataset.lockedPrefix || "";
     let value = normalizeTrackingDigits(input.value);
-    if (prefix.length === 6) {
-      if (value.length === 9 && value.startsWith(prefix)) value = value.slice(6);
-      else if (value.length > 3) value = value.slice(-3);
-      input.maxLength = 3;
-      input.pattern = "[0-9๐-๙]{3}";
-      input.placeholder = "3 ตัวท้าย";
-      input.title = `กรอก 3 ตัวท้าย ต่อจาก ${prefix}`;
+    const prefixDigits = normalizeTrackingDigits(prefix).slice(0, 5);
+    if (/^[A-Z]{2}[0-9๐-๙]{5}$/.test(prefix)) {
+      if (value.length === 9 && value.startsWith(prefixDigits)) value = value.slice(5);
+      else if (value.length > 4) value = value.slice(-4);
+      input.maxLength = 4;
+      input.pattern = "[0-9๐-๙]{4}";
+      input.placeholder = "4 ตัวท้าย";
+      input.title = `กรอก 4 ตัวท้าย ต่อจาก ${prefix}`;
     } else {
-      if (value && value.length <= 3 && previousPrefix.length === 6) value = `${previousPrefix}${value}`;
+      const previousPrefixDigits = normalizeTrackingDigits(previousPrefix).slice(0, 5);
+      if (value && value.length <= 4 && previousPrefixDigits.length === 5) value = `${previousPrefixDigits}${value}`;
       input.maxLength = 9;
       input.pattern = "[0-9๐-๙]{9}";
       input.placeholder = "ตัวเลข 9 หลัก";
@@ -2698,10 +2723,12 @@ function openManifestDialog() {
   elements.manifestPermit.value = defaultManifestPermit();
   elements.manifestRegisteredPrefix.value = state.settings.manifestRegisteredPrefix || "";
   elements.manifestEmsPrefix.value = state.settings.manifestEmsPrefix || "";
-  const registeredPrefix = normalizeTrackingDigits(elements.manifestRegisteredPrefix.value).slice(0, 6);
-  const emsPrefix = normalizeTrackingDigits(elements.manifestEmsPrefix.value).slice(0, 6);
-  const registeredUsesPrefix = registeredPrefix.length === 6;
-  const emsUsesPrefix = emsPrefix.length === 6;
+  const registeredPrefix = normalizeManifestPrefix(elements.manifestRegisteredPrefix.value, "RJ");
+  const emsPrefix = normalizeManifestPrefix(elements.manifestEmsPrefix.value, "EQ");
+  elements.manifestRegisteredPrefix.value = registeredPrefix;
+  elements.manifestEmsPrefix.value = emsPrefix;
+  const registeredUsesPrefix = /^[A-Z]{2}[0-9๐-๙]{5}$/.test(registeredPrefix);
+  const emsUsesPrefix = /^[A-Z]{2}[0-9๐-๙]{5}$/.test(emsPrefix);
   elements.manifestRows.dataset.printJobId = job?.id || "";
   elements.manifestRows.innerHTML = jobs.map(({ item, copyIndex }, index) => {
     const name = manifestRecipientLabel(item);
@@ -2716,8 +2743,8 @@ function openManifestDialog() {
       <td>${index + 1}</td>
       <td><div class="manifest-recipient-name">${escapeHtml(name)}</div>${subText ? `<div class="manifest-recipient-sub">${escapeHtml(subText)}</div>` : ""}</td>
       <td>${escapeHtml(item.postalCode || "")}</td>
-      <td><input name="registered-${index}" class="tracking-input" data-tracking-type="registered" data-locked-prefix="${escapeHtml(registeredUsesPrefix ? registeredPrefix : "")}" type="text" inputmode="numeric" autocomplete="off" maxlength="${registeredUsesPrefix ? 3 : 9}" pattern="[0-9๐-๙]{${registeredUsesPrefix ? 3 : 9}}" title="${registeredUsesPrefix ? `กรอก 3 ตัวท้าย ต่อจาก ${escapeHtml(registeredPrefix)}` : "กรอกตัวเลข 9 หลัก"}" placeholder="${registeredUsesPrefix ? "3 ตัวท้าย" : "ตัวเลข 9 หลัก"}" value="${escapeHtml(registeredValue)}" /></td>
-      <td><input name="ems-${index}" class="tracking-input" data-tracking-type="ems" data-locked-prefix="${escapeHtml(emsUsesPrefix ? emsPrefix : "")}" type="text" inputmode="numeric" autocomplete="off" maxlength="${emsUsesPrefix ? 3 : 9}" pattern="[0-9๐-๙]{${emsUsesPrefix ? 3 : 9}}" title="${emsUsesPrefix ? `กรอก 3 ตัวท้าย ต่อจาก ${escapeHtml(emsPrefix)}` : "กรอกตัวเลข 9 หลัก"}" placeholder="${emsUsesPrefix ? "3 ตัวท้าย" : "ตัวเลข 9 หลัก"}" value="${escapeHtml(emsValue)}" /></td>
+      <td><input name="registered-${index}" class="tracking-input" data-tracking-type="registered" data-locked-prefix="${escapeHtml(registeredUsesPrefix ? registeredPrefix : "")}" type="text" inputmode="numeric" autocomplete="off" maxlength="${registeredUsesPrefix ? 4 : 9}" pattern="[0-9๐-๙]{${registeredUsesPrefix ? 4 : 9}}" title="${registeredUsesPrefix ? `กรอก 4 ตัวท้าย ต่อจาก ${escapeHtml(registeredPrefix)}` : "กรอกตัวเลข 9 หลัก"}" placeholder="${registeredUsesPrefix ? "4 ตัวท้าย" : "ตัวเลข 9 หลัก"}" value="${escapeHtml(registeredValue)}" /></td>
+      <td><input name="ems-${index}" class="tracking-input" data-tracking-type="ems" data-locked-prefix="${escapeHtml(emsUsesPrefix ? emsPrefix : "")}" type="text" inputmode="numeric" autocomplete="off" maxlength="${emsUsesPrefix ? 4 : 9}" pattern="[0-9๐-๙]{${emsUsesPrefix ? 4 : 9}}" title="${emsUsesPrefix ? `กรอก 4 ตัวท้าย ต่อจาก ${escapeHtml(emsPrefix)}` : "กรอกตัวเลข 9 หลัก"}" placeholder="${emsUsesPrefix ? "4 ตัวท้าย" : "ตัวเลข 9 หลัก"}" value="${escapeHtml(emsValue)}" /></td>
     </tr>`;
   }).join("");
   elements.manifestRows.querySelectorAll(".tracking-input").forEach((input) => {
@@ -2749,9 +2776,9 @@ function printMailingManifest(event) {
 
   const form = new FormData(elements.mailingManifestForm);
   const invalidTrackingInput = [...elements.manifestRows.querySelectorAll(".tracking-input")]
-    .find((input) => input.value.trim() && fullManifestTrackingValue(input).length !== 9);
+    .find((input) => input.value.trim() && normalizeTrackingDigits(fullManifestTrackingValue(input)).length !== 9);
   if (invalidTrackingInput) {
-    const expected = manifestPrefixForInput(invalidTrackingInput) ? "3 ตัวท้าย" : "ตัวเลข 9 หลัก";
+    const expected = manifestPrefixForInput(invalidTrackingInput) ? "4 ตัวท้าย" : "ตัวเลข 9 หลัก";
     invalidTrackingInput.setCustomValidity(`กรุณากรอก${expected}ให้ครบ`);
     invalidTrackingInput.reportValidity();
     return;
@@ -3036,9 +3063,9 @@ $("#openManifestDialog").addEventListener("click", openManifestDialog);
 $("#closeManifestDialog").addEventListener("click", closeManifestDialog);
 $("#cancelManifestDialog").addEventListener("click", closeManifestDialog);
 elements.manifestDate.addEventListener("change", () => saveCurrentPrintJobDraft());
-elements.manifestRegisteredPrefix.addEventListener("input", limitTrackingInput);
+elements.manifestRegisteredPrefix.addEventListener("input", limitManifestPrefixInput);
 elements.manifestRegisteredPrefix.addEventListener("input", () => applyManifestPrefixMode("registered"));
-elements.manifestEmsPrefix.addEventListener("input", limitTrackingInput);
+elements.manifestEmsPrefix.addEventListener("input", limitManifestPrefixInput);
 elements.manifestEmsPrefix.addEventListener("input", () => applyManifestPrefixMode("ems"));
 elements.mailingManifestForm.addEventListener("submit", printMailingManifest);
 $("#openPrintHistory").addEventListener("click", openPrintHistory);
