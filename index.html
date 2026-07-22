@@ -75,10 +75,18 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .sender-address-mini{margin-top:0}
 .sender-document-mini{font-weight:700}
 .receiver-mini{position:absolute;z-index:2;width:68%;color:#17223b}
+.recipient-heading{display:flex;align-items:baseline;gap:.55em}
+.recipient-greeting{flex:0 0 auto;color:#667085}
+.recipient-name{display:block;min-width:0;white-space:nowrap}
+.recipient-name strong{font-weight:800}
+.recipient-heading.recipient-name-manual{align-items:flex-start}
+.recipient-heading.recipient-name-manual .recipient-name{white-space:normal}
+.recipient-detail{margin-left:2.55em}
 .receiver-mini small{display:block;color:#667085}
 .hero .receiver-mini h1{max-width:none;margin:0;color:inherit;font:inherit;font-weight:800;letter-spacing:normal;line-height:inherit;white-space:nowrap}
 .hero .receiver-mini h1.recipient-name-manual{white-space:normal}
 .hero .receiver-mini p{max-width:none;margin:0;color:inherit;font:inherit;letter-spacing:normal;line-height:inherit}
+.receiver-mini .recipient-position{font-weight:800}
 .receiver-mini .organization,.receiver-mini .postal-code{font-weight:700}
 
 .content-grid{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:18px;align-items:start}
@@ -1223,18 +1231,16 @@ function buildHistoryEnvelopePdf(job) {
     : "";
   const pages = entries.map(({ item }) => {
     const rawName = recipientEnvelopeName(item);
-    const displayName = recipientEnvelopeDisplayName(item);
-    const manualClass = displayName.includes("\n") ? " recipient-name-manual" : "";
     const locality = [formatAddressArea("ตำบล", item.subdistrict), formatAddressArea("อำเภอ", item.district)].filter(Boolean).join(" ");
     const province = formatAddressArea("จังหวัด", item.province);
     const department = state.settings.showRecipientDepartment && item.department && rawName !== item.department ? `<p class="organization">${escapeHtml(item.department)}</p>` : "";
     const address = state.settings.showRecipientAddress
       ? `<p>${escapeHtml(item.address1 || "")}</p><p>${escapeHtml(locality)}</p><p>${escapeHtml(province)}</p>${item.postalCode ? `<p class="postal-code"><strong>${escapeHtml(item.postalCode)}</strong></p>` : ""}`
       : "";
-    return `<section class="envelope pdf-page">${senderBlock}${permit}<div class="recipient"><small>เรียน</small><h1 class="${manualClass.trim()}" style="font-size:${state.settings.recipientFontPt}pt">${recipientEnvelopeNameHtml(item)}</h1>${item.position && rawName !== item.position ? `<p>${escapeHtml(item.position)}</p>` : ""}${department}${address}</div></section>`;
+    return `<section class="envelope pdf-page">${senderBlock}${permit}<div class="recipient">${recipientEnvelopeBlockHtml(item, { fontPt: state.settings.recipientFontPt })}<div class="recipient-detail">${department}${address}</div></div></section>`;
   }).join("");
   const container = document.createElement("div");
-  container.innerHTML = `<style>${printFontFaceCss()}*{box-sizing:border-box}.pdf-envelope-document{margin:0;color:#17223b;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${widthMm}mm;height:${heightMm}mm;overflow:hidden;background:#fff}.sender{position:absolute;top:${state.settings.senderTopMm}mm;left:${state.settings.senderLeftMm}mm;width:55%;font-size:${state.settings.senderFontPt}pt;line-height:${state.settings.senderLineHeight};color:#111}.sender-content{min-width:0}.sender-address{margin-top:.7mm}.document-number{margin-top:1.2mm;font-weight:700}.garuda{display:block;width:auto;height:${state.settings.garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${state.settings.senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm}.postage-permit{position:absolute;top:${state.settings.postagePermitTopMm}mm;right:${state.settings.postagePermitRightMm}mm;display:flex;width:${POSTAGE_PERMIT_WIDTH_MM}mm;height:${POSTAGE_PERMIT_HEIGHT_MM}mm;align-items:center;justify-content:center;overflow:hidden;padding:1.2mm;border:.35mm solid #111;color:#111;font-size:${state.settings.postagePermitFontPt}pt;font-weight:700;line-height:${state.settings.postagePermitLineHeight};text-align:center}.recipient{position:absolute;left:${state.settings.recipientLeftPercent}%;top:${state.settings.recipientTopPercent}%;width:calc(100% - ${state.settings.recipientLeftPercent}% - 8mm);font-size:${state.settings.recipientFontPt}pt;line-height:${state.settings.recipientLineHeight}}.recipient small{color:#667085;font-size:inherit}.recipient h1{margin:1mm 0 0;font-size:inherit;white-space:nowrap}.recipient h1.recipient-name-manual{white-space:normal}.recipient p{margin:.4mm 0}.organization{font-weight:700}.pdf-page{break-after:page;page-break-after:always}.pdf-page:last-child{break-after:auto;page-break-after:auto}</style><div class="pdf-envelope-document">${pages}</div>`;
+  container.innerHTML = `<style>${printFontFaceCss()}*{box-sizing:border-box}.pdf-envelope-document{margin:0;color:#17223b;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${widthMm}mm;height:${heightMm}mm;overflow:hidden;background:#fff}.sender{position:absolute;top:${state.settings.senderTopMm}mm;left:${state.settings.senderLeftMm}mm;width:55%;font-size:${state.settings.senderFontPt}pt;line-height:${state.settings.senderLineHeight};color:#111}.sender-content{min-width:0}.sender-address{margin-top:.7mm}.document-number{margin-top:1.2mm;font-weight:700}.garuda{display:block;width:auto;height:${state.settings.garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${state.settings.senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm}.postage-permit{position:absolute;top:${state.settings.postagePermitTopMm}mm;right:${state.settings.postagePermitRightMm}mm;display:flex;width:${POSTAGE_PERMIT_WIDTH_MM}mm;height:${POSTAGE_PERMIT_HEIGHT_MM}mm;align-items:center;justify-content:center;overflow:hidden;padding:1.2mm;border:.35mm solid #111;color:#111;font-size:${state.settings.postagePermitFontPt}pt;font-weight:700;line-height:${state.settings.postagePermitLineHeight};text-align:center}.recipient{position:absolute;left:${state.settings.recipientLeftPercent}%;top:${state.settings.recipientTopPercent}%;width:calc(100% - ${state.settings.recipientLeftPercent}% - 8mm);font-size:${state.settings.recipientFontPt}pt;line-height:${state.settings.recipientLineHeight}}.recipient-heading{display:flex;align-items:baseline;gap:.55em}.recipient-greeting{flex:0 0 auto;color:#667085}.recipient-name{display:block;min-width:0;white-space:nowrap}.recipient-name strong{font-weight:800}.recipient-heading.recipient-name-manual{align-items:flex-start}.recipient-heading.recipient-name-manual .recipient-name{white-space:normal}.recipient-detail{margin-left:2.55em}.recipient-position{font-weight:800}.recipient p{margin:.4mm 0}.organization{font-weight:700}.pdf-page{break-after:page;page-break-after:always}.pdf-page:last-child{break-after:auto;page-break-after:auto}</style><div class="pdf-envelope-document">${pages}</div>`;
   return { container, format: [widthMm, heightMm], orientation: "landscape" };
 }
 
@@ -1593,6 +1599,17 @@ function recipientEnvelopeDisplayName(item) {
 
 function recipientEnvelopeNameHtml(item) {
   return escapeHtml(recipientEnvelopeDisplayName(item)).replace(/\n/g, "<br>");
+}
+
+function recipientEnvelopeBlockHtml(item, options = {}) {
+  const rawName = recipientEnvelopeName(item);
+  const displayName = recipientEnvelopeDisplayName(item);
+  const manualClass = displayName.includes("\n") ? " recipient-name-manual" : "";
+  const fontStyle = options.fontPt ? ` style="font-size:${options.fontPt}pt"` : "";
+  const position = item.position && rawName !== item.position
+    ? `<p class="recipient-position"><strong>${escapeHtml(item.position)}</strong></p>`
+    : "";
+  return `<div class="recipient-heading${manualClass}"><span class="recipient-greeting">เรียน</span><span class="recipient-name"${fontStyle}><strong>${recipientEnvelopeNameHtml(item)}</strong></span></div>${position}`;
 }
 
 function previewRecipientItems() {
@@ -2218,17 +2235,15 @@ function renderSummary() {
     ].filter(Boolean).join(" ");
     const previewProvince = formatAddressArea("จังหวัด", previewRecipient.province);
     const previewRecipientName = recipientEnvelopeName(previewRecipient);
-    const previewRecipientDisplayName = recipientEnvelopeDisplayName(previewRecipient);
-    const previewRecipientNameClass = previewRecipientDisplayName.includes("\n") ? ' class="recipient-name-manual"' : "";
     const previewDepartmentHtml = state.settings.showRecipientDepartment && previewRecipient.department && previewRecipientName !== previewRecipient.department
       ? `<p class="organization">${escapeHtml(previewRecipient.department)}</p>`
       : "";
     const previewAddressHtml = state.settings.showRecipientAddress
       ? `<p>${escapeHtml(previewRecipient.address1)}</p><p>${escapeHtml(previewLocality)}</p><p>${escapeHtml(previewProvince)}</p>${previewRecipient.postalCode ? `<p class="postal-code">${escapeHtml(previewRecipient.postalCode)}</p>` : ""}`
       : "";
-    receiverPreview.innerHTML = `<small>เรียน</small><h1${previewRecipientNameClass}>${recipientEnvelopeNameHtml(previewRecipient)}</h1>${previewRecipient.position && previewRecipientName !== previewRecipient.position ? `<p>${escapeHtml(previewRecipient.position)}</p>` : ""}${previewDepartmentHtml}${previewAddressHtml}`;
+    receiverPreview.innerHTML = `${recipientEnvelopeBlockHtml(previewRecipient)}<div class="recipient-detail">${previewDepartmentHtml}${previewAddressHtml}</div>`;
   } else {
-    receiverPreview.innerHTML = "<small>เรียน</small><h1>เลือกผู้รับเพื่อดูตัวอย่าง</h1>";
+    receiverPreview.innerHTML = '<div class="recipient-heading"><span class="recipient-greeting">เรียน</span><span class="recipient-name"><strong>เลือกผู้รับเพื่อดูตัวอย่าง</strong></span></div>';
   }
   receiverPreview.style.top = `${state.settings.recipientTopPercent}%`;
   receiverPreview.style.left = `${state.settings.recipientLeftPercent}%`;
@@ -2236,7 +2251,7 @@ function renderSummary() {
   receiverPreview.style.lineHeight = state.settings.recipientLineHeight;
   const recipientPreviewFontPx = ptToPreviewPx(state.settings.recipientFontPt);
   receiverPreview.style.fontSize = `${recipientPreviewFontPx}px`;
-  const receiverGreeting = receiverPreview.querySelector("small");
+  const receiverGreeting = receiverPreview.querySelector(".recipient-greeting");
   if (receiverGreeting) receiverGreeting.style.fontSize = `${recipientPreviewFontPx}px`;
   const receiverHeading = receiverPreview.querySelector("h1");
   if (receiverHeading) {
@@ -2922,15 +2937,13 @@ function printEnvelopes() {
     ].filter(Boolean).join(" ");
     const province = formatAddressArea("จังหวัด", item.province);
     const envelopeRecipientName = recipientEnvelopeName(item);
-    const envelopeRecipientDisplayName = recipientEnvelopeDisplayName(item);
-    const envelopeRecipientHeadingClass = envelopeRecipientDisplayName.includes("\n") ? ' class="recipient-name-manual"' : "";
     const recipientDepartmentHtml = state.settings.showRecipientDepartment && item.department && envelopeRecipientName !== item.department
       ? `<p class="organization">${escapeHtml(item.department)}</p>`
       : "";
     const recipientAddressHtml = state.settings.showRecipientAddress
       ? `<p>${escapeHtml(item.address1)}</p><p>${escapeHtml(locality)}</p><p>${escapeHtml(province)}</p>${item.postalCode ? `<p class="postal-code"><strong>${escapeHtml(item.postalCode)}</strong></p>` : ""}`
       : "";
-    return `<section class="envelope">${senderBlockHtml}${postagePermitBlockHtml}<div class="recipient"><small>เรียน</small><h1${envelopeRecipientHeadingClass} style="font-size:${recipientFontPt}pt">${recipientEnvelopeNameHtml(item)}</h1>${item.position && envelopeRecipientName !== item.position ? `<p class="recipient-position">${escapeHtml(item.position)}</p>` : ""}${recipientDepartmentHtml}${recipientAddressHtml}</div></section>`;
+    return `<section class="envelope">${senderBlockHtml}${postagePermitBlockHtml}<div class="recipient">${recipientEnvelopeBlockHtml(item, { fontPt: recipientFontPt })}<div class="recipient-detail">${recipientDepartmentHtml}${recipientAddressHtml}</div></div></section>`;
   }).join("");
   const popup = window.open("", "_blank");
   if (!popup) {
@@ -2938,7 +2951,7 @@ function printEnvelopes() {
     return;
   }
   popup.opener = null;
-  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์จ่าหน้าซอง</title><style>${printFontFaceCss()}@page{size:${width} ${height};margin:0}*{box-sizing:border-box}body{margin:0;color:#17223b;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${width};height:${height};page-break-after:always;overflow:hidden;background:#fff}.envelope:last-child{page-break-after:auto}.sender{position:absolute;top:${senderTopMm}mm;left:${senderLeftMm}mm;width:55%;font-size:${senderFontPt}pt;line-height:${senderLineHeight};color:#111}.sender-content{min-width:0}.sender-address{margin-top:.7mm}.document-number{margin-top:1.2mm;font-weight:700}.garuda{display:block;width:auto;height:${garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm 0}.postage-permit{position:absolute;top:${postagePermitTopMm}mm;right:${postagePermitRightMm}mm;display:flex;width:${POSTAGE_PERMIT_WIDTH_MM}mm;height:${POSTAGE_PERMIT_HEIGHT_MM}mm;align-items:center;justify-content:center;overflow:hidden;padding:1.2mm;border:.35mm solid #111;color:#111;font-size:${postagePermitFontPt}pt;font-weight:700;line-height:${postagePermitLineHeight};text-align:center}.recipient{position:absolute;left:${recipientLeftPercent}%;top:${recipientTopPercent}%;width:calc(100% - ${recipientLeftPercent}% - 8mm);font-size:${recipientFontPt}pt;line-height:${recipientLineHeight}}.recipient small{color:#667085;font-size:${recipientFontPt}pt}.recipient h1{margin:1mm 0 0;font-size:${recipientFontPt}pt;white-space:nowrap}.recipient h1.recipient-name-manual{white-space:normal}.recipient-position{white-space:nowrap}.recipient p{margin:.4mm 0}.organization{font-weight:700}@media screen{body{background:#eef2f7;padding:18px}.envelope{margin:0 auto 18px;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${pages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
+  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์จ่าหน้าซอง</title><style>${printFontFaceCss()}@page{size:${width} ${height};margin:0}*{box-sizing:border-box}body{margin:0;color:#17223b;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif}.envelope{position:relative;width:${width};height:${height};page-break-after:always;overflow:hidden;background:#fff}.envelope:last-child{page-break-after:auto}.sender{position:absolute;top:${senderTopMm}mm;left:${senderLeftMm}mm;width:55%;font-size:${senderFontPt}pt;line-height:${senderLineHeight};color:#111}.sender-content{min-width:0}.sender-address{margin-top:.7mm}.document-number{margin-top:1.2mm;font-weight:700}.garuda{display:block;width:auto;height:${garudaSizeMm}mm;object-fit:contain;object-position:left top}.garuda-hidden{visibility:hidden}.sender.garuda-left{display:flex;align-items:flex-start;gap:3mm}.garuda-left .garuda{flex:0 0 auto}.garuda-left .sender-content{padding-top:${senderTextOffsetMm}mm}.garuda-above .garuda{margin:0 0 2mm 0}.postage-permit{position:absolute;top:${postagePermitTopMm}mm;right:${postagePermitRightMm}mm;display:flex;width:${POSTAGE_PERMIT_WIDTH_MM}mm;height:${POSTAGE_PERMIT_HEIGHT_MM}mm;align-items:center;justify-content:center;overflow:hidden;padding:1.2mm;border:.35mm solid #111;color:#111;font-size:${postagePermitFontPt}pt;font-weight:700;line-height:${postagePermitLineHeight};text-align:center}.recipient{position:absolute;left:${recipientLeftPercent}%;top:${recipientTopPercent}%;width:calc(100% - ${recipientLeftPercent}% - 8mm);font-size:${recipientFontPt}pt;line-height:${recipientLineHeight}}.recipient-heading{display:flex;align-items:baseline;gap:.55em}.recipient-greeting{flex:0 0 auto;color:#667085}.recipient-name{display:block;min-width:0;white-space:nowrap}.recipient-name strong{font-weight:800}.recipient-heading.recipient-name-manual{align-items:flex-start}.recipient-heading.recipient-name-manual .recipient-name{white-space:normal}.recipient-detail{margin-left:2.55em}.recipient-position{font-weight:800;white-space:nowrap}.recipient p{margin:.4mm 0}.organization{font-weight:700}@media screen{body{background:#eef2f7;padding:18px}.envelope{margin:0 auto 18px;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${pages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
   popup.document.close();
   saveCurrentPrintJobDraft({ envelopePrintedAt: new Date().toISOString() });
   setNotice(`เตรียมพิมพ์ ${jobs.length} ซอง จาก ${selectedCount} รายชื่อ บน${label} และบันทึกลงประวัติแล้ว`);
