@@ -41,8 +41,7 @@
         <div class="hero-copy">
           <span class="eyebrow">งานสารบรรณที่ง่ายขึ้น</span>
           <h1>เลือกผู้รับ แล้วพิมพ์<br /><em>จ่าหน้าซองได้ทันที</em></h1>
-          <p>ค้นหารายชื่อจากฐานข้อมูลกลาง เลือกหลายหน่วยงาน และจัดหน้าพิมพ์ให้พอดีกับซองในไม่กี่คลิก</p>
-          <label class="job-creator-control">
+          <label class="job-creator-control is-hidden">
             <span>ผู้สร้างชุดงาน / กลุ่มงาน *</span>
             <select id="printJobCreator" required>
               <option value="">กรุณาเลือกผู้สร้างชุดงาน</option>
@@ -95,7 +94,10 @@
         <section class="directory-card">
           <div class="section-title">
             <div><span class="eyebrow">รายชื่อผู้รับ</span><h2>เลือกหน่วยงานที่ต้องการส่ง</h2></div>
-            <button class="small-button accent" id="openAddRecipient" type="button">＋ เพิ่มรายชื่อผู้รับ</button>
+            <div class="section-actions">
+              <button class="small-button" id="downloadRecipientsCsv" type="button">⬇ ดาวน์โหลดรายชื่อ CSV</button>
+              <button class="small-button accent" id="openAddRecipient" type="button">＋ เพิ่มรายชื่อผู้รับ</button>
+            </div>
           </div>
           <div class="filters">
             <label class="search"><span>⌕</span><input id="searchInput" type="search" placeholder="ค้นหาชื่อ ตำแหน่ง หรือหน่วยงาน" /></label>
@@ -126,7 +128,6 @@
               <label class="garuda-option"><input id="showPostagePermit" type="checkbox" checked /><span>แสดงกรอบฝากส่ง</span></label>
               <button class="sender-settings-button" id="openSenderSettings" type="button">✎ แก้ไขข้อมูลผู้ส่ง</button>
               <button class="sender-settings-button" id="openPostagePermitSettings" type="button">✎ แก้ไขกรอบค่าฝากส่ง</button>
-              <button id="printButton" type="button">ดูตัวอย่างและพิมพ์ <span>↗</span></button>
             </div>
           </section>
         </aside>
@@ -173,6 +174,7 @@
         <div class="dialog-title confirm-title"><div><span class="eyebrow danger-text">ยืนยันการลบ</span><h2>ลบข้อมูลผู้รับ</h2></div><button class="close-button" id="closeDeleteRecipientDialog" type="button" aria-label="ปิด">×</button></div>
         <p class="dialog-info danger-info">รายการนี้จะถูกลบออกจากฐานข้อมูลกลาง กรุณาตรวจสอบให้แน่ใจก่อนดำเนินการ</p>
         <div class="delete-target" id="deleteRecipientName"></div>
+        <label class="form-field"><span>รหัสยืนยันการลบ *</span><input id="deleteRecipientPassword" type="password" minlength="8" autocomplete="current-password" required placeholder="กรอกรหัสผ่านผู้ดูแล" /><small>ต้องกรอกรหัสผ่านผู้ดูแลอีกครั้ง เพื่อป้องกันการกดลบผิด</small></label>
         <p class="form-message" id="deleteRecipientMessage" role="status" aria-live="polite"></p>
         <div class="dialog-actions"><button class="button secondary" id="cancelDeleteRecipient" type="button">ยกเลิก</button><button class="button danger solid" id="confirmDeleteRecipient" type="submit">ยืนยันลบข้อมูล</button></div>
       </form>

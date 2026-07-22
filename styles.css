@@ -54,6 +54,8 @@ body.app-locked .login-screen{display:grid}
 .hero p{max-width:630px;margin:18px 0 0;color:#5a6579;font-size:15px;line-height:1.85}
 .hero-actions{display:flex;flex-wrap:wrap;gap:11px;margin-top:28px}
 .job-creator-control{display:block;max-width:650px;margin-top:18px}
+.job-creator-control.is-hidden{display:none}
+.job-creator-control.is-active{padding:14px;border:1px solid #bdd0ff;border-radius:18px;background:rgba(255,255,255,.68);box-shadow:0 10px 24px rgba(40,86,217,.08)}
 .job-creator-control>span{display:block;margin-bottom:8px;color:#344054;font-size:15px;font-weight:900}
 .job-creator-control select{width:100%;height:54px;padding:0 44px 0 16px;border:1px solid #cfd9ec;border-radius:14px;background:#fff;color:#17223b;font-size:16px;font-weight:700}
 .job-creator-control small{display:block;margin-top:7px;color:#667085;font-size:12px;line-height:1.5}
@@ -107,6 +109,7 @@ body.app-locked .login-screen{display:grid}
 .section-title{display:flex;align-items:end;justify-content:space-between;gap:16px;padding:25px 26px 15px}
 .section-title h2,.print-card h2,dialog h2{margin:0;letter-spacing:-.025em}
 .section-title h2{font-size:20px}
+.section-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:9px}
 .small-button{padding:8px 11px;border:1px solid #e1e6ef;border-radius:10px;background:#fff;color:#667085;font-size:10px;font-weight:700}
 .small-button.accent{border-color:var(--blue);background:var(--blue);color:#fff;box-shadow:0 7px 16px rgba(40,86,217,.16)}
 .small-button.accent:hover{background:var(--blue-deep)}
@@ -319,7 +322,6 @@ input[type=checkbox]{width:20px;height:20px}
 .print-controls .paper-size-option{grid-column:span 2}
 .paper-profile-hint{display:block;margin-top:8px;color:#dbe5ff;font-size:12px;font-weight:700}
 .print-controls .garuda-option{height:52px}
-.print-controls #printButton{grid-column:1/-1}
 .print-card h2{font-size:38px}
 .print-card p{font-size:14px}
 .print-card label>span{margin-bottom:8px;font-size:13px}

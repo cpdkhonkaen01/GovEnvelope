@@ -63,6 +63,8 @@ body.app-locked .login-screen{display:grid}
 .hero p{max-width:630px;margin:18px 0 0;color:#5a6579;font-size:15px;line-height:1.85}
 .hero-actions{display:flex;flex-wrap:wrap;gap:11px;margin-top:28px}
 .job-creator-control{display:block;max-width:650px;margin-top:18px}
+.job-creator-control.is-hidden{display:none}
+.job-creator-control.is-active{padding:14px;border:1px solid #bdd0ff;border-radius:18px;background:rgba(255,255,255,.68);box-shadow:0 10px 24px rgba(40,86,217,.08)}
 .job-creator-control>span{display:block;margin-bottom:8px;color:#344054;font-size:15px;font-weight:900}
 .job-creator-control select{width:100%;height:54px;padding:0 44px 0 16px;border:1px solid #cfd9ec;border-radius:14px;background:#fff;color:#17223b;font-size:16px;font-weight:700}
 .job-creator-control small{display:block;margin-top:7px;color:#667085;font-size:12px;line-height:1.5}
@@ -116,6 +118,7 @@ body.app-locked .login-screen{display:grid}
 .section-title{display:flex;align-items:end;justify-content:space-between;gap:16px;padding:25px 26px 15px}
 .section-title h2,.print-card h2,dialog h2{margin:0;letter-spacing:-.025em}
 .section-title h2{font-size:20px}
+.section-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:9px}
 .small-button{padding:8px 11px;border:1px solid #e1e6ef;border-radius:10px;background:#fff;color:#667085;font-size:10px;font-weight:700}
 .small-button.accent{border-color:var(--blue);background:var(--blue);color:#fff;box-shadow:0 7px 16px rgba(40,86,217,.16)}
 .small-button.accent:hover{background:var(--blue-deep)}
@@ -328,7 +331,6 @@ input[type=checkbox]{width:20px;height:20px}
 .print-controls .paper-size-option{grid-column:span 2}
 .paper-profile-hint{display:block;margin-top:8px;color:#dbe5ff;font-size:12px;font-weight:700}
 .print-controls .garuda-option{height:52px}
-.print-controls #printButton{grid-column:1/-1}
 .print-card h2{font-size:38px}
 .print-card p{font-size:14px}
 .print-card label>span{margin-bottom:8px;font-size:13px}
@@ -435,8 +437,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
         <div class="hero-copy">
           <span class="eyebrow">งานสารบรรณที่ง่ายขึ้น</span>
           <h1>เลือกผู้รับ แล้วพิมพ์<br /><em>จ่าหน้าซองได้ทันที</em></h1>
-          <p>ค้นหารายชื่อจากฐานข้อมูลกลาง เลือกหลายหน่วยงาน และจัดหน้าพิมพ์ให้พอดีกับซองในไม่กี่คลิก</p>
-          <label class="job-creator-control">
+          <label class="job-creator-control is-hidden">
             <span>ผู้สร้างชุดงาน / กลุ่มงาน *</span>
             <select id="printJobCreator" required>
               <option value="">กรุณาเลือกผู้สร้างชุดงาน</option>
@@ -489,7 +490,10 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
         <section class="directory-card">
           <div class="section-title">
             <div><span class="eyebrow">รายชื่อผู้รับ</span><h2>เลือกหน่วยงานที่ต้องการส่ง</h2></div>
-            <button class="small-button accent" id="openAddRecipient" type="button">＋ เพิ่มรายชื่อผู้รับ</button>
+            <div class="section-actions">
+              <button class="small-button" id="downloadRecipientsCsv" type="button">⬇ ดาวน์โหลดรายชื่อ CSV</button>
+              <button class="small-button accent" id="openAddRecipient" type="button">＋ เพิ่มรายชื่อผู้รับ</button>
+            </div>
           </div>
           <div class="filters">
             <label class="search"><span>⌕</span><input id="searchInput" type="search" placeholder="ค้นหาชื่อ ตำแหน่ง หรือหน่วยงาน" /></label>
@@ -520,7 +524,6 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
               <label class="garuda-option"><input id="showPostagePermit" type="checkbox" checked /><span>แสดงกรอบฝากส่ง</span></label>
               <button class="sender-settings-button" id="openSenderSettings" type="button">✎ แก้ไขข้อมูลผู้ส่ง</button>
               <button class="sender-settings-button" id="openPostagePermitSettings" type="button">✎ แก้ไขกรอบค่าฝากส่ง</button>
-              <button id="printButton" type="button">ดูตัวอย่างและพิมพ์ <span>↗</span></button>
             </div>
           </section>
         </aside>
@@ -567,6 +570,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
         <div class="dialog-title confirm-title"><div><span class="eyebrow danger-text">ยืนยันการลบ</span><h2>ลบข้อมูลผู้รับ</h2></div><button class="close-button" id="closeDeleteRecipientDialog" type="button" aria-label="ปิด">×</button></div>
         <p class="dialog-info danger-info">รายการนี้จะถูกลบออกจากฐานข้อมูลกลาง กรุณาตรวจสอบให้แน่ใจก่อนดำเนินการ</p>
         <div class="delete-target" id="deleteRecipientName"></div>
+        <label class="form-field"><span>รหัสยืนยันการลบ *</span><input id="deleteRecipientPassword" type="password" minlength="8" autocomplete="current-password" required placeholder="กรอกรหัสผ่านผู้ดูแล" /><small>ต้องกรอกรหัสผ่านผู้ดูแลอีกครั้ง เพื่อป้องกันการกดลบผิด</small></label>
         <p class="form-message" id="deleteRecipientMessage" role="status" aria-live="polite"></p>
         <div class="dialog-actions"><button class="button secondary" id="cancelDeleteRecipient" type="button">ยกเลิก</button><button class="button danger solid" id="confirmDeleteRecipient" type="submit">ยืนยันลบข้อมูล</button></div>
       </form>
@@ -907,6 +911,7 @@ function setGroupDisabled(container, disabled) {
 
 const elements = {
   rows: $("#recipientRows"),
+  downloadRecipientsCsv: $("#downloadRecipientsCsv"),
   search: $("#searchInput"),
   category: $("#categoryFilter"),
   responsibleUnit: $("#responsibleUnitFilter"),
@@ -938,6 +943,7 @@ const elements = {
   deleteRecipientDialog: $("#deleteRecipientDialog"),
   deleteRecipientForm: $("#deleteRecipientForm"),
   deleteRecipientName: $("#deleteRecipientName"),
+  deleteRecipientPassword: $("#deleteRecipientPassword"),
   deleteRecipientMessage: $("#deleteRecipientMessage"),
   confirmDeleteRecipient: $("#confirmDeleteRecipient"),
   recipientLayoutDialog: $("#recipientLayoutDialog"),
@@ -1154,6 +1160,19 @@ function syncHistoryGroupOptions() {
     + groups.map((group) => `<option value="${escapeHtml(group)}">${escapeHtml(group)}</option>`).join("");
   elements.historyGroupFilter.value = groups.includes(selected) ? selected : "";
   state.historyFilters.group = elements.historyGroupFilter.value;
+}
+
+function setPrintJobCreatorVisible(visible, options = {}) {
+  const wrapper = elements.printJobCreator?.closest(".job-creator-control");
+  if (!wrapper) return;
+  wrapper.classList.toggle("is-hidden", !visible);
+  wrapper.classList.toggle("is-active", visible && Boolean(options.active));
+}
+
+function focusPrintJobCreator() {
+  setPrintJobCreatorVisible(true, { active: true });
+  elements.printJobCreator?.scrollIntoView({ behavior: "smooth", block: "center" });
+  window.setTimeout(() => elements.printJobCreator?.focus(), 180);
 }
 
 function filteredPrintJobs() {
@@ -1430,6 +1449,7 @@ function restorePrintJob(id, options = {}) {
   }
   persistSettings();
   persistPrintHistory();
+  setPrintJobCreatorVisible(true);
   if (elements.manifestRows?.dataset.printJobId !== job.id) {
     elements.manifestRows.innerHTML = "";
     elements.manifestRows.dataset.printJobId = "";
@@ -1481,26 +1501,31 @@ function startNewPrintJob() {
   saveCurrentPrintJobDraft();
   state.currentPrintJobId = "";
   state.selected.clear();
+  state.settings.printJobCreator = "";
   state.settings.envelopeCopiesById = {};
   state.previewRecipientIndex = 0;
+  if (elements.printJobCreator) elements.printJobCreator.value = "";
   elements.manifestRows.innerHTML = "";
   elements.manifestRows.dataset.printJobId = "";
   elements.manifestDate.value = "";
+  persistSettings();
   persistPrintHistory();
   render();
   elements.printHistoryDialog?.close();
-  setNotice("เริ่มชุดงานใหม่แล้ว กรุณาเลือกรายชื่อผู้รับ");
+  focusPrintJobCreator();
+  setNotice("เริ่มชุดงานใหม่แล้ว กรุณาเลือกกลุ่มงานก่อนเลือกรายชื่อผู้รับ");
 }
 
 function requirePrintJobCreator() {
   if (state.settings.printJobCreator) return true;
-  elements.printJobCreator?.focus();
-  setNotice("กรุณาเลือกผู้สร้างชุดงานก่อนพิมพ์");
+  focusPrintJobCreator();
+  setNotice("กรุณาเลือกกลุ่มงานก่อนพิมพ์");
   return false;
 }
 
 function handlePrintJobCreatorChange(event) {
   state.settings.printJobCreator = String(event.target.value || "").trim();
+  setPrintJobCreatorVisible(true, { active: !state.settings.printJobCreator });
   persistSettings();
   saveCurrentPrintJobDraft({ creatorGroup: state.settings.printJobCreator });
   renderPrintHistory();
@@ -1880,6 +1905,65 @@ function filteredRecipients() {
     const cooperativeTypeMatches = !cooperativeFiltersActive || state.cooperativeType === "ทั้งหมด" || item.cooperativeType === state.cooperativeType;
     return categoryMatches && responsibleUnitMatches && cooperativeTypeMatches && (!query || text.includes(query));
   });
+}
+
+function csvCell(value) {
+  const text = String(value ?? "").replace(/\r?\n/g, " ").trim();
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
+function downloadRecipientsCsv() {
+  const rows = filteredRecipients();
+  if (!rows.length) {
+    setNotice("ไม่มีรายชื่อให้ดาวน์โหลด กรุณาล้างตัวกรองหรือโหลดฐานข้อมูลใหม่");
+    return;
+  }
+  const headers = [
+    "ลำดับ",
+    "ประเภทผู้รับ",
+    "กสส. / นิคมฯ",
+    "ประเภทสหกรณ์",
+    "คำนำหน้า",
+    "ชื่อ",
+    "นามสกุล",
+    "ชื่อผู้รับ / ตำแหน่ง",
+    "ตำแหน่ง",
+    "ชื่อหน่วยงาน",
+    "เลขที่ / หมู่ / ถนน",
+    "ตำบล / แขวง",
+    "อำเภอ / เขต",
+    "จังหวัด",
+    "รหัสไปรษณีย์",
+    "ที่อยู่เต็ม",
+  ];
+  const body = rows.map((item, index) => [
+    index + 1,
+    item.category,
+    item.responsibleUnit,
+    item.cooperativeType,
+    item.prefix,
+    item.firstName,
+    item.lastName,
+    recipientName(item),
+    item.position,
+    item.department,
+    item.address1,
+    item.subdistrict,
+    item.district,
+    item.province,
+    item.postalCode,
+    recipientFullAddress(item),
+  ].map(csvCell).join(","));
+  const csv = `\uFEFF${headers.map(csvCell).join(",")}\r\n${body.join("\r\n")}`;
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `recipients-${localIsoDate()}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  URL.revokeObjectURL(link.href);
+  link.remove();
+  setNotice(`ดาวน์โหลดรายชื่อ ${rows.length} รายการ เป็นไฟล์ CSV แล้ว`);
 }
 
 function setNotice(message) {
@@ -2765,6 +2849,7 @@ async function deleteRecipient(id) {
   elements.deleteRecipientForm.reset();
   elements.deleteRecipientDialog.dataset.recipientId = id;
   elements.deleteRecipientDialog.showModal();
+  elements.deleteRecipientPassword?.focus();
 }
 
 async function handleDeleteRecipientSubmit(event) {
@@ -2780,13 +2865,26 @@ async function handleDeleteRecipientSubmit(event) {
   }
 
   const name = recipientName(recipient);
+  const deletePassword = elements.deleteRecipientPassword.value;
   elements.confirmDeleteRecipient.disabled = true;
-  elements.confirmDeleteRecipient.textContent = "กำลังลบ…";
-  elements.deleteRecipientMessage.textContent = `กำลังลบ ${name} จาก Supabase…`;
+  elements.confirmDeleteRecipient.textContent = "กำลังตรวจสอบ…";
+  elements.deleteRecipientMessage.textContent = "กำลังตรวจสอบรหัสยืนยันการลบ…";
   elements.deleteRecipientMessage.className = "form-message";
-  setNotice(`กำลังลบ ${name} จาก Supabase…`);
+  setNotice("กำลังตรวจสอบรหัสยืนยันการลบ…");
 
   try {
+    try {
+      await signInAdminWithPassword(deletePassword);
+    } catch (error) {
+      elements.deleteRecipientMessage.textContent = "รหัสยืนยันการลบไม่ถูกต้อง กรุณาตรวจสอบแล้วลองใหม่";
+      elements.deleteRecipientMessage.className = "form-message error";
+      elements.deleteRecipientPassword.select();
+      setNotice("รหัสยืนยันการลบไม่ถูกต้อง");
+      return;
+    }
+    elements.confirmDeleteRecipient.textContent = "กำลังลบ…";
+    elements.deleteRecipientMessage.textContent = `กำลังลบ ${name} จาก Supabase…`;
+    setNotice(`กำลังลบ ${name} จาก Supabase…`);
     const { error } = await requireSupabase().from("recipients").delete().eq("id", id);
     if (error) throw error;
     const rows = await requestRecipients();
@@ -3077,6 +3175,7 @@ elements.selectAll.addEventListener("change", () => {
   renderSummary();
   saveCurrentPrintJobDraft();
 });
+elements.downloadRecipientsCsv.addEventListener("click", downloadRecipientsCsv);
 elements.paper.addEventListener("change", (event) => {
   const nextPaperSize = PAPER_SIZE_KEYS.includes(event.target.value) ? event.target.value : "DL";
   rememberCurrentPaperLayout();
@@ -3188,7 +3287,6 @@ elements.adminAuthButton.addEventListener("click", toggleAdminAuth);
 elements.adminAuthForm.addEventListener("submit", handleAdminAuthSubmit);
 $("#closeAdminAuth").addEventListener("click", closeAdminAuthDialog);
 $("#cancelAdminAuth").addEventListener("click", closeAdminAuthDialog);
-$("#printButton").addEventListener("click", printEnvelopes);
 $("#heroPrint").addEventListener("click", printEnvelopes);
 elements.previewPrevious.addEventListener("click", () => {
   const count = state.recipients.filter((item) => state.selected.has(item.id)).length;
