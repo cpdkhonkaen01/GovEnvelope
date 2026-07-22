@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#2856d9" />
+    <meta name="description" content="ระบบจ่าหน้าซองจดหมายราชการจากฐานข้อมูล Supabase" />
+    <title>ระบบจ่าหน้าซองจดหมายราชการ</title>
+    <link rel="stylesheet" href="assets/styles.css" />
+  </head>
+  <body class="app-locked">
+    <section class="login-screen" id="loginScreen" aria-label="เข้าสู่ระบบ">
+      <form class="login-card" id="loginGateForm" autocomplete="off">
+        <div class="login-card-brand">
+          <span class="login-card-logo" aria-hidden="true"><img src="assets/brand-logo.jpg" alt="" /></span>
+          <span>สำนักงาน<br />สหกรณ์จังหวัด<br />ขอนแก่น</span>
+        </div>
+        <h1>ระบบจ่าหน้าซองจดหมายราชการ</h1>
+        <p>สำนักงานสหกรณ์จังหวัดขอนแก่น</p>
+        <label class="login-password">
+          <span class="sr-only">รหัสผ่านระบบ</span>
+          <input id="loginGatePassword" type="password" minlength="8" autocomplete="current-password" placeholder="รหัสผ่านระบบ" required />
+        </label>
+        <button class="login-submit" id="loginGateButton" type="submit">เข้าสู่ระบบ</button>
+        <p class="login-message" id="loginGateMessage" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="ระบบจ่าหน้าซองจดหมายราชการ">
+        <span class="brand-mark" aria-hidden="true"><img src="assets/brand-logo.jpg" alt="" /></span>
+        <span><strong>ระบบจ่าหน้าซองจดหมายราชการ</strong><small>สำนักงานสหกรณ์จังหวัดขอนแก่น</small></span>
+      </a>
+      <div class="top-actions">
+        <span class="status-pill loading" id="connectionStatus"><i></i><span>กำลังเชื่อมฐานข้อมูล</span></span>
+        <button class="small-button" id="adminAuthButton" type="button">เข้าสู่ระบบผู้ดูแล</button>
+      </div>
+    </header>
+
+    <main class="workspace" id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <span class="eyebrow">งานสารบรรณที่ง่ายขึ้น</span>
+          <h1>เลือกผู้รับ แล้วพิมพ์<br /><em>จ่าหน้าซองได้ทันที</em></h1>
+          <p>ค้นหารายชื่อจากฐานข้อมูลกลาง เลือกหลายหน่วยงาน และจัดหน้าพิมพ์ให้พอดีกับซองในไม่กี่คลิก</p>
+          <label class="job-creator-control">
+            <span>ผู้สร้างชุดงาน / กลุ่มงาน *</span>
+            <select id="printJobCreator" required>
+              <option value="">กรุณาเลือกผู้สร้างชุดงาน</option>
+              <option value="ฝ่ายบริหารทั่วไป">ฝ่ายบริหารทั่วไป</option>
+              <option value="กลุ่มจัดตั้งและส่งเสริมสหกรณ์">กลุ่มจัดตั้งและส่งเสริมสหกรณ์</option>
+              <option value="กลุ่มส่งเสริมและพัฒนาการบริหารการจัดการสหกรณ์">กลุ่มส่งเสริมและพัฒนาการบริหารการจัดการสหกรณ์</option>
+              <option value="กลุ่มส่งเสริมและพัฒนาธุรกิจสหกรณ์">กลุ่มส่งเสริมและพัฒนาธุรกิจสหกรณ์</option>
+              <option value="กลุ่มตรวจการสหกรณ์">กลุ่มตรวจการสหกรณ์</option>
+              <option value="กลุ่มส่งเสริมสหกรณ์ 1">กลุ่มส่งเสริมสหกรณ์ 1</option>
+              <option value="กลุ่มส่งเสริมสหกรณ์ 2">กลุ่มส่งเสริมสหกรณ์ 2</option>
+              <option value="กลุ่มส่งเสริมสหกรณ์ 3">กลุ่มส่งเสริมสหกรณ์ 3</option>
+              <option value="กลุ่มส่งเสริมสหกรณ์ 4">กลุ่มส่งเสริมสหกรณ์ 4</option>
+              <option value="กลุ่มส่งเสริมสหกรณ์ 5">กลุ่มส่งเสริมสหกรณ์ 5</option>
+              <option value="กลุ่มส่งเสริมสหกรณ์ 6">กลุ่มส่งเสริมสหกรณ์ 6</option>
+              <option value="กลุ่มส่งเสริมสหกรณ์ 7">กลุ่มส่งเสริมสหกรณ์ 7</option>
+              <option value="กลุ่มส่งเสริมสหกรณ์ 8">กลุ่มส่งเสริมสหกรณ์ 8</option>
+              <option value="นิคมสหกรณ์ดงมูล">นิคมสหกรณ์ดงมูล</option>
+            </select>
+            <small>เลือกครั้งเดียว ระบบจะจำไว้และบันทึกไว้กับทุกชุดงาน · <a href="https://khonkaen.web.cpd.go.th/about-us/staff.html" target="_blank" rel="noopener">ดูรายชื่อบุคลากร</a></small>
+          </label>
+          <div class="hero-actions">
+            <button class="button primary" id="heroPrint" type="button">พิมพ์หน้าซองจดหมาย <b id="heroSelected">0</b></button>
+            <button class="button secondary" id="openManifestDialog" type="button">พิมพ์ใบนำส่ง</button>
+            <button class="button history-button" id="openPrintHistory" type="button">ประวัติชุดงานพิมพ์</button>
+          </div>
+        </div>
+        <div class="preview-panel">
+          <div class="preview-toolbar">
+            <div class="preview-size-heading"><span>ตัวอย่างย่อส่วนตามสัดส่วนจริง</span><strong id="previewSizeLabel">ซอง C5 · 229 × 162 มม.</strong></div>
+            <div class="preview-navigation" aria-label="เลื่อนดูตัวอย่างผู้รับที่เลือก">
+              <button class="preview-nav-button line-break-button" id="openRecipientLineBreak" type="button">↵ ตัดบรรทัดหน้านี้</button>
+              <button class="preview-nav-button" id="previewPrevious" type="button" disabled>← ก่อนหน้า</button>
+              <strong class="preview-counter" id="previewCounter">ตัวอย่าง</strong>
+              <button class="preview-nav-button" id="previewNext" type="button" disabled>ถัดไป →</button>
+            </div>
+          </div>
+          <div class="envelope-preview" id="envelopePreview" aria-label="ตัวอย่างซองจดหมายตามสัดส่วนจริง">
+            <span class="postage-permit-mini" id="postagePermitPreview"></span>
+            <div class="sender-mini-block" id="senderPreviewBlock">
+              <img class="garuda-mini" id="garudaPreview" alt="ตราครุฑ" />
+              <div class="sender-mini" id="senderPreview"></div>
+            </div>
+            <div class="receiver-mini" id="receiverPreview"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="content-grid">
+        <section class="directory-card">
+          <div class="section-title">
+            <div><span class="eyebrow">รายชื่อผู้รับ</span><h2>เลือกหน่วยงานที่ต้องการส่ง</h2></div>
+            <button class="small-button accent" id="openAddRecipient" type="button">＋ เพิ่มรายชื่อผู้รับ</button>
+          </div>
+          <div class="filters">
+            <label class="search"><span>⌕</span><input id="searchInput" type="search" placeholder="ค้นหาชื่อ ตำแหน่ง หรือหน่วยงาน" /></label>
+            <label class="department-filter"><span>ประเภทผู้รับ *</span><select id="categoryFilter"><option value="ทั้งหมด">ทุกประเภท</option><option value="หน่วยงานราชการ">หน่วยงานราชการ</option><option value="สหกรณ์และกลุ่มเกษตรกร">สหกรณ์และกลุ่มเกษตรกร</option><option value="ภาคเอกชน">ภาคเอกชน</option><option value="บุคคล">บุคคล</option></select></label>
+            <label class="department-filter cooperative-filter" id="responsibleUnitFilterWrap" hidden><span>กสส. / นิคมฯ</span><select id="responsibleUnitFilter"><option value="ทั้งหมด">ทั้งหมด</option></select></label>
+            <label class="department-filter cooperative-filter" id="cooperativeTypeFilterWrap" hidden><span>ประเภทสหกรณ์</span><select id="cooperativeTypeFilter"><option value="ทั้งหมด">ทั้งหมด</option></select></label>
+          </div>
+          <div class="table-wrap">
+            <table class="recipient-table">
+              <thead><tr><th class="check-cell"><input id="selectAll" type="checkbox" aria-label="เลือกทั้งหมด" /></th><th class="copy-cell">จำนวนซอง</th><th class="sequence-cell">ลำดับ</th><th class="recipient-name-cell">ชื่อผู้รับ / ตำแหน่ง</th><th class="type-cell">ประเภท</th><th class="department-cell">หน่วยงาน</th><th class="address-cell">ที่อยู่</th><th class="action-cell">จัดการ</th></tr></thead>
+              <tbody id="recipientRows"></tbody>
+            </table>
+            <div class="empty" id="emptyState" hidden>ไม่พบรายชื่อที่ตรงกับคำค้นหา</div>
+          </div>
+        </section>
+
+        <aside class="side-panel">
+          <section class="print-card">
+            <div class="print-overview"><span class="eyebrow light">พร้อมพิมพ์</span><h2><span id="sideSelected">0</span> รายการ</h2><p>ระบบจะสร้างหน้าพิมพ์ตามจำนวนซองที่ตั้งไว้ในแต่ละรายชื่อ</p></div>
+            <div class="print-controls">
+              <label class="paper-size-option"><span>ขนาดซอง / กระดาษ</span><select id="paperSize"><option value="DL">ซอง DL · 22 × 11 ซม.</option><option value="C5">ซอง C5 · 22.9 × 16.2 ซม.</option><option value="A4L">กระดาษ A4 แนวนอน · 29.7 × 21 ซม.</option></select><small class="paper-profile-hint">จำฟอนต์และตำแหน่งแยกให้แต่ละขนาดอัตโนมัติ</small></label>
+              <label class="recipient-font-option"><span>ขนาดฟอนต์ข้อมูลผู้รับ (พอยต์)</span><input id="recipientFontPt" type="number" min="8" max="24" step="0.5" /></label>
+              <button class="sender-settings-button" id="openRecipientLayoutSettings" type="button">✎ ปรับตำแหน่งและระยะผู้รับ</button>
+              <label class="garuda-option"><input id="showRecipientDepartment" type="checkbox" checked /><span>แสดงชื่อหน่วยงานผู้รับ</span></label>
+              <label class="garuda-option"><input id="showRecipientAddress" type="checkbox" checked /><span>แสดงที่อยู่ผู้รับ</span></label>
+              <label class="garuda-option"><input id="showSender" type="checkbox" checked /><span>แสดงข้อมูลผู้ส่ง</span></label>
+              <label class="garuda-option"><input id="showGaruda" type="checkbox" checked /><span>แสดงตราครุฑ</span></label>
+              <label class="garuda-option"><input id="showPostagePermit" type="checkbox" checked /><span>แสดงกรอบฝากส่ง</span></label>
+              <button class="sender-settings-button" id="openSenderSettings" type="button">✎ แก้ไขข้อมูลผู้ส่ง</button>
+              <button class="sender-settings-button" id="openPostagePermitSettings" type="button">✎ แก้ไขกรอบค่าฝากส่ง</button>
+              <button id="printButton" type="button">ดูตัวอย่างและพิมพ์ <span>↗</span></button>
+            </div>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <footer><span>พัฒนาโดย <strong>นายนิธิกร เสริมปรุงสุข</strong> · นักวิชาการสหกรณ์</span><span>สงวนลิขสิทธิ์ © 2026</span></footer>
+
+    <dialog id="recipientDialog">
+      <form id="recipientForm">
+        <div class="dialog-title"><div><span class="eyebrow">ฐานข้อมูลผู้รับ</span><h2 id="recipientDialogTitle">เพิ่มรายชื่อผู้รับ</h2></div><button class="close-button" id="closeRecipientDialog" type="button" aria-label="ปิด">×</button></div>
+        <p class="dialog-info" id="recipientDialogInfo">ข้อมูลจะบันทึกลงฐานข้อมูลกลาง ต้องเข้าสู่ระบบผู้ดูแลก่อนเพิ่มหรือแก้ไขข้อมูล</p>
+        <div class="form-grid equal single" id="categoryAndPrefixFields">
+          <label class="form-field"><span>ประเภทผู้รับ *</span><select name="category" id="recipientCategory" required><option value="">เลือกประเภท</option><option value="หน่วยงานราชการ">หน่วยงานราชการ</option><option value="สหกรณ์และกลุ่มเกษตรกร">สหกรณ์และกลุ่มเกษตรกร</option><option value="ภาคเอกชน">ภาคเอกชน</option><option value="บุคคล">บุคคล</option></select></label>
+          <label class="form-field" id="prefixField" hidden><span>คำนำหน้า</span><select name="prefix"><option value="">ไม่ระบุ</option><option value="นาย">นาย</option><option value="นาง">นาง</option><option value="นางสาว">นางสาว</option></select></label>
+        </div>
+        <div class="form-grid equal" id="personNameFields" hidden>
+          <label class="form-field"><span>ชื่อ</span><input name="firstName" type="text" /></label>
+          <label class="form-field"><span>นามสกุล</span><input name="lastName" type="text" /></label>
+        </div>
+        <div class="form-grid equal" id="cooperativeClassificationFields" hidden>
+          <label class="form-field"><span>กสส. / นิคมฯ ที่รับผิดชอบ *</span><select name="responsibleUnit"><option value="">เลือก กสส. / นิคมฯ</option><option value="กสส.1">กสส.1</option><option value="กสส.2">กสส.2</option><option value="กสส.3">กสส.3</option><option value="กสส.4">กสส.4</option><option value="กสส.5">กสส.5</option><option value="กสส.6">กสส.6</option><option value="กสส.7">กสส.7</option><option value="กสส.8">กสส.8</option><option value="นิคมฯ">นิคมฯ</option></select></label>
+          <label class="form-field"><span>ประเภทสหกรณ์</span><select name="cooperativeType"><option value="">ไม่ระบุ</option><option value="กลุ่มเกษตรกร">กลุ่มเกษตรกร</option><option value="สหกรณ์การเกษตร">สหกรณ์การเกษตร</option><option value="สหกรณ์ออมทรัพย์">สหกรณ์ออมทรัพย์</option><option value="สหกรณ์ประมง">สหกรณ์ประมง</option><option value="สหกรณ์ร้านค้า">สหกรณ์ร้านค้า</option><option value="สหกรณ์นิคม">สหกรณ์นิคม</option><option value="สหกรณ์บริการ">สหกรณ์บริการ</option><option value="สหกรณ์เครดิตยูเนี่ยน">สหกรณ์เครดิตยูเนี่ยน</option></select><small>เลือก “กลุ่มเกษตรกร” เพื่อให้ค้นหาและแยกรายการได้ง่าย</small></label>
+        </div>
+        <div class="form-grid equal">
+          <label class="form-field"><span>ตำแหน่งผู้รับ</span><input name="position" type="text" placeholder="เช่น ผู้อำนวยการ หรือประธานกรรมการ" /></label>
+          <label class="form-field"><span id="departmentFieldLabel">ชื่อหน่วยงาน *</span><input name="department" id="recipientDepartment" type="text" /><small id="departmentFieldHint">จำเป็นสำหรับหน่วยงาน องค์กร และกลุ่ม</small></label>
+        </div>
+        <label class="form-field"><span>เลขที่ / หมู่ / ถนน *</span><input name="address1" type="text" required /></label>
+        <div class="form-grid three">
+          <label class="form-field"><span>ตำบล / แขวง</span><input name="subdistrict" type="text" /></label>
+          <label class="form-field"><span>อำเภอ / เขต</span><input name="district" type="text" /></label>
+          <label class="form-field"><span>จังหวัด</span><input name="province" type="text" /></label>
+        </div>
+        <label class="form-field"><span>รหัสไปรษณีย์</span><input name="postalCode" type="text" inputmode="text" autocomplete="postal-code" maxlength="5" pattern="[0-9๐-๙]{5}" title="กรุณากรอกรหัสไปรษณีย์ 5 หลัก เป็นเลขไทยหรือเลขอารบิก" /><small>ใส่ได้ทั้ง 40000 และ ๔๐๐๐๐</small></label>
+        <p class="form-message" id="recipientFormMessage" role="status" aria-live="polite"></p>
+        <div class="dialog-actions split"><button class="button danger" id="deleteRecipientButton" type="button" hidden>ลบข้อมูลผู้รับ</button><div class="action-group"><button class="button secondary" id="cancelRecipient" type="button">ยกเลิก</button><button class="button primary" id="saveRecipient" type="submit">บันทึกข้อมูลผู้รับ</button></div></div>
+      </form>
+    </dialog>
+
+    <dialog id="deleteRecipientDialog" class="confirm-dialog">
+      <form id="deleteRecipientForm">
+        <div class="confirm-icon">!</div>
+        <div class="dialog-title confirm-title"><div><span class="eyebrow danger-text">ยืนยันการลบ</span><h2>ลบข้อมูลผู้รับ</h2></div><button class="close-button" id="closeDeleteRecipientDialog" type="button" aria-label="ปิด">×</button></div>
+        <p class="dialog-info danger-info">รายการนี้จะถูกลบออกจากฐานข้อมูลกลาง กรุณาตรวจสอบให้แน่ใจก่อนดำเนินการ</p>
+        <div class="delete-target" id="deleteRecipientName"></div>
+        <p class="form-message" id="deleteRecipientMessage" role="status" aria-live="polite"></p>
+        <div class="dialog-actions"><button class="button secondary" id="cancelDeleteRecipient" type="button">ยกเลิก</button><button class="button danger solid" id="confirmDeleteRecipient" type="submit">ยืนยันลบข้อมูล</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="recipientLayoutDialog">
+      <form id="recipientLayoutForm">
+        <div class="dialog-title"><div><span class="eyebrow">ตำแหน่งบนซอง</span><h2>ปรับตำแหน่งผู้รับ</h2></div><button class="close-button" id="closeRecipientLayoutDialog" type="button" aria-label="ปิด">×</button></div>
+        <p class="dialog-info">ปรับตำแหน่งข้อความผู้รับได้เอง ค่าน้อยจะเลื่อนไปด้านบนหรือด้านซ้าย ค่ามากจะเลื่อนไปด้านล่างหรือด้านขวา</p>
+        <div class="form-grid three">
+          <label class="form-field"><span>ระยะจากขอบบน (%)</span><input name="recipientTopPercent" type="number" min="5" max="85" step="1" /><small>ปรับขึ้น–ลง</small></label>
+          <label class="form-field"><span>ระยะจากขอบซ้าย (%)</span><input name="recipientLeftPercent" type="number" min="5" max="80" step="1" /><small>ปรับซ้าย–ขวา</small></label>
+          <label class="form-field"><span>ระยะห่างบรรทัด</span><input name="recipientLineHeight" type="number" min="1" max="2.2" step="0.05" /><small>ค่าแนะนำ 1.5</small></label>
+        </div>
+        <div class="dialog-actions"><button class="button secondary" id="resetRecipientLayout" type="button">คืนค่าตำแหน่งแนะนำ</button><button class="button secondary" id="cancelRecipientLayout" type="button">ยกเลิก</button><button class="button primary" type="submit">บันทึกตำแหน่งผู้รับ</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="recipientLineBreakDialog" class="confirm-dialog">
+      <form id="recipientLineBreakForm">
+        <div class="dialog-title"><div><span class="eyebrow">เฉพาะหน้าที่กำลังดู</span><h2>กำหนดจุดตัดบรรทัด</h2></div><button class="close-button" id="closeRecipientLineBreakDialog" type="button" aria-label="ปิด">×</button></div>
+        <p class="dialog-info">วางเคอร์เซอร์ตรงจุดที่ต้องการ แล้วกด Enter เพื่อขึ้นบรรทัดใหม่ ระบบจะใช้ขนาดฟอนต์ข้อมูลผู้รับที่ตั้งไว้ และจำรูปแบบแยกตามรายชื่อ</p>
+        <label class="form-field"><span>ชื่อผู้รับ / ตำแหน่ง</span><textarea id="recipientLineBreakText" name="recipientLineBreakText" rows="4" required></textarea><small>แก้ได้เฉพาะการเว้นวรรคและการขึ้นบรรทัดใหม่ โดยข้อความเดิมต้องครบถ้วน</small></label>
+        <p class="form-message" id="recipientLineBreakMessage" role="status" aria-live="polite"></p>
+        <div class="dialog-actions split"><button class="button secondary" id="clearRecipientLineBreak" type="button">กลับเป็นบรรทัดเดียว</button><div class="action-group"><button class="button secondary" id="cancelRecipientLineBreak" type="button">ยกเลิก</button><button class="button primary" type="submit">บันทึกจุดตัดบรรทัด</button></div></div>
+      </form>
+    </dialog>
+
+    <dialog id="senderDialog">
+      <form id="senderForm">
+        <div class="dialog-title"><div><span class="eyebrow">ข้อมูลบนซอง</span><h2>แก้ไขหน่วยงานผู้ส่ง</h2></div><button class="close-button" id="closeSenderDialog" type="button" aria-label="ปิด">×</button></div>
+        <p class="dialog-info">ข้อมูลนี้ใช้เฉพาะบนเครื่องนี้ และจะแสดงเหนือที่อยู่ผู้รับในหน้าพิมพ์ซอง</p>
+        <label class="form-field"><span>1. ชื่อหน่วยงาน *</span><input name="sender" type="text" required /></label>
+        <label class="form-field"><span>2. ที่อยู่ผู้ส่ง *</span><textarea name="senderAddress" rows="5" required></textarea><small>สามารถขึ้นบรรทัดใหม่ และใส่หมายเลขโทรศัพท์หรือโทรสารได้</small></label>
+        <label class="form-field"><span>3. เลขที่หนังสือ</span><input name="documentNumber" type="text" placeholder="ที่ ขก0010/................................................................." /></label>
+        <hr />
+        <div class="dialog-title compact"><div><span class="eyebrow">ปรับตำแหน่งแบบแมนนวล</span><h3>รูปแบบกล่องผู้ส่ง</h3></div></div>
+        <div class="form-grid equal">
+          <label class="form-field"><span>ตำแหน่งตราครุฑ</span><select name="garudaPlacement"><option value="left">ด้านซ้ายของหน่วยงาน</option><option value="above">ด้านบนหน่วยงาน</option></select></label>
+          <label class="form-field"><span>ขนาดตราครุฑ (มม. · มาตรฐาน 15)</span><input name="garudaSizeMm" type="number" min="8" max="30" step="1" /></label>
+        </div>
+        <div class="form-grid equal">
+          <label class="form-field"><span>ขนาดฟอนต์ข้อมูลผู้ส่ง (พอยต์)</span><input name="senderFontPt" type="number" min="7" max="20" step="0.5" /><small>ปรับพร้อมกันทั้งชื่อหน่วยงาน ที่อยู่ และเลขที่หนังสือ</small></label>
+          <label class="form-field"><span>ระยะห่างบรรทัด</span><input name="senderLineHeight" type="number" min="1" max="2.2" step="0.05" /><small>ค่าปกติ 1.45 — ค่าน้อยบรรทัดจะชิดขึ้น ค่ามากบรรทัดจะห่างขึ้น</small></label>
+        </div>
+        <div class="form-grid three">
+          <label class="form-field"><span>ระยะจากขอบบน (มม.)</span><input name="senderTopMm" type="number" min="0" max="40" step="1" /></label>
+          <label class="form-field"><span>ระยะจากขอบซ้าย (มม.)</span><input name="senderLeftMm" type="number" min="0" max="60" step="1" /></label>
+          <label class="form-field"><span>เลื่อนข้อความลง (มม.)</span><input name="senderTextOffsetMm" type="number" min="0" max="30" step="1" /><small>ใช้เมื่อตราครุฑอยู่ด้านซ้าย ปรับให้ชื่อหน่วยงานตรงระดับเท้าครุฑ</small></label>
+        </div>
+        <div class="dialog-actions"><button class="button secondary" id="resetSenderLayout" type="button">คืนค่าตำแหน่งแนะนำ</button><button class="button secondary" id="cancelSenderSettings" type="button">ยกเลิก</button><button class="button primary" type="submit">บันทึกข้อมูลผู้ส่ง</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="postagePermitDialog">
+      <form id="postagePermitForm">
+        <div class="dialog-title"><div><span class="eyebrow">กรอบมุมขวาบน</span><h2>แก้ไขกรอบค่าฝากส่ง</h2></div><button class="close-button" id="closePostagePermitDialog" type="button" aria-label="ปิด">×</button></div>
+        <p class="dialog-info">กรอบสี่เหลี่ยมแนวนอนมีขนาดคงที่ <strong>3 × 1.5 เซนติเมตร</strong> และจะแสดงที่มุมบนด้านขวาของซอง</p>
+        <label class="form-field"><span>ข้อความในกรอบ *</span><textarea name="postagePermitText" rows="4" required></textarea><small>แนะนำให้แบ่งเป็น 3 บรรทัด: ประเภทการฝากส่ง เลขที่ใบอนุญาต และชื่อที่ทำการไปรษณีย์</small></label>
+        <div class="form-grid equal">
+          <label class="form-field"><span>ระยะจากขอบบน (มม.)</span><input name="postagePermitTopMm" type="number" min="0" max="40" step="1" /></label>
+          <label class="form-field"><span>ระยะจากขอบขวา (มม.)</span><input name="postagePermitRightMm" type="number" min="0" max="60" step="1" /></label>
+        </div>
+        <div class="form-grid equal">
+          <label class="form-field"><span>ขนาดตัวอักษร (พอยต์)</span><input name="postagePermitFontPt" type="number" min="6" max="14" step="0.5" /></label>
+          <label class="form-field"><span>ระยะห่างบรรทัด</span><input name="postagePermitLineHeight" type="number" min="1" max="2" step="0.05" /><small>ค่าปกติ 1.15 — ค่าน้อยบรรทัดจะชิดขึ้น ค่ามากบรรทัดจะห่างขึ้น</small></label>
+        </div>
+        <div class="dialog-actions"><button class="button secondary" id="resetPostagePermit" type="button">คืนค่าแนะนำ</button><button class="button secondary" id="cancelPostagePermit" type="button">ยกเลิก</button><button class="button primary" type="submit">บันทึกกรอบค่าฝากส่ง</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="mailingManifestDialog" class="wide-dialog">
+      <form id="mailingManifestForm">
+        <div class="dialog-title">
+          <div><span class="eyebrow">ใบนำส่งไปรษณีย์</span><h2>กรอกเลขลงทะเบียน / EMS</h2></div>
+          <button class="close-button" id="closeManifestDialog" type="button" aria-label="ปิด">×</button>
+        </div>
+        <div class="form-grid equal">
+          <label class="form-field"><span>วัน/เดือน/ปี ทำรายการ</span><input name="manifestDate" id="manifestDate" type="date" required /></label>
+          <label class="form-field"><span>ใบอนุญาต/ไปรษณีย์</span><input name="manifestPermit" id="manifestPermit" type="text" value="ใบอนุญาตเลขที่ 3/2521 ไปรษณีย์เทพารักษ์" readonly /></label>
+        </div>
+        <div class="form-grid equal manifest-prefix-fields">
+          <label class="form-field"><span>ล็อกเลขนำหน้าลงทะเบียน 5 หลัก</span><input id="manifestRegisteredPrefix" type="text" inputmode="text" autocomplete="off" maxlength="7" pattern="[A-Za-z]{2}[0-9๐-๙]{5}" placeholder="เช่น RJ00235" /><small>ใส่ตัวอังกฤษ 2 ตัว + เลขนำหน้า 5 หลัก แล้วแต่ละแถวกรอกเฉพาะ 4 ตัวท้าย</small></label>
+          <label class="form-field"><span>ล็อกเลขนำหน้า EMS 5 หลัก</span><input id="manifestEmsPrefix" type="text" inputmode="text" autocomplete="off" maxlength="7" pattern="[A-Za-z]{2}[0-9๐-๙]{5}" placeholder="เช่น EQ12238" /><small>ใส่ตัวอังกฤษ 2 ตัว + เลขนำหน้า 5 หลัก แล้วแต่ละแถวกรอกเฉพาะ 4 ตัวท้าย</small></label>
+        </div>
+        <div class="manifest-table-wrap">
+          <table class="manifest-entry-table">
+            <thead><tr><th>ลำดับ</th><th>ผู้รับ</th><th>ปลายทาง</th><th>ลงทะเบียน</th><th>EMS</th></tr></thead>
+            <tbody id="manifestRows"></tbody>
+          </table>
+        </div>
+        <div class="dialog-actions">
+          <button class="button secondary" id="cancelManifestDialog" type="button">ยกเลิก</button>
+          <button class="button primary" type="submit">ดูตัวอย่างและพิมพ์ใบนำส่ง</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="printHistoryDialog" class="wide-dialog history-dialog">
+      <div class="dialog-title">
+        <div><span class="eyebrow">บันทึกอัตโนมัติ</span><h2>ประวัติชุดงานพิมพ์</h2></div>
+        <button class="close-button" id="closePrintHistory" type="button" aria-label="ปิด">×</button>
+      </div>
+      <p class="dialog-info">ระบบเก็บผู้สร้างชุดงาน รายชื่อ จำนวนซอง วันที่ และเลขลงทะเบียน/EMS ให้อัตโนมัติ สามารถกด “ดำเนินการต่อ” เพื่อกลับมาทำต่อหรือแก้ไขได้ทันที</p>
+      <div class="history-toolbar">
+        <button class="button primary" id="startNewPrintJob" type="button">＋ เริ่มชุดงานใหม่</button>
+        <span class="history-save-status" id="historySaveStatus">บันทึกล่าสุดบนเครื่องนี้</span>
+      </div>
+      <section class="history-filter-panel" aria-label="ตัวกรองประวัติชุดงานพิมพ์">
+        <div class="history-filter-grid">
+          <label class="form-field"><span>กลุ่มงาน</span><select id="historyGroupFilter"><option value="">ทุกกลุ่มงาน</option></select></label>
+          <label class="form-field"><span>เดือน</span><input id="historyMonthFilter" type="month" /></label>
+          <label class="form-field"><span>วันที่</span><input id="historyDateFilter" type="date" /></label>
+          <button class="button secondary history-reset-filter" id="resetHistoryFilters" type="button">ล้างตัวกรอง</button>
+        </div>
+        <div class="history-summary-grid">
+          <div><span>ชุดงานที่พบ</span><strong id="historyJobTotal">0</strong></div>
+          <div><span>รายชื่อผู้รับรวม</span><strong id="historyRecipientTotal">0</strong></div>
+          <div><span>จำนวนซองรวม</span><strong id="historyEnvelopeTotal">0</strong></div>
+          <div><span>ผลการค้นหา</span><strong class="history-result-label" id="historyResultLabel">ทั้งหมด</strong></div>
+        </div>
+      </section>
+      <div class="print-history-table-wrap">
+        <table class="print-history-table">
+          <thead><tr><th>ลำดับ</th><th>วันที่สร้างชุดงาน</th><th>กลุ่มงาน</th><th>รายละเอียด</th><th>การพิมพ์</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+          <tbody id="printHistoryList"></tbody>
+        </table>
+      </div>
+      <div class="history-sync-panel" id="historySyncPanel">
+        <div>
+          <strong>บันทึกประวัติลง Supabase อัตโนมัติ</strong>
+          <small id="historySyncHint">เข้าสู่ระบบผู้ดูแลครั้งเดียว หลังจากนั้นระบบจะบันทึกทุกการเปลี่ยนแปลงให้เอง</small>
+        </div>
+      </div>
+      <div class="dialog-actions"><button class="button secondary" id="donePrintHistory" type="button">ปิด</button></div>
+    </dialog>
+
+    <dialog id="adminAuthDialog" class="confirm-dialog">
+      <form id="adminAuthForm">
+        <div class="dialog-title"><div><span class="eyebrow">เฉพาะผู้ดูแล</span><h2>เข้าสู่ระบบผู้ดูแล</h2></div><button class="close-button" id="closeAdminAuth" type="button" aria-label="ปิด">×</button></div>
+        <p class="dialog-info">กรอกรหัสผู้ดูแลเพื่อเข้าสู่ระบบ</p>
+        <label class="form-field"><span>รหัสผู้ดูแล</span><input id="adminAuthPassword" type="password" minlength="8" autocomplete="current-password" required autofocus /><small>กรอกรหัสผู้ดูแลที่กำหนดไว้</small></label>
+        <p class="form-message" id="adminAuthMessage" role="status" aria-live="polite"></p>
+        <div class="dialog-actions"><button class="button secondary" id="cancelAdminAuth" type="button">ยกเลิก</button><button class="button primary" id="adminPasswordLogin" type="submit">เข้าสู่ระบบ</button></div>
+      </form>
+    </dialog>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="config.js"></script>
+    <script src="assets/app.js"></script>
+  </body>
+</html>
