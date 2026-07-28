@@ -1,6 +1,6 @@
 ﻿const CATEGORIES = ["หน่วยงานราชการ", "สหกรณ์และกลุ่มเกษตรกร", "ภาคเอกชน", "บุคคล"];
 const defaults = window.ENVELOPE_APP_CONFIG || {};
-const ADMIN_KEY_SESSION_STORAGE = "envelope-app-admin-key";
+const AUTH_SESSION_STORAGE = "envelope-app-auth-session";
 
 let savedSettings = {};
 try {
@@ -97,7 +97,8 @@ const state = {
   previewRecipientIndex: 0,
   printJobs: savedPrintJobs,
   currentPrintJobId: localStorage.getItem(CURRENT_PRINT_JOB_STORAGE_KEY) || "",
-  adminKey: "",
+  authToken: "",
+  currentUser: null,
   historyFilters: { group: "", month: "", date: "" },
   settings: {
     appsScriptUrl: String(defaults.appsScriptUrl || "").trim(),
@@ -366,7 +367,7 @@ function saveCurrentPrintJobDraft(changes = {}, options = {}) {
   }, changes);
   state.printJobs = [job, ...state.printJobs.filter((item) => item.id !== job.id)];
   persistPrintHistory();
-  if (elements.historySaveStatus) elements.historySaveStatus.textContent = isAdminSignedIn()
+  if (elements.historySaveStatus) elements.historySaveStatus.textContent = isUserSignedIn()
     ? "กำลังบันทึกลง Google Sheets อัตโนมัติ…"
     : "บันทึกไว้ในเครื่องแล้ว · เข้าสู่ระบบเพื่อสำรองลง Google Sheets";
   queuePrintJobCloudSave(job);
@@ -704,7 +705,7 @@ function renderPrintHistory() {
       <td><div class="history-actions">
         <button class="resume" data-resume-job="${escapeHtml(job.id)}" type="button">ดำเนินการต่อ</button>
         ${job.completedAt ? "" : `<button data-complete-job="${escapeHtml(job.id)}" type="button">ทำเครื่องหมายว่าเสร็จ</button>`}
-        <button class="delete" data-delete-job="${escapeHtml(job.id)}" type="button">ลบประวัติ</button>
+        ${isAdminSignedIn() ? `<button class="delete" data-delete-job="${escapeHtml(job.id)}" type="button">ลบประวัติ</button>` : ""}
       </div></td>
     </tr>`;
   }).join("");
@@ -771,7 +772,8 @@ function completePrintJob(id) {
   setNotice("ทำเครื่องหมายชุดงานว่าเสร็จสิ้นแล้ว");
 }
 
-function requestDeletePrintJob(button) {
+async function requestDeletePrintJob(button) {
+  if (!(await requireAdminSession())) return;
   const id = button.dataset.deleteJob || "";
   const job = state.printJobs.find((item) => item.id === id);
   if (!job) {
@@ -920,7 +922,7 @@ function handlePrintJobCreatorChange(event) {
     return;
   }
   setNotice(`เลือกผู้สร้างชุดงาน: ${state.settings.printJobCreator}`);
-  if (!isAdminSignedIn()) {
+  if (!isUserSignedIn()) {
     openAdminAuthDialog("เข้าสู่ระบบครั้งเดียว เพื่อให้ระบบบันทึกประวัติลง Google Sheets อัตโนมัติ");
   }
 }
@@ -1395,12 +1397,12 @@ function requestAppsScript(action, parameters = {}) {
   });
 }
 
-async function postAppsScript(action, payload = {}, adminKey = state.adminKey) {
+async function postAppsScript(action, payload = {}, authToken = state.authToken) {
   const response = await fetch(requireAppsScriptUrl(), {
     method: "POST",
     redirect: "follow",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({ ...payload, action, adminKey }),
+    body: JSON.stringify({ ...payload, action, authToken }),
   });
   if (!response.ok) throw new Error(`Google Apps Script ตอบกลับ HTTP ${response.status}`);
   const result = await response.json();
@@ -1408,25 +1410,48 @@ async function postAppsScript(action, payload = {}, adminKey = state.adminKey) {
   return result.data;
 }
 
-function isAdminSignedIn() {
-  return Boolean(state.adminKey);
+function isUserSignedIn() {
+  return Boolean(state.authToken && state.currentUser?.username);
 }
 
-async function verifyAdminKey(adminKey) {
-  try {
-    await postAppsScript("verifyAdmin", {}, adminKey);
-  } catch (error) {
-    if (!/ไม่รองรับคำสั่ง/.test(String(error?.message || ""))) throw error;
-    await postAppsScript("deletePrintJob", { id: "__ADMIN_AUTH_CHECK__" }, adminKey);
-  }
+function isAdminSignedIn() {
+  return isUserSignedIn() && state.currentUser?.role === "admin";
+}
+
+async function signInUser(username, password) {
+  const result = await postAppsScript("login", {
+    username: String(username || "").trim(),
+    password: String(password || ""),
+  }, "");
+  state.authToken = String(result?.token || "");
+  state.currentUser = {
+    username: String(result?.username || ""),
+    displayName: String(result?.displayName || result?.username || ""),
+    role: String(result?.role || "user"),
+  };
+  if (!state.authToken || !state.currentUser.username) throw new Error("ข้อมูลการเข้าสู่ระบบไม่สมบูรณ์");
+  sessionStorage.setItem(AUTH_SESSION_STORAGE, JSON.stringify({
+    token: state.authToken,
+    user: state.currentUser,
+  }));
+  updateAdminAuthUi();
+  return state.currentUser;
 }
 
 function updateAdminAuthUi() {
-  const signedIn = isAdminSignedIn();
+  const signedIn = isUserSignedIn();
+  const isAdmin = isAdminSignedIn();
   document.body.classList.toggle("app-locked", !signedIn);
+  document.body.classList.toggle("admin-user", isAdmin);
   if (elements.loginScreen) elements.loginScreen.setAttribute("aria-hidden", signedIn ? "true" : "false");
   if (signedIn && elements.loginGatePassword) elements.loginGatePassword.value = "";
-  if (elements.adminAuthButton) elements.adminAuthButton.textContent = signedIn ? "ออกจากระบบผู้ดูแล" : "เข้าสู่ระบบผู้ดูแล";
+  const addRecipientButton = $("#openAddRecipient");
+  if (addRecipientButton) addRecipientButton.hidden = !signedIn;
+  if (elements.adminAuthButton) {
+    const userLabel = state.currentUser?.displayName || state.currentUser?.username || "";
+    elements.adminAuthButton.textContent = signedIn ? `ออกจากระบบ${userLabel ? ` · ${userLabel}` : ""}` : "เข้าสู่ระบบ";
+  }
+  if (state.connected) renderRows();
 }
 
 function setLoginGateMessage(message = "", type = "") {
@@ -1436,12 +1461,8 @@ function setLoginGateMessage(message = "", type = "") {
 }
 
 async function signInAdminWithPassword(password) {
-  const adminKey = String(password || "").trim();
-  if (!adminKey) throw new Error("กรุณากรอกรหัสผู้ดูแล");
-  await verifyAdminKey(adminKey);
-  state.adminKey = adminKey;
-  sessionStorage.setItem(ADMIN_KEY_SESSION_STORAGE, adminKey);
-  updateAdminAuthUi();
+  const user = await signInUser("admin", password);
+  if (user.role !== "admin") throw new Error("บัญชีนี้ไม่มีสิทธิ์ผู้ดูแล");
 }
 
 async function handleLoginGateSubmit(event) {
@@ -1452,9 +1473,9 @@ async function handleLoginGateSubmit(event) {
   elements.loginGateButton.textContent = "กำลังเข้าสู่ระบบ…";
   setLoginGateMessage("กำลังตรวจสอบรหัสผ่าน…");
   try {
-    await signInAdminWithPassword(password);
+    const user = await signInUser("", password);
     setLoginGateMessage("เข้าสู่ระบบสำเร็จ", "success");
-    setNotice("เข้าสู่ระบบผู้ดูแลแล้ว ระบบจะบันทึกประวัติลง Google Sheets อัตโนมัติ");
+    setNotice(`เข้าสู่ระบบแล้ว: ${user.displayName || user.username}`);
     setTimeout(() => autoSyncPrintHistory().catch(console.warn), 0);
   } catch (error) {
     setLoginGateMessage("รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง");
@@ -1466,7 +1487,7 @@ async function handleLoginGateSubmit(event) {
 }
 
 function openAdminAuthDialog(message = "") {
-  if (!isAdminSignedIn() && elements.loginGatePassword) {
+  if (!isUserSignedIn() && elements.loginGatePassword) {
     setLoginGateMessage(message);
     elements.loginGatePassword.focus();
     return;
@@ -1483,7 +1504,13 @@ function closeAdminAuthDialog() {
 
 async function requireAdminSession() {
   if (isAdminSignedIn()) return true;
-  openAdminAuthDialog("กรุณาเข้าสู่ระบบผู้ดูแลก่อนเพิ่ม แก้ไข หรือลบข้อมูล");
+  openAdminAuthDialog("รายการนี้ต้องใช้รหัสของบัญชี admin");
+  return false;
+}
+
+async function requireUserSession() {
+  if (isUserSignedIn()) return true;
+  openAdminAuthDialog("กรุณาเข้าสู่ระบบก่อนเพิ่มหรือแก้ไขข้อมูล");
   return false;
 }
 
@@ -1511,14 +1538,15 @@ async function handleAdminAuthSubmit(event) {
 }
 
 async function toggleAdminAuth() {
-  if (!isAdminSignedIn()) {
+  if (!isUserSignedIn()) {
     openAdminAuthDialog();
     return;
   }
-  state.adminKey = "";
-  sessionStorage.removeItem(ADMIN_KEY_SESSION_STORAGE);
+  state.authToken = "";
+  state.currentUser = null;
+  sessionStorage.removeItem(AUTH_SESSION_STORAGE);
   updateAdminAuthUi();
-  setNotice("ออกจากระบบผู้ดูแลแล้ว");
+  setNotice("ออกจากระบบแล้ว");
 }
 
 async function initializeAdminAuth() {
@@ -1529,20 +1557,31 @@ async function initializeAdminAuth() {
     setLoginGateMessage(error.message);
     return;
   }
-  const savedAdminKey = sessionStorage.getItem(ADMIN_KEY_SESSION_STORAGE) || "";
-  if (savedAdminKey) {
+  let savedSession = null;
+  try {
+    savedSession = JSON.parse(sessionStorage.getItem(AUTH_SESSION_STORAGE) || "null");
+  } catch (_error) {
+    savedSession = null;
+  }
+  if (savedSession?.token) {
     try {
-      await verifyAdminKey(savedAdminKey);
-      state.adminKey = savedAdminKey;
+      const result = await postAppsScript("verifySession", {}, savedSession.token);
+      state.authToken = savedSession.token;
+      state.currentUser = {
+        username: String(result?.username || savedSession.user?.username || ""),
+        displayName: String(result?.displayName || savedSession.user?.displayName || ""),
+        role: String(result?.role || savedSession.user?.role || "user"),
+      };
     } catch (error) {
-      sessionStorage.removeItem(ADMIN_KEY_SESSION_STORAGE);
-      state.adminKey = "";
+      sessionStorage.removeItem(AUTH_SESSION_STORAGE);
+      state.authToken = "";
+      state.currentUser = null;
     }
   }
   updateAdminAuthUi();
-  if (!isAdminSignedIn() && elements.loginGatePassword) elements.loginGatePassword.focus();
+  if (!isUserSignedIn() && elements.loginGatePassword) elements.loginGatePassword.focus();
   localStorage.removeItem(PASSWORD_SETUP_PENDING_KEY);
-  if (isAdminSignedIn()) await autoSyncPrintHistory();
+  if (isUserSignedIn()) await autoSyncPrintHistory();
 }
 
 function recipientFromGoogleSheets(row = {}) {
@@ -1601,7 +1640,7 @@ function mergePrintJobs(rows) {
 }
 
 async function loadPrintJobsFromGoogleSheets() {
-  if (!isAdminSignedIn()) return;
+  if (!isUserSignedIn()) return;
   try {
     const rows = await requestAppsScript("printJobs");
     mergePrintJobs(rows);
@@ -1618,7 +1657,7 @@ async function savePrintJobToGoogleSheets(job) {
 let printJobCloudTimer;
 function queuePrintJobCloudSave(job) {
   if (!job) return;
-  if (!isAdminSignedIn()) {
+  if (!isUserSignedIn()) {
     if (elements.historySaveStatus) elements.historySaveStatus.textContent = "บันทึกไว้ในเครื่องแล้ว · เข้าสู่ระบบเพื่อสำรองลง Google Sheets";
     return;
   }
@@ -1634,14 +1673,14 @@ function queuePrintJobCloudSave(job) {
 }
 
 function queuePrintJobCloudDelete(id) {
-  if (!isAdminSignedIn() || !id) return;
+  if (!isUserSignedIn() || !id) return;
   postAppsScript("deletePrintJob", { id }).catch((error) => {
     console.warn("ลบประวัติจาก Google Sheets ไม่สำเร็จ", error);
   });
 }
 
 async function autoSyncPrintHistory() {
-  if (!isAdminSignedIn()) return;
+  if (!isUserSignedIn()) return;
   try {
     await loadPrintJobsFromGoogleSheets();
     for (const job of state.printJobs) {
@@ -1701,7 +1740,7 @@ function renderRows() {
       <td class="type-cell"><span class="category-badge ${categoryClass(item.category)}">${escapeHtml(item.category)}</span>${classification ? `<small class="recipient-classification">${escapeHtml(classification)}</small>` : ""}</td>
       <td class="department-cell"><span class="department-text">${escapeHtml(item.department || (item.category === "บุคคล" ? "บุคคล" : "ไม่ระบุหน่วยงาน"))}</span></td>
       <td class="address-cell"><span class="address-text">${escapeHtml(recipientFullAddress(item))}</span></td>
-      <td class="action-cell"><div class="row-actions"><button class="row-button edit" data-edit-id="${escapeHtml(item.id)}" type="button">แก้ไข</button></div></td>
+      <td class="action-cell"><div class="row-actions">${isUserSignedIn() ? `<button class="row-button edit" data-edit-id="${escapeHtml(item.id)}" type="button">แก้ไข</button>` : ""}</div></td>
     </tr>`;
   }).join("");
   elements.empty.hidden = rows.length > 0;
@@ -1914,7 +1953,7 @@ async function connectToDatabase() {
 }
 
 async function openRecipientDialog() {
-  if (!(await requireAdminSession())) return;
+  if (!(await requireUserSession())) return;
   state.editingRecipientId = null;
   elements.recipientForm.reset();
   elements.recipientFormMessage.textContent = "";
@@ -1928,7 +1967,7 @@ async function openRecipientDialog() {
 }
 
 async function openEditRecipientDialog(id) {
-  if (!(await requireAdminSession())) return;
+  if (!(await requireUserSession())) return;
   const recipient = state.recipients.find((item) => item.id === id);
   if (!recipient) {
     setNotice("ไม่พบรายการผู้รับที่ต้องการแก้ไข");
@@ -1942,7 +1981,7 @@ async function openEditRecipientDialog(id) {
   $("#recipientDialogTitle").textContent = "แก้ไขข้อมูลผู้รับ";
   $("#recipientDialogInfo").innerHTML = "บันทึกการแก้ไขกลับไปยังรายการเดิมในฐานข้อมูล <strong>Google Sheets</strong>";
   elements.saveRecipient.textContent = "บันทึกการแก้ไข";
-  elements.deleteRecipientButton.hidden = false;
+  elements.deleteRecipientButton.hidden = !isAdminSignedIn();
 
   elements.recipientForm.elements.category.value = recipient.category;
   updateRecipientFormRequirements();
@@ -2178,7 +2217,7 @@ function recipientPayloadMatches(row, payload) {
 }
 
 async function postRecipient(payload) {
-  if (!(await requireAdminSession())) throw new Error("กรุณาเข้าสู่ระบบผู้ดูแล");
+  if (!(await requireUserSession())) throw new Error("กรุณาเข้าสู่ระบบ");
   const row = recipientToGoogleSheets(payload);
   await postAppsScript(payload.action, row);
   return requestRecipients();
