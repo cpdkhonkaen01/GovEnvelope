@@ -1,10 +1,6 @@
 ﻿const CATEGORIES = ["หน่วยงานราชการ", "สหกรณ์และกลุ่มเกษตรกร", "ภาคเอกชน", "บุคคล"];
 const defaults = window.ENVELOPE_APP_CONFIG || {};
-const supabaseClient = window.supabase?.createClient(
-  defaults.supabaseUrl || "",
-  defaults.supabasePublishableKey || "",
-  { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } },
-);
+const ADMIN_KEY_SESSION_STORAGE = "envelope-app-admin-key";
 
 let savedSettings = {};
 try {
@@ -101,12 +97,10 @@ const state = {
   previewRecipientIndex: 0,
   printJobs: savedPrintJobs,
   currentPrintJobId: localStorage.getItem(CURRENT_PRINT_JOB_STORAGE_KEY) || "",
-  adminSession: null,
+  adminKey: "",
   historyFilters: { group: "", month: "", date: "" },
   settings: {
-    supabaseUrl: defaults.supabaseUrl || "",
-    supabaseAdminEmail: String(defaults.supabaseAdminEmail || "").toLowerCase(),
-    supabaseRedirectUrl: defaults.supabaseRedirectUrl || "",
+    appsScriptUrl: String(defaults.appsScriptUrl || "").trim(),
     printJobCreator: "",
     sender: savedSettings.sender || defaults.sender || "สำนักงานสหกรณ์จังหวัดขอนแก่น",
     senderAddress: savedSettings.senderAddress || defaults.senderAddress || "เลขที่ 1/112 หมู่ที่ 13 ถนนหน้าเมือง ตำบลในเมือง\nอำเภอเมือง จังหวัดขอนแก่น 40000",
@@ -373,8 +367,8 @@ function saveCurrentPrintJobDraft(changes = {}, options = {}) {
   state.printJobs = [job, ...state.printJobs.filter((item) => item.id !== job.id)];
   persistPrintHistory();
   if (elements.historySaveStatus) elements.historySaveStatus.textContent = isAdminSignedIn()
-    ? "กำลังบันทึกลง Supabase อัตโนมัติ…"
-    : "บันทึกไว้ในเครื่องแล้ว · เข้าสู่ระบบเพื่อสำรองลง Supabase";
+    ? "กำลังบันทึกลง Google Sheets อัตโนมัติ…"
+    : "บันทึกไว้ในเครื่องแล้ว · เข้าสู่ระบบเพื่อสำรองลง Google Sheets";
   queuePrintJobCloudSave(job);
   return job;
 }
@@ -817,8 +811,7 @@ async function handleDeletePrintJobSubmit(event) {
       return;
     }
     elements.confirmDeletePrintJob.textContent = "กำลังลบ…";
-    const { error } = await requireSupabase().from("print_jobs").delete().eq("id", id);
-    if (error) throw error;
+    await postAppsScript("deletePrintJob", { id });
     deletePrintJobLocally(id);
     closeDeletePrintJobDialog();
     setNotice("ลบประวัติชุดงานแล้ว");
@@ -928,7 +921,7 @@ function handlePrintJobCreatorChange(event) {
   }
   setNotice(`เลือกผู้สร้างชุดงาน: ${state.settings.printJobCreator}`);
   if (!isAdminSignedIn()) {
-    openAdminAuthDialog("เข้าสู่ระบบครั้งเดียว เพื่อให้ระบบบันทึกประวัติลง Supabase อัตโนมัติ");
+    openAdminAuthDialog("เข้าสู่ระบบครั้งเดียว เพื่อให้ระบบบันทึกประวัติลง Google Sheets อัตโนมัติ");
   }
 }
 
@@ -936,7 +929,7 @@ async function openPrintHistory() {
   saveCurrentPrintJobDraft();
   renderPrintHistory();
   elements.printHistoryDialog.showModal();
-  await loadPrintJobsFromSupabase();
+  await loadPrintJobsFromGoogleSheets();
   renderPrintHistory();
 }
 
@@ -1367,14 +1360,65 @@ function persistSettings() {
   localStorage.setItem("envelope-app-settings", JSON.stringify(saved));
 }
 
-function requireSupabase() {
-  if (!supabaseClient) throw new Error("ยังไม่ได้ตั้งค่า Supabase หรือโหลดไลบรารีไม่สำเร็จ");
-  return supabaseClient;
+function requireAppsScriptUrl() {
+  const url = String(state.settings.appsScriptUrl || "").trim();
+  if (!/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec(?:\?.*)?$/i.test(url)) {
+    throw new Error("ยังไม่ได้ตั้งค่า Google Apps Script URL /exec ใน config.js");
+  }
+  return url;
+}
+
+function requestAppsScript(action, parameters = {}) {
+  const endpoint = new URL(requireAppsScriptUrl());
+  const callbackName = `__envelopeCallback_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  endpoint.searchParams.set("action", action);
+  endpoint.searchParams.set("callback", callbackName);
+  Object.entries(parameters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") endpoint.searchParams.set(key, String(value));
+  });
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    const timeout = window.setTimeout(() => finish(new Error("Google Sheets ตอบกลับช้าเกินไป กรุณาลองใหม่")), 20000);
+    const finish = (error, payload) => {
+      window.clearTimeout(timeout);
+      script.remove();
+      try { delete window[callbackName]; } catch (_error) { window[callbackName] = undefined; }
+      if (error) reject(error);
+      else if (!payload?.ok) reject(new Error(payload?.error || "Google Sheets ตอบกลับไม่สำเร็จ"));
+      else resolve(payload.data);
+    };
+    window[callbackName] = (payload) => finish(null, payload);
+    script.onerror = () => finish(new Error("เชื่อมต่อ Google Apps Script ไม่สำเร็จ"));
+    script.src = endpoint.toString();
+    document.head.appendChild(script);
+  });
+}
+
+async function postAppsScript(action, payload = {}, adminKey = state.adminKey) {
+  const response = await fetch(requireAppsScriptUrl(), {
+    method: "POST",
+    redirect: "follow",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ ...payload, action, adminKey }),
+  });
+  if (!response.ok) throw new Error(`Google Apps Script ตอบกลับ HTTP ${response.status}`);
+  const result = await response.json();
+  if (!result?.ok) throw new Error(result?.error || "บันทึกลง Google Sheets ไม่สำเร็จ");
+  return result.data;
 }
 
 function isAdminSignedIn() {
-  const email = String(state.adminSession?.user?.email || "").toLowerCase();
-  return Boolean(email && email === state.settings.supabaseAdminEmail);
+  return Boolean(state.adminKey);
+}
+
+async function verifyAdminKey(adminKey) {
+  try {
+    await postAppsScript("verifyAdmin", {}, adminKey);
+  } catch (error) {
+    if (!/ไม่รองรับคำสั่ง/.test(String(error?.message || ""))) throw error;
+    await postAppsScript("deletePrintJob", { id: "__ADMIN_AUTH_CHECK__" }, adminKey);
+  }
 }
 
 function updateAdminAuthUi() {
@@ -1392,12 +1436,11 @@ function setLoginGateMessage(message = "", type = "") {
 }
 
 async function signInAdminWithPassword(password) {
-  const { data, error } = await requireSupabase().auth.signInWithPassword({
-    email: state.settings.supabaseAdminEmail,
-    password,
-  });
-  if (error) throw error;
-  state.adminSession = data.session;
+  const adminKey = String(password || "").trim();
+  if (!adminKey) throw new Error("กรุณากรอกรหัสผู้ดูแล");
+  await verifyAdminKey(adminKey);
+  state.adminKey = adminKey;
+  sessionStorage.setItem(ADMIN_KEY_SESSION_STORAGE, adminKey);
   updateAdminAuthUi();
 }
 
@@ -1411,6 +1454,8 @@ async function handleLoginGateSubmit(event) {
   try {
     await signInAdminWithPassword(password);
     setLoginGateMessage("เข้าสู่ระบบสำเร็จ", "success");
+    setNotice("เข้าสู่ระบบผู้ดูแลแล้ว ระบบจะบันทึกประวัติลง Google Sheets อัตโนมัติ");
+    setTimeout(() => autoSyncPrintHistory().catch(console.warn), 0);
   } catch (error) {
     setLoginGateMessage("รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง");
     elements.loginGatePassword.select();
@@ -1451,13 +1496,11 @@ async function handleAdminAuthSubmit(event) {
   button.textContent = "กำลังเข้าสู่ระบบ…";
   elements.adminAuthMessage.textContent = "กำลังตรวจสอบรหัสผู้ดูแล…";
   try {
-    const { error } = await requireSupabase().auth.signInWithPassword({
-      email: state.settings.supabaseAdminEmail,
-      password,
-    });
-    if (error) throw error;
+    await signInAdminWithPassword(password);
     elements.adminAuthMessage.textContent = "เข้าสู่ระบบสำเร็จ";
     elements.adminAuthMessage.className = "form-message success";
+    closeAdminAuthDialog();
+    setTimeout(() => autoSyncPrintHistory().catch(console.warn), 0);
   } catch (error) {
     elements.adminAuthMessage.textContent = "รหัสผู้ดูแลไม่ถูกต้อง กรุณาตรวจสอบแล้วลองใหม่";
     elements.adminAuthMessage.className = "form-message error";
@@ -1472,81 +1515,78 @@ async function toggleAdminAuth() {
     openAdminAuthDialog();
     return;
   }
-  await requireSupabase().auth.signOut();
-  state.adminSession = null;
+  state.adminKey = "";
+  sessionStorage.removeItem(ADMIN_KEY_SESSION_STORAGE);
   updateAdminAuthUi();
   setNotice("ออกจากระบบผู้ดูแลแล้ว");
 }
 
 async function initializeAdminAuth() {
-  if (!supabaseClient) {
+  try {
+    requireAppsScriptUrl();
+  } catch (error) {
     updateAdminAuthUi();
-    setLoginGateMessage("ยังไม่ได้ตั้งค่า Supabase กรุณาตรวจสอบ config.js");
+    setLoginGateMessage(error.message);
     return;
   }
-  const { data } = await supabaseClient.auth.getSession();
-  state.adminSession = data.session;
+  const savedAdminKey = sessionStorage.getItem(ADMIN_KEY_SESSION_STORAGE) || "";
+  if (savedAdminKey) {
+    try {
+      await verifyAdminKey(savedAdminKey);
+      state.adminKey = savedAdminKey;
+    } catch (error) {
+      sessionStorage.removeItem(ADMIN_KEY_SESSION_STORAGE);
+      state.adminKey = "";
+    }
+  }
   updateAdminAuthUi();
   if (!isAdminSignedIn() && elements.loginGatePassword) elements.loginGatePassword.focus();
   localStorage.removeItem(PASSWORD_SETUP_PENDING_KEY);
   if (isAdminSignedIn()) await autoSyncPrintHistory();
-  supabaseClient.auth.onAuthStateChange((_event, session) => {
-    state.adminSession = session;
-    updateAdminAuthUi();
-    if (session && isAdminSignedIn()) {
-      closeAdminAuthDialog();
-      setNotice("เข้าสู่ระบบผู้ดูแลแล้ว ระบบจะบันทึกประวัติอัตโนมัติ");
-      setTimeout(() => autoSyncPrintHistory().catch(console.warn), 0);
-    }
-  });
 }
 
-function recipientFromSupabase(row = {}) {
+function recipientFromGoogleSheets(row = {}) {
   return {
     id: row.id,
     category: row.category,
     prefix: row.prefix,
-    firstName: row.first_name,
-    lastName: row.last_name,
+    firstName: row.firstName,
+    lastName: row.lastName,
     position: row.position,
     department: row.department,
-    responsibleUnit: row.responsible_unit,
-    cooperativeType: row.cooperative_type,
+    responsibleUnit: row.responsibleUnit,
+    cooperativeType: row.cooperativeType,
     address1: row.address1,
     subdistrict: row.subdistrict,
     district: row.district,
     province: row.province,
-    postalCode: row.postal_code,
+    postalCode: row.postalCode,
   };
 }
 
-function recipientToSupabase(payload = {}) {
+function recipientToGoogleSheets(payload = {}) {
   return {
     id: payload.id,
     category: payload.category,
     prefix: payload.prefix || "",
-    first_name: payload.firstName || "",
-    last_name: payload.lastName || "",
+    firstName: payload.firstName || "",
+    lastName: payload.lastName || "",
     position: payload.position || "",
     department: payload.department || "",
-    responsible_unit: payload.responsibleUnit || "",
-    cooperative_type: payload.cooperativeType || "",
+    responsibleUnit: payload.responsibleUnit || "",
+    cooperativeType: payload.cooperativeType || "",
     address1: payload.address1 || "",
     subdistrict: payload.subdistrict || "",
     district: payload.district || "",
     province: payload.province || "",
-    postal_code: payload.postalCode || "",
+    postalCode: payload.postalCode || "",
     active: true,
   };
 }
 
 async function requestRecipients() {
-  const { data, error } = await requireSupabase()
-    .from("recipients")
-    .select("*")
-    .order("created_at", { ascending: true });
-  if (error) throw error;
-  return (data || []).map(recipientFromSupabase);
+  const data = await requestAppsScript("recipients");
+  return (data || []).map(recipientFromGoogleSheets);
 }
 
 function mergePrintJobs(rows) {
@@ -1560,78 +1600,58 @@ function mergePrintJobs(rows) {
   persistPrintHistory();
 }
 
-async function loadPrintJobsFromSupabase() {
+async function loadPrintJobsFromGoogleSheets() {
   if (!isAdminSignedIn()) return;
   try {
-    const { data, error } = await requireSupabase().from("print_jobs").select("*").order("updated_at", { ascending: false });
-    if (error) throw error;
-    const rows = (data || []).map((row) => ({
-      ...(row.data || {}),
-      id: row.id,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-      completedAt: row.completed_at,
-      envelopePrintedAt: row.envelope_printed_at,
-      manifestPrintedAt: row.manifest_printed_at,
-    }));
+    const rows = await requestAppsScript("printJobs");
     mergePrintJobs(rows);
-    if (elements.historySaveStatus) elements.historySaveStatus.textContent = "โหลดประวัติจาก Supabase แล้ว";
+    if (elements.historySaveStatus) elements.historySaveStatus.textContent = "โหลดประวัติจาก Google Sheets แล้ว";
   } catch (error) {
-    console.warn("ยังโหลดประวัติจาก Supabase ไม่ได้ ใช้ประวัติบนเครื่องแทน", error);
+    console.warn("ยังโหลดประวัติจาก Google Sheets ไม่ได้ ใช้ประวัติบนเครื่องแทน", error);
   }
 }
 
-async function savePrintJobToSupabase(job) {
-  const row = {
-    id: job.id,
-    data: job,
-    created_at: job.createdAt || new Date().toISOString(),
-    updated_at: job.updatedAt || new Date().toISOString(),
-    completed_at: job.completedAt || null,
-    envelope_printed_at: job.envelopePrintedAt || null,
-    manifest_printed_at: job.manifestPrintedAt || null,
-  };
-  const { error } = await requireSupabase().from("print_jobs").upsert(row, { onConflict: "id" });
-  if (error) throw error;
+async function savePrintJobToGoogleSheets(job) {
+  await postAppsScript("savePrintJob", { job });
 }
 
 let printJobCloudTimer;
 function queuePrintJobCloudSave(job) {
   if (!job) return;
   if (!isAdminSignedIn()) {
-    if (elements.historySaveStatus) elements.historySaveStatus.textContent = "บันทึกไว้ในเครื่องแล้ว · เข้าสู่ระบบเพื่อสำรองลง Supabase";
+    if (elements.historySaveStatus) elements.historySaveStatus.textContent = "บันทึกไว้ในเครื่องแล้ว · เข้าสู่ระบบเพื่อสำรองลง Google Sheets";
     return;
   }
   clearTimeout(printJobCloudTimer);
   printJobCloudTimer = setTimeout(async () => {
     try {
-      await savePrintJobToSupabase(job);
-      if (elements.historySaveStatus) elements.historySaveStatus.textContent = "บันทึกลง Supabase อัตโนมัติแล้ว";
+      await savePrintJobToGoogleSheets(job);
+      if (elements.historySaveStatus) elements.historySaveStatus.textContent = "บันทึกลง Google Sheets อัตโนมัติแล้ว";
     } catch (error) {
-      console.warn("สำรองชุดงานไป Supabase ไม่สำเร็จ", error);
+      console.warn("สำรองชุดงานไป Google Sheets ไม่สำเร็จ", error);
     }
   }, 700);
 }
 
 function queuePrintJobCloudDelete(id) {
   if (!isAdminSignedIn() || !id) return;
-  requireSupabase().from("print_jobs").delete().eq("id", id).then(({ error }) => {
-    if (error) console.warn("ลบประวัติจาก Supabase ไม่สำเร็จ", error);
+  postAppsScript("deletePrintJob", { id }).catch((error) => {
+    console.warn("ลบประวัติจาก Google Sheets ไม่สำเร็จ", error);
   });
 }
 
 async function autoSyncPrintHistory() {
   if (!isAdminSignedIn()) return;
   try {
-    await loadPrintJobsFromSupabase();
+    await loadPrintJobsFromGoogleSheets();
     for (const job of state.printJobs) {
-      await savePrintJobToSupabase(job);
+      await savePrintJobToGoogleSheets(job);
     }
     renderPrintHistory();
-    elements.historySaveStatus.textContent = "บันทึกลง Supabase อัตโนมัติแล้ว";
+    elements.historySaveStatus.textContent = "บันทึกลง Google Sheets อัตโนมัติแล้ว";
   } catch (error) {
     console.error(error);
-    elements.historySaveStatus.textContent = `บันทึก Supabase ไม่สำเร็จ: ${error.message}`;
+    elements.historySaveStatus.textContent = `บันทึก Google Sheets ไม่สำเร็จ: ${error.message}`;
   }
 }
 
@@ -1860,23 +1880,25 @@ function toggleRecipient(id) {
 }
 
 async function connectToDatabase() {
-  if (!supabaseClient) {
+  try {
+    requireAppsScriptUrl();
+  } catch (error) {
     elements.status.className = "status-pill error";
-    elements.status.querySelector("span").textContent = "ยังไม่ได้ตั้งค่า Supabase";
-    setNotice("กรุณาตรวจสอบค่า Supabase ใน config.js");
+    elements.status.querySelector("span").textContent = "ยังไม่ได้ตั้งค่า Google Sheets";
+    setNotice(error.message);
     return;
   }
 
   elements.status.className = "status-pill loading";
   elements.status.querySelector("span").textContent = "กำลังเชื่อมฐานข้อมูล";
-  setNotice("กำลังดึงข้อมูลจาก Supabase…");
+  setNotice("กำลังดึงข้อมูลจาก Google Sheets…");
   try {
     const rows = await requestRecipients();
     state.recipients = rows.map(normalizeRecipient);
     state.selected = new Set([...state.selected].filter((id) => state.recipients.some((item) => item.id === id)));
     state.connected = true;
     elements.status.className = "status-pill connected";
-    elements.status.querySelector("span").textContent = "เชื่อม Supabase แล้ว";
+    elements.status.querySelector("span").textContent = "เชื่อม Google Sheets แล้ว";
     const restoredJob = restoreSavedPrintJobOnLoad();
     if (!restoredJob) render();
     setNotice(restoredJob
@@ -1898,7 +1920,7 @@ async function openRecipientDialog() {
   elements.recipientFormMessage.textContent = "";
   elements.recipientFormMessage.className = "form-message";
   $("#recipientDialogTitle").textContent = "เพิ่มรายชื่อผู้รับ";
-  $("#recipientDialogInfo").innerHTML = "ข้อมูลจะบันทึกลงฐานข้อมูล <strong>Supabase</strong> โดยตรง";
+  $("#recipientDialogInfo").innerHTML = "ข้อมูลจะบันทึกลงฐานข้อมูล <strong>Google Sheets</strong> โดยตรง";
   elements.saveRecipient.textContent = "บันทึกข้อมูลผู้รับ";
   elements.deleteRecipientButton.hidden = true;
   updateRecipientFormRequirements();
@@ -1918,7 +1940,7 @@ async function openEditRecipientDialog(id) {
   elements.recipientFormMessage.textContent = "";
   elements.recipientFormMessage.className = "form-message";
   $("#recipientDialogTitle").textContent = "แก้ไขข้อมูลผู้รับ";
-  $("#recipientDialogInfo").innerHTML = "บันทึกการแก้ไขกลับไปยังรายการเดิมในฐานข้อมูล <strong>Supabase</strong>";
+  $("#recipientDialogInfo").innerHTML = "บันทึกการแก้ไขกลับไปยังรายการเดิมในฐานข้อมูล <strong>Google Sheets</strong>";
   elements.saveRecipient.textContent = "บันทึกการแก้ไข";
   elements.deleteRecipientButton.hidden = false;
 
@@ -2157,12 +2179,8 @@ function recipientPayloadMatches(row, payload) {
 
 async function postRecipient(payload) {
   if (!(await requireAdminSession())) throw new Error("กรุณาเข้าสู่ระบบผู้ดูแล");
-  const row = recipientToSupabase(payload);
-  const query = payload.action === "updateRecipient"
-    ? requireSupabase().from("recipients").update(row).eq("id", payload.id)
-    : requireSupabase().from("recipients").insert(row);
-  const { error } = await query;
-  if (error) throw error;
+  const row = recipientToGoogleSheets(payload);
+  await postAppsScript(payload.action, row);
   return requestRecipients();
 }
 
@@ -2201,8 +2219,8 @@ async function handleRecipientSubmit(event) {
   elements.saveRecipient.disabled = true;
   elements.saveRecipient.textContent = "กำลังบันทึก…";
   elements.recipientFormMessage.textContent = isEditing
-    ? "กำลังบันทึกการแก้ไขไปยัง Supabase…"
-    : "กำลังบันทึกข้อมูลไปยัง Supabase…";
+    ? "กำลังบันทึกการแก้ไขไปยัง Google Sheets…"
+    : "กำลังบันทึกข้อมูลไปยัง Google Sheets…";
   elements.recipientFormMessage.className = "form-message";
 
   try {
@@ -2278,10 +2296,9 @@ async function handleDeleteRecipientSubmit(event) {
       return;
     }
     elements.confirmDeleteRecipient.textContent = "กำลังลบ…";
-    elements.deleteRecipientMessage.textContent = `กำลังลบ ${name} จาก Supabase…`;
-    setNotice(`กำลังลบ ${name} จาก Supabase…`);
-    const { error } = await requireSupabase().from("recipients").delete().eq("id", id);
-    if (error) throw error;
+    elements.deleteRecipientMessage.textContent = `กำลังลบ ${name} จาก Google Sheets…`;
+    setNotice(`กำลังลบ ${name} จาก Google Sheets…`);
+    await postAppsScript("deleteRecipient", { id });
     const rows = await requestRecipients();
     state.recipients = rows.map(normalizeRecipient);
     state.selected.delete(id);
