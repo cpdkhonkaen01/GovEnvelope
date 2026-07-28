@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#2856d9" />
-    <meta name="description" content="ระบบจ่าหน้าซองจดหมายราชการจากฐานข้อมูล Supabase" />
+    <meta name="description" content="ระบบจ่าหน้าซองจดหมายราชการจากฐานข้อมูล Google Sheets" />
     <title>ระบบจ่าหน้าซองจดหมายราชการ</title>
     <link rel="stylesheet" href="assets/styles.css" />
   </head>
@@ -319,7 +319,7 @@
       <form id="deletePrintJobForm">
         <div class="confirm-icon">!</div>
         <div class="dialog-title confirm-title"><div><span class="eyebrow danger-text">ยืนยันการลบ</span><h2>ลบประวัติชุดงานพิมพ์</h2></div><button class="close-button" id="closeDeletePrintJobDialog" type="button" aria-label="ปิด">×</button></div>
-        <p class="dialog-info danger-info">ประวัติชุดงานนี้จะถูกลบออกจากระบบและ Supabase กรุณาตรวจสอบให้แน่ใจก่อนดำเนินการ</p>
+        <p class="dialog-info danger-info">ประวัติชุดงานนี้จะถูกลบออกจากระบบและ Google Sheets กรุณาตรวจสอบให้แน่ใจก่อนดำเนินการ</p>
         <div class="delete-target" id="deletePrintJobName"></div>
         <label class="form-field"><span>รหัสยืนยันการลบ *</span><input id="deletePrintJobPassword" type="password" minlength="8" autocomplete="current-password" required placeholder="กรอกรหัสผ่านผู้ดูแล" /><small>ต้องกรอกรหัสผ่านผู้ดูแลอีกครั้ง เพื่อป้องกันการกดลบผิด</small></label>
         <p class="form-message" id="deletePrintJobMessage" role="status" aria-live="polite"></p>
@@ -347,7 +347,6 @@
       </form>
     </dialog>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="config.js"></script>
     <script src="assets/app.js"></script>

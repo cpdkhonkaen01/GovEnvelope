@@ -1,48 +1,53 @@
 # ระบบจ่าหน้าซองจดหมายราชการ
 
-เว็บสำหรับค้นหารายชื่อผู้รับ พิมพ์หน้าซอง และพิมพ์ใบนำส่งไปรษณีย์ โดยใช้ Supabase เป็นฐานข้อมูลกลางและเผยแพร่บน Vercel
+เว็บสำหรับค้นหารายชื่อผู้รับ พิมพ์หน้าซอง และพิมพ์ใบนำส่งไปรษณีย์ โดยใช้ Google Sheets เป็นฐานข้อมูลกลาง ผ่าน Google Apps Script Web App และเผยแพร่หน้าเว็บบน Vercel
 
 ## โครงสร้างระบบ
 
-หน้าเว็บ Vercel ↔ Supabase Database + Supabase Auth
+หน้าเว็บ Vercel ↔ Google Apps Script ↔ Google Sheets
 
-- ผู้ใช้ทั่วไปอ่านรายชื่อ ค้นหา เลือก และพิมพ์ได้โดยไม่ต้องเข้าสู่ระบบ
-- ผู้ดูแลเข้าสู่ระบบด้วยลิงก์ที่ส่งไปยัง `cpd.khonkaen01@gmail.com`
-- เฉพาะผู้ดูแลเพิ่ม แก้ไข ลบรายชื่อ และสำรองประวัติชุดงานได้
-- ประวัติชุดงานบันทึกลง Supabase อัตโนมัติหลังเข้าสู่ระบบ ไม่ต้องกดซิงค์เอง
-- ทุกชุดงานเก็บชื่อกลุ่มงานผู้สร้าง รายชื่อ จำนวนซอง วันที่ และเลขลงทะเบียน/EMS เพื่อกลับมาทำต่อหรือแก้ไขได้
-- สิทธิ์ถูกบังคับที่ฐานข้อมูลด้วย Row Level Security (RLS)
+- ชีต `Recipients` เก็บรายชื่อผู้รับ
+- ชีต `PrintJobs` เก็บประวัติชุดงานพิมพ์
+- ผู้ดูแลเข้าสู่ระบบด้วยรหัส `WRITE_KEY` ที่กำหนดใน Script Properties
+- การเพิ่ม แก้ไข ลบรายชื่อ และประวัติชุดงาน จะบันทึกลง Google Sheets
+- ห้ามใส่ `WRITE_KEY` ใน `config.js`, GitHub หรือโค้ดหน้าเว็บ
 
 ## ไฟล์สำคัญ
 
 - `index.source.html` หน้าเว็บต้นฉบับ
-- `assets/app.js` การทำงานของเว็บและการเชื่อม Supabase
+- `assets/app.js` การทำงานของเว็บและการเชื่อม Google Apps Script
 - `assets/styles.css` รูปแบบหน้าเว็บและหน้าพิมพ์
-- `config.js` Project URL, Publishable key และอีเมลผู้ดูแล
+- `config.js` URL `/exec` ของ Google Apps Script
+- `apps-script/Code.gs` API สำหรับอ่านและเขียน Google Sheets
 - `scripts/build-standalone.mjs` สร้าง `index.html` สำหรับอัปโหลด
 - `index.html` ไฟล์ที่สร้างแล้วสำหรับใช้งานจริง
-- `apps-script/` โค้ดระบบ Google Sheets เดิม เก็บไว้เป็นข้อมูลสำรอง ไม่ถูกเรียกใช้แล้ว
+
+## ตั้งค่า Google Apps Script
+
+1. เปิดโปรเจกต์ Apps Script แล้วนำ `apps-script/Code.gs` ไปวาง
+2. แก้ `SPREADSHEET_ID` ให้ตรงกับ Google Sheet ที่ต้องการใช้
+3. ไปที่ **Project Settings > Script Properties**
+4. เพิ่ม Property ชื่อ `WRITE_KEY` และกำหนดรหัสผู้ดูแล
+5. กด **Deploy > New deployment > Web app**
+6. เลือก **Execute as: Me** และ **Who has access: Anyone**
+7. คัดลอก URL ที่ลงท้าย `/exec` ไปใส่ใน `config.js`
+8. เมื่อแก้ `Code.gs` ภายหลัง ต้องสร้างเวอร์ชัน deployment ใหม่
+
+หากต้องการให้การอ่านข้อมูลเร็วขึ้น ให้เพิ่มบริการ **Google Sheets API v4** ใน Apps Script ส่วนระบบยังมี Spreadsheet service เป็นตัวสำรอง
 
 ## เมื่อแก้ไขเว็บ
 
-รันคำสั่งต่อไปนี้เพื่อสร้าง `index.html` ใหม่
+สร้าง `index.html` ใหม่ด้วยคำสั่ง:
 
 ```powershell
 node scripts/build-standalone.mjs
 ```
 
-จากนั้นอัปโหลดหรือ push ไฟล์ต่อไปนี้ขึ้น GitHub/Vercel
+จากนั้นอัปโหลดหรือ push ไฟล์ต่อไปนี้ขึ้น GitHub/Vercel:
 
 - `index.html`
 - `config.js`
 - `assets/`
-- `vercel.json` ถ้ามีการแก้ไข
+- `vercel.json`
 
-## การเข้าสู่ระบบผู้ดูแล
-
-1. กด **เข้าสู่ระบบผู้ดูแล**
-2. กรอกเฉพาะรหัสผู้ดูแล แล้วกด **เข้าสู่ระบบ**
-3. ระบบใช้อีเมลผู้ดูแลที่กำหนดไว้เบื้องหลังโดยอัตโนมัติ
-4. เมื่อเข้าสู่ระบบแล้ว สามารถเพิ่ม แก้ไข ลบ และบันทึกประวัติลง Supabase อัตโนมัติ
-
-ห้ามนำ Secret key หรือ Service Role key ใส่ใน `config.js` หรือ GitHub โดยเด็ดขาด หน้าเว็บนี้ใช้เฉพาะ Publishable key ซึ่งออกแบบมาให้ใช้ในเบราว์เซอร์ร่วมกับ RLS
+โฟลเดอร์ `apps-script/` ใช้สำหรับนำโค้ดไปอัปเดตใน Google Apps Script ไม่จำเป็นต่อการทำงานของหน้าเว็บบน Vercel

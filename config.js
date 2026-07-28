@@ -1,9 +1,6 @@
-// ฐานข้อมูล Supabase: ใช้ Publishable key เท่านั้น (ห้ามใส่ Secret key ในหน้าเว็บ)
+// ฐานข้อมูล Google Sheets ผ่าน Google Apps Script Web App
 window.ENVELOPE_APP_CONFIG = {
-  supabaseUrl: "https://ywhuywtabxpunyuyjsou.supabase.co",
-  supabasePublishableKey: "sb_publishable_xzzh_KY6bHtKjwXGQEle1A_ONRQF_wD",
-  supabaseAdminEmail: "cpd.khonkaen01@gmail.com",
-  supabaseRedirectUrl: "https://envelope-addressing.vercel.app/",
+  appsScriptUrl: "https://script.google.com/macros/s/AKfycbz7WU2jcB3tqDcHCW0XInm3fGPF7MCDO_m1j3zGmo7Tvf9BbxnFbwGhzg7fUPpE_qty/exec",
   layoutDefaultsVersion: "2026-07-22-envelope-layout-v3",
   sender: "สำนักงานสหกรณ์จังหวัดขอนแก่น",
   senderAddress: "เลขที่ 1/112 หมู่ที่ 13 ถนนหน้าเมือง ตำบลในเมือง\nอำเภอเมือง จังหวัดขอนแก่น 40000\nโทรศัพท์. 0-4324-6682 โทรสาร. 0-4324-6681",
