@@ -233,6 +233,7 @@ const elements = {
   loginScreen: $("#loginScreen"),
   loginGateForm: $("#loginGateForm"),
   loginGatePassword: $("#loginGatePassword"),
+  loginPasswordVisibility: $("#toggleLoginPassword"),
   loginGateMessage: $("#loginGateMessage"),
   loginGateButton: $("#loginGateButton"),
   adminAuthButton: $("#adminAuthButton"),
@@ -453,9 +454,9 @@ function updateWorkflowUi(selectedCount = state.selected.size) {
     hint = "เลือกรายชื่อผู้รับที่ต้องการส่ง และกำหนดจำนวนซองในแต่ละรายชื่อ";
   } else if (hasCreator && selectedCount > 0 && !hasEnvelopePrinted) {
     activeStep = 4;
-    hint = "พร้อมพิมพ์หน้าซองจดหมายแล้ว หลังจากพิมพ์หน้าซองจึงไปพิมพ์ใบนำส่ง";
+    hint = "ตรวจสอบรายชื่อและจำนวนซอง แล้วเลือกขนาดซอง ตั้งค่าหน้าซอง และตรวจตัวอย่างก่อนพิมพ์";
   } else if (hasCreator && selectedCount > 0) {
-    activeStep = 5;
+    activeStep = 8;
     hint = "พิมพ์หน้าซองแล้ว ขั้นต่อไปกรอกเลขลงทะเบียน/EMS และพิมพ์ใบนำส่ง";
   }
 
@@ -1444,7 +1445,15 @@ function updateAdminAuthUi() {
   document.body.classList.toggle("app-locked", !signedIn);
   document.body.classList.toggle("admin-user", isAdmin);
   if (elements.loginScreen) elements.loginScreen.setAttribute("aria-hidden", signedIn ? "true" : "false");
-  if (signedIn && elements.loginGatePassword) elements.loginGatePassword.value = "";
+  if (signedIn && elements.loginGatePassword) {
+    elements.loginGatePassword.value = "";
+    elements.loginGatePassword.type = "password";
+  }
+  if (signedIn && elements.loginPasswordVisibility) {
+    elements.loginPasswordVisibility.textContent = "แสดง";
+    elements.loginPasswordVisibility.setAttribute("aria-label", "แสดงรหัสผ่าน");
+    elements.loginPasswordVisibility.setAttribute("aria-pressed", "false");
+  }
   const addRecipientButton = $("#openAddRecipient");
   if (addRecipientButton) addRecipientButton.hidden = !signedIn;
   if (elements.adminAuthButton) {
@@ -1458,6 +1467,15 @@ function setLoginGateMessage(message = "", type = "") {
   if (!elements.loginGateMessage) return;
   elements.loginGateMessage.textContent = message;
   elements.loginGateMessage.className = type ? `login-message ${type}` : "login-message";
+}
+
+function toggleLoginPasswordVisibility() {
+  const showPassword = elements.loginGatePassword.type === "password";
+  elements.loginGatePassword.type = showPassword ? "text" : "password";
+  elements.loginPasswordVisibility.textContent = showPassword ? "ซ่อน" : "แสดง";
+  elements.loginPasswordVisibility.setAttribute("aria-label", showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน");
+  elements.loginPasswordVisibility.setAttribute("aria-pressed", showPassword ? "true" : "false");
+  elements.loginGatePassword.focus();
 }
 
 async function signInAdminWithPassword(password) {
@@ -2750,6 +2768,7 @@ $("#cancelDeletePrintJob").addEventListener("click", closeDeletePrintJobDialog);
 elements.deletePrintJobForm.addEventListener("submit", handleDeletePrintJobSubmit);
 elements.printJobCreator.addEventListener("change", handlePrintJobCreatorChange);
 elements.loginGateForm.addEventListener("submit", handleLoginGateSubmit);
+elements.loginPasswordVisibility.addEventListener("click", toggleLoginPasswordVisibility);
 elements.adminAuthButton.addEventListener("click", toggleAdminAuth);
 elements.adminAuthForm.addEventListener("submit", handleAdminAuthSubmit);
 $("#closeAdminAuth").addEventListener("click", closeAdminAuthDialog);
