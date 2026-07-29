@@ -268,11 +268,9 @@
           <div><span class="eyebrow">ใบนำส่งไปรษณีย์</span><h2>กรอกเลขลงทะเบียน / EMS</h2></div>
           <button class="close-button" id="closeManifestDialog" type="button" aria-label="ปิด">×</button>
         </div>
-        <div class="form-grid equal">
+        <div class="manifest-setup-grid">
           <label class="form-field"><span>วัน/เดือน/ปี ทำรายการ</span><input name="manifestDate" id="manifestDate" type="date" required /></label>
           <label class="form-field"><span>ใบอนุญาต/ไปรษณีย์</span><input name="manifestPermit" id="manifestPermit" type="text" value="ใบอนุญาตเลขที่ 3/2521 ไปรษณีย์เทพารักษ์" readonly /></label>
-        </div>
-        <div class="form-grid equal manifest-prefix-fields">
           <label class="form-field"><span>ล็อกเลขนำหน้าลงทะเบียน 5 หลัก</span><input id="manifestRegisteredPrefix" type="text" inputmode="text" autocomplete="off" maxlength="7" pattern="[A-Za-z]{2}[0-9๐-๙]{5}" placeholder="เช่น RJ00235" /><small>ใส่ตัวอังกฤษ 2 ตัว + เลขนำหน้า 5 หลัก แล้วแต่ละแถวกรอกเฉพาะ 4 ตัวท้าย</small></label>
           <label class="form-field"><span>ล็อกเลขนำหน้า EMS 5 หลัก</span><input id="manifestEmsPrefix" type="text" inputmode="text" autocomplete="off" maxlength="7" pattern="[A-Za-z]{2}[0-9๐-๙]{5}" placeholder="เช่น EQ12238" /><small>ใส่ตัวอังกฤษ 2 ตัว + เลขนำหน้า 5 หลัก แล้วแต่ละแถวกรอกเฉพาะ 4 ตัวท้าย</small></label>
         </div>

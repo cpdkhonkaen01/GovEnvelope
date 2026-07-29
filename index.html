@@ -206,7 +206,12 @@ footer strong{color:#667085}
 
 dialog{width:min(860px,calc(100% - 32px));max-height:calc(100vh - 40px);padding:34px;border:0;border-radius:24px;box-shadow:0 30px 90px rgba(17,26,48,.3)}
 dialog.wide-dialog{width:min(1120px,calc(100% - 28px))}
-#mailingManifestDialog{width:min(1240px,calc(100% - 18px));max-height:calc(100vh - 16px);padding:28px 34px}
+#mailingManifestDialog{width:min(1440px,calc(100% - 12px));height:calc(100vh - 12px);max-height:calc(100vh - 12px);padding:16px 22px 14px;overflow:hidden}
+#mailingManifestForm{display:flex;height:100%;min-height:0;flex-direction:column}
+#mailingManifestDialog .dialog-title{flex:0 0 auto;align-items:center}
+#mailingManifestDialog .dialog-title .eyebrow{margin-bottom:2px;font-size:10px}
+#mailingManifestDialog .dialog-title h2{margin:0;font-size:25px;line-height:1.2}
+#mailingManifestDialog .close-button{width:40px;height:40px;font-size:23px}
 dialog::backdrop{background:rgba(17,26,48,.56);backdrop-filter:blur(6px)}
 .dialog-title{display:flex;align-items:flex-start;justify-content:space-between}
 .dialog-title .eyebrow{font-size:12px}
@@ -247,19 +252,26 @@ button:disabled{cursor:not-allowed;opacity:.58}
 dialog hr{height:1px;margin:20px 0 4px;border:0;background:#edf0f5}
 .dialog-actions{display:flex;justify-content:flex-end;gap:11px;margin-top:24px}.dialog-actions .button{min-height:50px;padding:0 22px;font-size:14px}
 .manifest-table-wrap{max-height:58vh;overflow:auto;margin-top:18px;border:1px solid #e6ebf4;border-radius:16px;background:#fff}
-#mailingManifestDialog .manifest-table-wrap{max-height:calc(100vh - 340px);min-height:420px;margin-top:14px}
+.manifest-setup-grid{display:grid;grid-template-columns:.72fr 1.25fr 1fr 1fr;flex:0 0 auto;gap:10px}
+#mailingManifestDialog .manifest-setup-grid .form-field{min-width:0;margin-top:8px}
+#mailingManifestDialog .manifest-setup-grid .form-field>span{margin-bottom:4px;font-size:12px}
+#mailingManifestDialog .manifest-setup-grid .form-field input{height:42px;padding:0 12px;border-radius:10px;font-size:14px}
+#mailingManifestDialog .manifest-setup-grid .form-field small{min-height:15px;margin-top:3px;font-size:10px;line-height:1.25}
+#mailingManifestDialog .manifest-table-wrap{min-height:0;max-height:none;flex:1 1 auto;margin-top:8px;border-radius:12px}
 .manifest-entry-table{min-width:860px}
 .manifest-entry-table th{position:sticky;top:0;z-index:1;background:#f7f9fd}
-.manifest-entry-table th,.manifest-entry-table td{padding:10px 14px;font-size:14px}
-.manifest-entry-table th:first-child,.manifest-entry-table td:first-child{width:64px;text-align:center}
-.manifest-entry-table th:nth-child(3),.manifest-entry-table td:nth-child(3){width:110px;text-align:center}
-.manifest-entry-table th:nth-child(4),.manifest-entry-table th:nth-child(5){width:180px}
-.manifest-entry-table input{width:100%;height:38px;padding:0 12px;border:1px solid #dfe4ed;border-radius:10px;background:#fff;color:var(--ink);font:inherit}
+.manifest-entry-table th,.manifest-entry-table td{height:42px;padding:5px 9px;font-size:13px;line-height:1.2}
+.manifest-entry-table th:first-child,.manifest-entry-table td:first-child{width:54px;text-align:center}
+.manifest-entry-table th:nth-child(3),.manifest-entry-table td:nth-child(3){width:90px;text-align:center}
+.manifest-entry-table th:nth-child(4),.manifest-entry-table th:nth-child(5){width:155px}
+.manifest-entry-table input{width:100%;height:32px;padding:0 10px;border:1px solid #dfe4ed;border-radius:8px;background:#fff;color:var(--ink);font:inherit}
 .manifest-entry-table input:disabled{border-color:#edf0f5;background:#f3f5f8;color:#98a2b3}
-.manifest-entry-table td.tracking-locked::after{display:block;color:#98a2b3;font-size:11px;text-align:center;content:"ปิดใช้งาน"}
+.manifest-entry-table td.tracking-locked::after{display:block;color:#98a2b3;font-size:9px;line-height:1;text-align:center;content:"ปิดใช้งาน"}
 .manifest-prefix-fields{margin-top:2px}
-.manifest-recipient-name{font-weight:800;color:#17223b}
+.manifest-recipient-name{overflow:hidden;color:#17223b;font-weight:800;text-overflow:ellipsis;white-space:nowrap}
 .manifest-recipient-sub{margin-top:3px;color:#667085;font-size:12px}
+#mailingManifestDialog .dialog-actions{flex:0 0 auto;margin-top:9px}
+#mailingManifestDialog .dialog-actions .button{min-height:42px}
 .history-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:18px 0}
 .history-save-status{color:#667085;font-size:14px}
 .print-history-list{display:grid;max-height:48vh;overflow:auto;gap:12px;padding-right:4px}
@@ -373,6 +385,7 @@ footer{width:min(2000px,96vw);font-size:12px}
 }
 @media(max-width:1080px){.content-grid{grid-template-columns:1fr}
 .workflow-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+.manifest-setup-grid{grid-template-columns:1fr 1fr}
 .print-card{grid-template-columns:1fr}
 .print-overview{padding:0;border:0}
 .print-controls{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -411,6 +424,9 @@ table{min-width:600px}
 .print-controls{grid-template-columns:1fr}
 .print-controls .paper-size-option{grid-column:auto}
 .form-grid{grid-template-columns:1fr}
+.manifest-setup-grid{grid-template-columns:1fr 1fr}
+#mailingManifestDialog{padding:14px}
+#mailingManifestDialog .dialog-title h2{font-size:21px}
 .history-item{grid-template-columns:1fr}
 .history-actions{justify-content:flex-start}
 .history-filter-grid,.history-summary-grid{grid-template-columns:1fr 1fr}
@@ -418,6 +434,7 @@ table{min-width:600px}
 footer{width:min(100% - 28px,680px);flex-direction:column}
 }
 @media(max-width:460px){.brand strong{font-size:16px}
+.manifest-setup-grid{grid-template-columns:1fr}
 .brand-mark{width:37px;height:37px}
 .hero h1{font-size:32px}
 .hero-actions{display:grid}
@@ -694,11 +711,9 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
           <div><span class="eyebrow">ใบนำส่งไปรษณีย์</span><h2>กรอกเลขลงทะเบียน / EMS</h2></div>
           <button class="close-button" id="closeManifestDialog" type="button" aria-label="ปิด">×</button>
         </div>
-        <div class="form-grid equal">
+        <div class="manifest-setup-grid">
           <label class="form-field"><span>วัน/เดือน/ปี ทำรายการ</span><input name="manifestDate" id="manifestDate" type="date" required /></label>
           <label class="form-field"><span>ใบอนุญาต/ไปรษณีย์</span><input name="manifestPermit" id="manifestPermit" type="text" value="ใบอนุญาตเลขที่ 3/2521 ไปรษณีย์เทพารักษ์" readonly /></label>
-        </div>
-        <div class="form-grid equal manifest-prefix-fields">
           <label class="form-field"><span>ล็อกเลขนำหน้าลงทะเบียน 5 หลัก</span><input id="manifestRegisteredPrefix" type="text" inputmode="text" autocomplete="off" maxlength="7" pattern="[A-Za-z]{2}[0-9๐-๙]{5}" placeholder="เช่น RJ00235" /><small>ใส่ตัวอังกฤษ 2 ตัว + เลขนำหน้า 5 หลัก แล้วแต่ละแถวกรอกเฉพาะ 4 ตัวท้าย</small></label>
           <label class="form-field"><span>ล็อกเลขนำหน้า EMS 5 หลัก</span><input id="manifestEmsPrefix" type="text" inputmode="text" autocomplete="off" maxlength="7" pattern="[A-Za-z]{2}[0-9๐-๙]{5}" placeholder="เช่น EQ12238" /><small>ใส่ตัวอังกฤษ 2 ตัว + เลขนำหน้า 5 หลัก แล้วแต่ละแถวกรอกเฉพาะ 4 ตัวท้าย</small></label>
         </div>
@@ -2137,7 +2152,8 @@ function manifestRecipientLabel(item) {
 
 function manifestRecipientFontStyle(name = "") {
   const length = String(name).trim().length;
-  if (length > 80) return ' style="font-size:8pt!important"';
+  if (length > 120) return ' style="font-size:8pt!important"';
+  if (length > 80) return ' style="font-size:9pt!important"';
   if (length > 60) return ' style="font-size:9pt!important"';
   if (length > 50) return ' style="font-size:11pt!important"';
   return "";
@@ -3284,7 +3300,7 @@ function openManifestDialog() {
     const emsValue = manifestTrackingEntryValue(savedEms, emsPrefix);
     return `<tr data-recipient-id="${escapeHtml(item.id)}" data-job-key="${escapeHtml(jobKey)}">
       <td>${index + 1}</td>
-      <td><div class="manifest-recipient-name">${escapeHtml(name)}</div></td>
+      <td><div class="manifest-recipient-name" title="${escapeHtml(name)}">${escapeHtml(name)}</div></td>
       <td>${escapeHtml(item.postalCode || "")}</td>
       <td><input name="registered-${index}" class="tracking-input" data-tracking-type="registered" data-locked-prefix="${escapeHtml(registeredUsesPrefix ? registeredPrefix : "")}" type="text" inputmode="numeric" autocomplete="off" maxlength="${registeredUsesPrefix ? 4 : 9}" pattern="[0-9๐-๙]{${registeredUsesPrefix ? 4 : 9}}" title="${registeredUsesPrefix ? `กรอก 4 ตัวท้าย ต่อจาก ${escapeHtml(registeredPrefix)}` : "กรอกตัวเลข 9 หลัก"}" placeholder="${registeredUsesPrefix ? "4 ตัวท้าย" : "ตัวเลข 9 หลัก"}" value="${escapeHtml(registeredValue)}" /></td>
       <td><input name="ems-${index}" class="tracking-input" data-tracking-type="ems" data-locked-prefix="${escapeHtml(emsUsesPrefix ? emsPrefix : "")}" type="text" inputmode="numeric" autocomplete="off" maxlength="${emsUsesPrefix ? 4 : 9}" pattern="[0-9๐-๙]{${emsUsesPrefix ? 4 : 9}}" title="${emsUsesPrefix ? `กรอก 4 ตัวท้าย ต่อจาก ${escapeHtml(emsPrefix)}` : "กรอกตัวเลข 9 หลัก"}" placeholder="${emsUsesPrefix ? "4 ตัวท้าย" : "ตัวเลข 9 หลัก"}" value="${escapeHtml(emsValue)}" /></td>
