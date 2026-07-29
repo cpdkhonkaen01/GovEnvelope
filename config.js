@@ -25,7 +25,7 @@ window.ENVELOPE_APP_CONFIG = {
   showRecipientDepartment: false,
   showRecipientAddress: true,
   showPostagePermit: true,
-  postagePermitText: "ชำระค่าฝากส่งเป็นรายเดือน\nใบอนุญาตเลขที่ xx/xxx\nไปรษณีย์เดชาวุธ",
+  postagePermitText: "ชำระค่าฝากส่งเป็นรายเดือน\nใบอนุญาตเลขที่ 3/2521\nไปรษณีย์เทพารักษ์",
   postagePermitTopMm: 10,
   postagePermitRightMm: 10,
   postagePermitFontPt: 10,
