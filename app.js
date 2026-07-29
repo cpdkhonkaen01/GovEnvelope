@@ -436,6 +436,38 @@ function syncHistoryGroupOptions() {
   state.historyFilters.group = elements.historyGroupFilter.value;
 }
 
+function formatThaiHistoryMonth(monthKey) {
+  if (!/^\d{4}-\d{2}$/.test(monthKey || "")) return monthKey || "";
+  const date = new Date(`${monthKey}-01T12:00:00`);
+  return new Intl.DateTimeFormat("th-TH-u-ca-buddhist", {
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
+function formatThaiHistoryDate(dateKey) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey || "")) return dateKey || "";
+  const date = new Date(`${dateKey}T12:00:00`);
+  return new Intl.DateTimeFormat("th-TH-u-ca-buddhist", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
+function syncHistoryMonthOptions() {
+  if (!elements.historyMonthFilter) return;
+  const selected = state.historyFilters.month;
+  const months = [...new Set(state.printJobs
+    .map((job) => printJobLocalDateKey(job.createdAt || job.updatedAt).slice(0, 7))
+    .filter((month) => /^\d{4}-\d{2}$/.test(month)))]
+    .sort((a, b) => b.localeCompare(a));
+  elements.historyMonthFilter.innerHTML = '<option value="">ทุกเดือน</option>'
+    + months.map((month) => `<option value="${month}">${escapeHtml(formatThaiHistoryMonth(month))}</option>`).join("");
+  elements.historyMonthFilter.value = months.includes(selected) ? selected : "";
+  state.historyFilters.month = elements.historyMonthFilter.value;
+}
+
 function setPrintJobCreatorVisible(visible, options = {}) {
   const wrapper = elements.printJobCreator?.closest(".job-creator-control");
   if (!wrapper) return;
@@ -691,6 +723,7 @@ async function downloadHistoryPdf(button, type) {
 function renderPrintHistory() {
   if (!elements.printHistoryList) return;
   syncHistoryGroupOptions();
+  syncHistoryMonthOptions();
   const jobs = filteredPrintJobs();
   const totals = jobs.reduce((result, job) => {
     const counts = printJobCounts(job);
@@ -702,7 +735,10 @@ function renderPrintHistory() {
   if (elements.historyRecipientTotal) elements.historyRecipientTotal.textContent = totals.recipients;
   if (elements.historyEnvelopeTotal) elements.historyEnvelopeTotal.textContent = totals.envelopes;
   if (elements.historyResultLabel) {
-    const labels = [state.historyFilters.group, state.historyFilters.date || state.historyFilters.month].filter(Boolean);
+    const dateLabel = state.historyFilters.date
+      ? formatThaiHistoryDate(state.historyFilters.date)
+      : formatThaiHistoryMonth(state.historyFilters.month);
+    const labels = [state.historyFilters.group, dateLabel].filter(Boolean);
     elements.historyResultLabel.textContent = labels.length ? labels.join(" · ") : "ทั้งหมด";
   }
   if (!jobs.length) {
