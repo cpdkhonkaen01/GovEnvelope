@@ -28,7 +28,7 @@ window.ENVELOPE_APP_CONFIG = {
   postagePermitText: "ชำระค่าฝากส่งเป็นรายเดือน\nใบอนุญาตเลขที่ 3/2521\nไปรษณีย์เทพารักษ์",
   postagePermitTopMm: 10,
   postagePermitRightMm: 10,
-  postagePermitFontPt: 10,
+  postagePermitFontPt: 12,
   postagePermitLineHeight: 1.2,
   paperLayouts: {
     DL: {
@@ -45,7 +45,7 @@ window.ENVELOPE_APP_CONFIG = {
       recipientLineHeight: 1,
       postagePermitTopMm: 10,
       postagePermitRightMm: 10,
-      postagePermitFontPt: 10,
+      postagePermitFontPt: 12,
       postagePermitLineHeight: 1.2,
     },
     C5: {
@@ -62,7 +62,7 @@ window.ENVELOPE_APP_CONFIG = {
       recipientLineHeight: 1,
       postagePermitTopMm: 10,
       postagePermitRightMm: 10,
-      postagePermitFontPt: 10,
+      postagePermitFontPt: 12,
       postagePermitLineHeight: 1.2,
     },
     A4L: {
@@ -79,7 +79,7 @@ window.ENVELOPE_APP_CONFIG = {
       recipientLineHeight: 1.2,
       postagePermitTopMm: 10,
       postagePermitRightMm: 10,
-      postagePermitFontPt: 10,
+      postagePermitFontPt: 12,
       postagePermitLineHeight: 1.2,
     },
   },

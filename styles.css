@@ -135,7 +135,7 @@ body.app-locked .login-screen{display:grid}
 .line-break-button{border-color:#9fb5f3;background:#eef3ff;white-space:nowrap}
 .preview-counter{min-width:48px;color:#263149;font-size:14px;text-align:center;white-space:nowrap}
 .envelope-preview{position:relative;width:100%;aspect-ratio:229/162;overflow:hidden;border:1px solid rgba(23,58,165,.16);border-radius:4px;background:#fff;box-shadow:0 24px 52px rgba(32,67,140,.18);font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif}
-.postage-permit-mini{position:absolute;z-index:3;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid #111;background:#fff;color:#111;font-weight:800;line-height:1.45;text-align:center;white-space:pre-line}
+.postage-permit-mini{position:absolute;z-index:3;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid #111;background:#fff;color:#111;font-weight:400;line-height:1.45;text-align:center;white-space:pre-line}
 .sender-mini-block{position:absolute;z-index:2;width:55%;color:#111}
 .sender-mini-block.garuda-left{display:flex;align-items:flex-start}
 .garuda-mini{display:block;width:auto;object-fit:contain;object-position:left top;color:#111}
@@ -278,6 +278,7 @@ button:disabled{cursor:not-allowed;opacity:.58}
 .category-badge.person{background:#f3efff;color:#6941c6}
 dialog hr{height:1px;margin:20px 0 4px;border:0;background:#edf0f5}
 .dialog-actions{display:flex;justify-content:flex-end;gap:11px;margin-top:24px}.dialog-actions .button{min-height:50px;padding:0 22px;font-size:14px}
+.admin-default-button{background:#e9f8f2;border:1px solid #9bdcc6;color:#08785c;font-weight:800}
 .manifest-table-wrap{max-height:58vh;overflow:auto;margin-top:18px;border:1px solid #e6ebf4;border-radius:16px;background:#fff}
 .manifest-setup-grid{display:grid;grid-template-columns:.72fr 1.25fr 1fr 1fr;flex:0 0 auto;gap:10px}
 #mailingManifestDialog .manifest-setup-grid .form-field{min-width:0;margin-top:8px}
