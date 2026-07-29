@@ -81,8 +81,8 @@ body.app-locked .login-screen{display:grid}
 .button.secondary{border:1px solid #d9dfeb;background:#fff;color:#344054}
 .button[disabled]{cursor:not-allowed;opacity:.48;box-shadow:none;transform:none}
 .button.primary[disabled]{border-color:#b7c5eb;background:#8fa8ed;color:#fff}
-.button.new-job-button{border:1px solid #bcd0ff;background:#fff;color:#1d4ed8;box-shadow:0 8px 18px rgba(40,86,217,.08)}
-.button.new-job-button:hover{border-color:#2856d9;background:#eef3ff;transform:translateY(-1px)}
+.button.new-job-button{border:1px solid #7cc7ef;background:#eef9ff;color:#075985;box-shadow:0 8px 18px rgba(14,116,144,.09)}
+.button.new-job-button:hover{border-color:#2596c7;background:#dff4ff;transform:translateY(-1px)}
 .button.save-job-button{border:1px solid #2856d9;background:#2856d9;color:#fff;box-shadow:0 8px 18px rgba(40,86,217,.18)}
 .button.save-job-button:hover{background:#1f49c4;transform:translateY(-1px)}
 .button.clear-job-button{border:1px solid #f0b457;background:#fff8eb;color:#9a5b00;box-shadow:none}
@@ -91,8 +91,11 @@ body.app-locked .login-screen{display:grid}
 .button.finish-job-button{border:1px solid #15966d;background:#20a276;color:#fff;box-shadow:0 8px 18px rgba(32,162,118,.18)}
 .button.finish-job-button:hover{background:#168963;transform:translateY(-1px)}.button.finish-job-button:disabled{border-color:#d8e6e1;background:#e9f1ee;color:#8aa39a;box-shadow:none}
 .finish-icon{border-color:#b8e5d5!important;background:#e9f8f2!important;color:#137555!important}.finish-text{color:#137555!important}
-.button.history-button{border:1px solid #cbd7f3;background:#edf3ff;color:#234ec9}
-.button.history-button:hover{border-color:#9eb4eb;background:#e1eaff}
+.button.manifest-button{border:1px solid #6d48d7;background:#7450dc;color:#fff;box-shadow:0 8px 18px rgba(116,80,220,.2)}
+.button.manifest-button:hover{border-color:#5935c1;background:#6540cf;transform:translateY(-1px)}
+.button.manifest-button:disabled{border-color:#d8d3e7;background:#e9e6f1;color:#9b94ad;box-shadow:none}
+.button.history-button{border:1px solid #d5d9e2;background:#f5f6f8;color:#475467;box-shadow:none}
+.button.history-button:hover{border-color:#aeb5c2;background:#e9ebef;color:#344054}
 .preview-panel{align-self:center;justify-self:center;width:min(720px,94%)}
 .preview-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 2px 10px}
 .preview-size-heading{display:flex;min-width:0;flex:1;align-items:center;justify-content:space-between;gap:16px;color:#667085;font-size:13px}

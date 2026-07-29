@@ -574,7 +574,7 @@ function updateWorkflowUi(selectedCount = state.selected.size) {
     hint = "เลือกรายชื่อผู้รับที่ต้องการส่ง และกำหนดจำนวนซองในแต่ละรายชื่อ";
   } else if (hasCreator && selectedCount > 0 && !hasEnvelopePrinted) {
     activeStep = 4;
-    hint = "ตรวจสอบรายชื่อ เลือกขนาดซองและตั้งค่าหน้าซอง แล้วกดพิมพ์หน้าซอง";
+    hint = "ตรวจสอบรายชื่อและตั้งค่าหน้าซอง แล้วเลือกพิมพ์หน้าซองหรือพิมพ์ใบนำส่งได้ทันที";
   } else if (hasCreator && selectedCount > 0) {
     activeStep = 5;
     hint = "พิมพ์หน้าซองแล้ว ขั้นต่อไปกรอกเลขลงทะเบียน/EMS และพิมพ์ใบนำส่ง";
@@ -594,10 +594,10 @@ function updateWorkflowUi(selectedCount = state.selected.size) {
       : (selectedCount === 0 ? "กรุณาเลือกผู้รับก่อนพิมพ์หน้าซอง" : "");
   }
   if (elements.openManifestDialog) {
-    elements.openManifestDialog.disabled = !hasCreator || selectedCount === 0 || !hasEnvelopePrinted;
+    elements.openManifestDialog.disabled = !hasCreator || selectedCount === 0;
     elements.openManifestDialog.title = !hasCreator
       ? "กรุณาเริ่มชุดงานและเลือกกลุ่มงานก่อน"
-      : (selectedCount === 0 ? "กรุณาเลือกผู้รับก่อนพิมพ์ใบนำส่ง" : (!hasEnvelopePrinted ? "กรุณาพิมพ์หน้าซองจดหมายก่อน" : ""));
+      : (selectedCount === 0 ? "กรุณาเลือกผู้รับก่อนพิมพ์ใบนำส่ง" : "กรอกเลขลงทะเบียน/EMS และพิมพ์ใบนำส่ง");
   }
   if (elements.finishPrintJob) {
     elements.finishPrintJob.disabled = !hasCreator || selectedCount === 0;
@@ -2725,10 +2725,6 @@ function openManifestDialog() {
     return;
   }
   const job = saveCurrentPrintJobDraft({}, { force: true });
-  if (!job?.envelopePrintedAt) {
-    setNotice("กรุณาพิมพ์หน้าซองจดหมายก่อน แล้วค่อยพิมพ์ใบนำส่ง");
-    return;
-  }
   elements.manifestDate.value = job?.manifestDate || localIsoDate();
   elements.manifestPermit.value = defaultManifestPermit();
   elements.manifestRegisteredPrefix.value = state.settings.manifestRegisteredPrefix || "";
