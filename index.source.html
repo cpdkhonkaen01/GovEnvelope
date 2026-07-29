@@ -46,14 +46,11 @@
           <h1>เริ่มชุดงาน แล้วเลือกผู้รับ<br /><em>พิมพ์หน้าซองและใบนำส่งได้ต่อเนื่อง</em></h1>
           <div class="workflow-panel" aria-label="ขั้นตอนการใช้งาน">
             <div class="workflow-steps">
-              <span class="workflow-step" data-workflow-step="1"><b>1</b>เริ่มชุดงานใหม่</span>
-              <span class="workflow-step" data-workflow-step="2"><b>2</b>เลือกกลุ่มงาน</span>
-              <span class="workflow-step" data-workflow-step="3"><b>3</b>เลือกผู้รับ</span>
-              <span class="workflow-step" data-workflow-step="4"><b>4</b>ตรวจสอบรายการ</span>
-              <span class="workflow-step" data-workflow-step="5"><b>5</b>เลือกขนาดซอง</span>
-              <span class="workflow-step" data-workflow-step="6"><b>6</b>ตั้งค่าหน้าซอง</span>
-              <span class="workflow-step" data-workflow-step="7"><b>7</b>พิมพ์หน้าซอง</span>
-              <span class="workflow-step" data-workflow-step="8"><b>8</b>พิมพ์ใบนำส่ง</span>
+              <span class="workflow-step" data-workflow-step="1"><b>1</b>เริ่มงาน / เลือกกลุ่ม</span>
+              <span class="workflow-step" data-workflow-step="2"><b>2</b>เลือกผู้รับ</span>
+              <span class="workflow-step" data-workflow-step="3"><b>3</b>ตั้งค่าหน้าซอง</span>
+              <span class="workflow-step" data-workflow-step="4"><b>4</b>พิมพ์หน้าซอง</span>
+              <span class="workflow-step" data-workflow-step="5"><b>5</b>พิมพ์ใบนำส่ง</span>
             </div>
             <p id="workflowHint">กด “เริ่มชุดงานใหม่” เพื่อเริ่มงานพิมพ์รอบใหม่</p>
           </div>
@@ -81,6 +78,8 @@
           </label>
           <div class="hero-actions">
             <button class="button new-job-button" id="startNewPrintJob" type="button">＋ เริ่มชุดงานใหม่</button>
+            <button class="button save-job-button" id="savePrintJob" type="button" disabled>บันทึกชุดงาน</button>
+            <button class="button clear-job-button" id="clearPrintJob" type="button" disabled>ล้างรายการ</button>
             <button class="button finish-job-button" id="finishPrintJob" type="button" disabled>✓ จบชุดงาน</button>
             <button class="button primary" id="heroPrint" type="button">พิมพ์หน้าซองจดหมาย <b id="heroSelected">0</b></button>
             <button class="button secondary" id="openManifestDialog" type="button">พิมพ์ใบนำส่ง</button>
@@ -353,6 +352,16 @@
         <p class="dialog-info">ระบบจะบันทึกชุดงานนี้เป็น “เสร็จสิ้น” แล้วล้างรายชื่อที่เลือก จำนวนซอง และข้อมูลใบนำส่ง เพื่อกลับไปเริ่มชุดงานใหม่</p>
         <div class="delete-target" id="finishPrintJobSummary"></div>
         <div class="dialog-actions"><button class="button secondary" id="cancelFinishPrintJob" type="button">กลับไปทำต่อ</button><button class="button finish-job-button" type="submit">ยืนยันจบชุดงาน</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="clearPrintJobDialog" class="confirm-dialog">
+      <form id="clearPrintJobForm">
+        <div class="confirm-icon clear-icon">↺</div>
+        <div class="dialog-title confirm-title"><div><span class="eyebrow">จัดการชุดงาน</span><h2 id="clearPrintJobTitle">ล้างรายการที่เลือก</h2></div><button class="close-button" id="closeClearPrintJobDialog" type="button" aria-label="ปิด">×</button></div>
+        <p class="dialog-info" id="clearPrintJobInfo">ระบบจะล้างรายชื่อที่เลือก จำนวนซอง และเลขลงทะเบียน/EMS โดยไม่ลบฐานข้อมูลผู้รับและประวัติที่บันทึกไว้</p>
+        <div class="delete-target" id="clearPrintJobSummary"></div>
+        <div class="dialog-actions"><button class="button secondary" id="cancelClearPrintJob" type="button">ยกเลิก</button><button class="button clear-job-button" id="confirmClearPrintJob" type="submit">ยืนยันล้างรายการ</button></div>
       </form>
     </dialog>
 

@@ -52,11 +52,11 @@ body.app-locked .login-screen{display:grid}
 .hero{position:relative;display:grid;grid-template-columns:minmax(0,.9fr) minmax(480px,1.1fr);min-height:460px;overflow:visible;padding-bottom:22px;border-radius:30px;background:linear-gradient(118deg,#f9fbff,#eef3ff 55%,#e8f5f2);box-shadow:var(--shadow)}
 .hero-copy{align-self:center;padding:50px 24px 52px 58px}
 .eyebrow{display:block;margin-bottom:8px;color:var(--blue);font-size:10px;font-weight:900;letter-spacing:.13em;text-transform:uppercase}
-.hero h1{margin:0;font-size:clamp(37px,4vw,58px);line-height:1.14;letter-spacing:-.04em}
+.hero h1{margin:0;font-size:clamp(32px,3vw,44px);line-height:1.16;letter-spacing:-.035em}
 .hero h1 em{color:var(--blue);font-style:normal}
 .hero p{max-width:630px;margin:18px 0 0;color:#5a6579;font-size:15px;line-height:1.85}
 .workflow-panel{max-width:760px;margin-top:22px;padding:14px;border:1px solid #d8e3fb;border-radius:18px;background:rgba(255,255,255,.78);box-shadow:0 10px 24px rgba(40,86,217,.06)}
-.workflow-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.workflow-steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
 .workflow-step{display:flex;min-height:46px;align-items:center;justify-content:center;gap:7px;padding:8px;border:1px solid #dfe6f4;border-radius:13px;background:#fff;color:#667085;font-size:12px;font-weight:900;text-align:center}
 .workflow-step b{display:grid;width:22px;height:22px;flex:0 0 auto;place-items:center;border-radius:999px;background:#eef3ff;color:#2856d9;font-size:12px}
 .workflow-step.is-active{border-color:#2856d9;background:#eef3ff;color:#163aa5;box-shadow:0 8px 16px rgba(40,86,217,.12)}
@@ -83,6 +83,11 @@ body.app-locked .login-screen{display:grid}
 .button.primary[disabled]{border-color:#b7c5eb;background:#8fa8ed;color:#fff}
 .button.new-job-button{border:1px solid #bcd0ff;background:#fff;color:#1d4ed8;box-shadow:0 8px 18px rgba(40,86,217,.08)}
 .button.new-job-button:hover{border-color:#2856d9;background:#eef3ff;transform:translateY(-1px)}
+.button.save-job-button{border:1px solid #2856d9;background:#2856d9;color:#fff;box-shadow:0 8px 18px rgba(40,86,217,.18)}
+.button.save-job-button:hover{background:#1f49c4;transform:translateY(-1px)}
+.button.clear-job-button{border:1px solid #f0b457;background:#fff8eb;color:#9a5b00;box-shadow:none}
+.button.clear-job-button:hover{border-color:#d89227;background:#fff1d6;transform:translateY(-1px)}
+.button.save-job-button:disabled,.button.clear-job-button:disabled{border-color:#dfe5ef;background:#eef1f6;color:#98a2b3;box-shadow:none}
 .button.finish-job-button{border:1px solid #15966d;background:#20a276;color:#fff;box-shadow:0 8px 18px rgba(32,162,118,.18)}
 .button.finish-job-button:hover{background:#168963;transform:translateY(-1px)}.button.finish-job-button:disabled{border-color:#d8e6e1;background:#e9f1ee;color:#8aa39a;box-shadow:none}
 .finish-icon{border-color:#b8e5d5!important;background:#e9f8f2!important;color:#137555!important}.finish-text{color:#137555!important}
@@ -346,7 +351,7 @@ body{font-size:16px}
 .workspace{width:min(2000px,96vw);padding:22px 0 44px}
 .hero{min-height:300px;border-radius:24px}
 .hero-copy{padding:36px 48px}
-.hero h1{font-size:clamp(38px,3vw,52px)}
+.hero h1{font-size:clamp(31px,2.7vw,42px)}
 .eyebrow{font-size:13px;letter-spacing:.08em}
 .hero p{margin-top:12px;font-size:16px;line-height:1.7}
 .hero-actions{margin-top:18px}
@@ -432,7 +437,7 @@ dialog{padding:22px}
 .hero-copy{padding:34px 26px 24px}
 .workflow-steps{grid-template-columns:1fr}
 .workflow-step{justify-content:flex-start}
-.hero h1{font-size:38px}
+.hero h1{font-size:34px}
 .hero p{font-size:15px}
 .preview-panel{width:88%;margin:2px auto 34px}
 .preview-toolbar{align-items:stretch;flex-direction:column}
@@ -459,7 +464,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
 @media(max-width:460px){.brand strong{font-size:16px}
 .manifest-setup-grid{grid-template-columns:1fr}
 .brand-mark{width:37px;height:37px}
-.hero h1{font-size:32px}
+.hero h1{font-size:29px}
 .hero-actions{display:grid}
 .hero-actions button{width:100%}
 .section-title{display:block}
