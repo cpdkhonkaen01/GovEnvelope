@@ -113,7 +113,7 @@ body.app-locked .login-screen{display:grid}
 .preview-measurements span{font-size:10px}
 .preview-stage{position:relative;width:100%;--ruler-top:24px;--ruler-left:26px}
 .preview-stage.rulers-visible{width:calc(100% + var(--ruler-left));margin-left:calc(var(--ruler-left) * -1);padding-top:var(--ruler-top);padding-left:var(--ruler-left)}
-.preview-ruler-layer{position:absolute;z-index:20;inset:0;overflow:hidden;pointer-events:none;--grid-x:32px;--grid-y:32px}
+.preview-ruler-layer{position:absolute;z-index:1;inset:0;overflow:hidden;pointer-events:none;--grid-x:32px;--grid-y:32px}
 .preview-ruler-layer[hidden]{display:none}
 .preview-grid-lines{position:absolute;top:var(--ruler-top);right:0;bottom:0;left:var(--ruler-left);background-image:repeating-linear-gradient(to right,transparent 0,transparent calc(var(--grid-x) - 1px),rgba(53,94,190,.16) calc(var(--grid-x) - 1px),rgba(53,94,190,.16) var(--grid-x)),repeating-linear-gradient(to bottom,transparent 0,transparent calc(var(--grid-y) - 1px),rgba(53,94,190,.16) calc(var(--grid-y) - 1px),rgba(53,94,190,.16) var(--grid-y))}
 .preview-ruler{position:absolute;z-index:3;background:rgba(248,251,255,.92);color:#24499f;font-family:Tahoma,sans-serif;font-size:8px}
@@ -728,7 +728,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
         </div>
         <div class="form-grid three">
           <label class="form-field"><span>ระยะจากขอบบน (มม.)</span><input name="senderTopMm" type="number" min="0" max="40" step="1" /></label>
-          <label class="form-field"><span>ระยะจากขอบซ้าย (มม.)</span><input name="senderLeftMm" type="number" min="0" max="60" step="1" /></label>
+          <label class="form-field"><span>ระยะจากขอบซ้าย (มม.)</span><input name="senderLeftMm" type="number" min="0" max="60" step="0.1" /></label>
           <label class="form-field"><span>เลื่อนข้อความลง (มม.)</span><input name="senderTextOffsetMm" type="number" min="0" max="30" step="1" /><small>ใช้เมื่อตราครุฑอยู่ด้านซ้าย ปรับให้ชื่อหน่วยงานตรงระดับเท้าครุฑ</small></label>
         </div>
         <div class="dialog-actions"><button class="button secondary" id="resetSenderLayout" type="button">คืนค่าตำแหน่งแนะนำ</button><button class="button secondary" id="cancelSenderSettings" type="button">ยกเลิก</button><button class="button primary" type="submit">บันทึกข้อมูลผู้ส่ง</button></div>
@@ -847,6 +847,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
 window.ENVELOPE_APP_CONFIG = {
   appsScriptUrl: "https://script.google.com/macros/s/AKfycbz7WU2jcB3tqDcHCW0XInm3fGPF7MCDO_m1j3zGmo7Tvf9BbxnFbwGhzg7fUPpE_qty/exec",
   layoutDefaultsVersion: "2026-07-22-envelope-layout-v3",
+  garudaRightEdgeVersion: "30mm-v1",
   sender: "สำนักงานสหกรณ์จังหวัดขอนแก่น",
   senderAddress: "เลขที่ 1/112 หมู่ที่ 13 ถนนหน้าเมือง ตำบลในเมือง\nอำเภอเมือง จังหวัดขอนแก่น 40000\nโทรศัพท์. 0-4324-6682 โทรสาร. 0-4324-6681",
   documentNumber: "ที่ ขก0010/.................................................................",
@@ -857,7 +858,7 @@ window.ENVELOPE_APP_CONFIG = {
   garudaPlacement: "left",
   garudaSizeMm: 15,
   senderTopMm: 10,
-  senderLeftMm: 10,
+  senderLeftMm: 17.2,
   senderTextOffsetMm: 8,
   senderFontPt: 14,
   senderLineHeight: 1.2,
@@ -878,7 +879,7 @@ window.ENVELOPE_APP_CONFIG = {
       garudaPlacement: "left",
       garudaSizeMm: 15,
       senderTopMm: 10,
-      senderLeftMm: 10,
+      senderLeftMm: 17.2,
       senderTextOffsetMm: 8,
       senderFontPt: 14,
       senderLineHeight: 1.2,
@@ -895,7 +896,7 @@ window.ENVELOPE_APP_CONFIG = {
       garudaPlacement: "left",
       garudaSizeMm: 15,
       senderTopMm: 10,
-      senderLeftMm: 10,
+      senderLeftMm: 17.2,
       senderTextOffsetMm: 8,
       senderFontPt: 14,
       senderLineHeight: 1.2,
@@ -912,7 +913,7 @@ window.ENVELOPE_APP_CONFIG = {
       garudaPlacement: "left",
       garudaSizeMm: 15,
       senderTopMm: 10,
-      senderLeftMm: 15,
+      senderLeftMm: 17.2,
       senderTextOffsetMm: 8,
       senderFontPt: 14,
       senderLineHeight: 1.2,
@@ -942,6 +943,8 @@ try {
 }
 
 const GARUDA_STANDARD_VERSION = "15mm-v1";
+const GARUDA_RIGHT_EDGE_VERSION = defaults.garudaRightEdgeVersion || "legacy-garuda-right-edge";
+const shouldRefreshGarudaRightEdge = savedSettings.garudaRightEdgeVersion !== GARUDA_RIGHT_EDGE_VERSION;
 const POSTAGE_PERMIT_WIDTH_MM = 30;
 const POSTAGE_PERMIT_HEIGHT_MM = 15;
 const LOCKED_MANIFEST_PERMIT = "ใบอนุญาตเลขที่ 3/2521 ไปรษณีย์เทพารักษ์";
@@ -1000,9 +1003,12 @@ const savedPaperLayouts = savedSettings.paperLayouts && typeof savedSettings.pap
 const legacyLayoutSource = { ...savedSettings, garudaSizeMm: savedGarudaSize };
 const initialPaperLayouts = Object.fromEntries(PAPER_SIZE_KEYS.map((paperSize) => {
   const paperDefaults = defaults.paperLayouts?.[paperSize] || {};
-  const source = !shouldRefreshLayoutDefaults && savedPaperLayouts[paperSize]
+  let source = !shouldRefreshLayoutDefaults && savedPaperLayouts[paperSize]
     ? { ...paperDefaults, ...savedPaperLayouts[paperSize] }
     : (!shouldRefreshLayoutDefaults && paperSize === initialPaperSize ? { ...paperDefaults, ...legacyLayoutSource } : paperDefaults);
+  if (shouldRefreshGarudaRightEdge) {
+    source = { ...source, senderLeftMm: paperDefaults.senderLeftMm ?? defaults.senderLeftMm ?? 17.2 };
+  }
   return [paperSize, normalizeLayoutProfile(source, paperSize)];
 }));
 const initialLayout = initialPaperLayouts[initialPaperSize];
@@ -1047,6 +1053,7 @@ const state = {
     manifestEmsPrefix: normalizeManifestPrefix(savedSettings.manifestEmsPrefix || "", "EQ"),
     paperLayouts: initialPaperLayouts,
     layoutDefaultsVersion: LAYOUT_DEFAULTS_VERSION,
+    garudaRightEdgeVersion: GARUDA_RIGHT_EDGE_VERSION,
     garudaImage: resolveAssetUrl(defaults.garudaImage),
     showRecipientDepartment: !shouldRefreshLayoutDefaults && savedSettings.showRecipientDepartment !== undefined ? Boolean(savedSettings.showRecipientDepartment) : defaults.showRecipientDepartment !== false,
     showRecipientAddress: savedSettings.showRecipientAddress !== undefined ? Boolean(savedSettings.showRecipientAddress) : defaults.showRecipientAddress !== false,
@@ -2293,7 +2300,7 @@ function setNotice(message) {
 function persistSettings() {
   rememberCurrentPaperLayout();
   const keys = [
-    "layoutDefaultsVersion", "sender", "senderAddress", "documentNumber", "paperSize", "paperLayouts", "printJobCreator", "recipientNameBreaksById", "showRecipientDepartment", "showRecipientAddress", "showSender", "showGaruda", "showPostagePermit",
+    "layoutDefaultsVersion", "garudaRightEdgeVersion", "sender", "senderAddress", "documentNumber", "paperSize", "paperLayouts", "printJobCreator", "recipientNameBreaksById", "showRecipientDepartment", "showRecipientAddress", "showSender", "showGaruda", "showPostagePermit",
     "garudaPlacement", "garudaSizeMm", "garudaStandardVersion", "senderTopMm", "senderLeftMm", "senderTextOffsetMm", "senderFontPt", "senderLineHeight", "recipientFontPt",
     "recipientTopPercent", "recipientLeftPercent", "recipientLineHeight", "manifestRegisteredPrefix", "manifestEmsPrefix",
     "postagePermitText", "postagePermitTopMm", "postagePermitRightMm", "postagePermitFontPt", "postagePermitLineHeight",

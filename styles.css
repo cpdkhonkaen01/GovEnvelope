@@ -104,7 +104,7 @@ body.app-locked .login-screen{display:grid}
 .preview-measurements span{font-size:10px}
 .preview-stage{position:relative;width:100%;--ruler-top:24px;--ruler-left:26px}
 .preview-stage.rulers-visible{width:calc(100% + var(--ruler-left));margin-left:calc(var(--ruler-left) * -1);padding-top:var(--ruler-top);padding-left:var(--ruler-left)}
-.preview-ruler-layer{position:absolute;z-index:20;inset:0;overflow:hidden;pointer-events:none;--grid-x:32px;--grid-y:32px}
+.preview-ruler-layer{position:absolute;z-index:1;inset:0;overflow:hidden;pointer-events:none;--grid-x:32px;--grid-y:32px}
 .preview-ruler-layer[hidden]{display:none}
 .preview-grid-lines{position:absolute;top:var(--ruler-top);right:0;bottom:0;left:var(--ruler-left);background-image:repeating-linear-gradient(to right,transparent 0,transparent calc(var(--grid-x) - 1px),rgba(53,94,190,.16) calc(var(--grid-x) - 1px),rgba(53,94,190,.16) var(--grid-x)),repeating-linear-gradient(to bottom,transparent 0,transparent calc(var(--grid-y) - 1px),rgba(53,94,190,.16) calc(var(--grid-y) - 1px),rgba(53,94,190,.16) var(--grid-y))}
 .preview-ruler{position:absolute;z-index:3;background:rgba(248,251,255,.92);color:#24499f;font-family:Tahoma,sans-serif;font-size:8px}
