@@ -3,6 +3,7 @@ window.ENVELOPE_APP_CONFIG = {
   appsScriptUrl: "https://script.google.com/macros/s/AKfycbz7WU2jcB3tqDcHCW0XInm3fGPF7MCDO_m1j3zGmo7Tvf9BbxnFbwGhzg7fUPpE_qty/exec",
   layoutDefaultsVersion: "2026-07-22-envelope-layout-v3",
   garudaLeftEdgeVersion: "15mm-v1",
+  garudaTopEdgeVersion: "10mm-v1",
   sender: "สำนักงานสหกรณ์จังหวัดขอนแก่น",
   senderAddress: "เลขที่ 1/112 หมู่ที่ 13 ถนนหน้าเมือง ตำบลในเมือง\nอำเภอเมือง จังหวัดขอนแก่น 40000\nโทรศัพท์. 0-4324-6682 โทรสาร. 0-4324-6681",
   documentNumber: "ที่ ขก0010/.................................................................",
