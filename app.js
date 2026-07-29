@@ -173,6 +173,8 @@ const elements = {
   previewPrevious: $("#previewPrevious"),
   previewNext: $("#previewNext"),
   previewCounter: $("#previewCounter"),
+  togglePreviewMeasurements: $("#togglePreviewMeasurements"),
+  previewMeasurements: $("#previewMeasurements"),
   openRecipientLineBreak: $("#openRecipientLineBreak"),
   showRecipientDepartment: $("#showRecipientDepartment"),
   showRecipientAddress: $("#showRecipientAddress"),
@@ -643,7 +645,7 @@ function buildHistoryManifestPdf(job) {
     return `<section class="manifest-page pdf-page">${pages.length > 1 ? `<div class="page-number">-${pageIndex + 1}-</div>` : ""}<h1>ใบนำส่งของทางไปรษณีย์โดยชำระค่าบริการเป็นสินเชื่อ</h1><div class="manifest-meta"><div>วัน/เดือน/ปี…${escapeHtml(manifestDate)}.......</div><div>ชื่อหน่วยงาน ${escapeHtml(state.settings.sender || "สำนักงานสหกรณ์จังหวัดขอนแก่น")}</div><div>${escapeHtml(permit)}</div></div><p class="manifest-intro">ได้ฝากส่งสิ่งของของทางไปรษณีย์โดยชำระค่าบริการเป็นเงินเชื่อดังรายการต่อไปนี้</p><table class="manifest-print-table"><colgroup><col class="col-seq"><col class="col-name"><col class="col-dest"><col class="col-registered"><col class="col-ems"><col class="col-fee"><col class="col-note"></colgroup><thead><tr><th>ลำดับ</th><th>ผู้รับ</th><th>ปลายทาง</th><th>ลงทะเบียน</th><th>EMS</th><th>ค่าบริการ</th><th>หมายเหตุ</th></tr></thead><tbody>${bodyRows}</tbody></table><div class="manifest-footer"><div class="manifest-footer-left"><p>รวม&nbsp;&nbsp; จำนวน ......................${pageRows.length}...................... ฉบับ</p><p>ธรรมดา จำนวน....................-...................... ฉบับ</p></div><div class="manifest-footer-right"><p class="total-line">รวมทั้งสิ้น....................${pageRows.length}....................ฉบับ</p><p class="sign-line"><span>ลงชื่อ</span><span class="sign-dots"></span></p><p class="role-line">ผู้รับผิดชอบในการฝากส่ง</p><p class="check-line">ได้ตรวจสอบและรับฝากไว้ถูกต้องแล้ว</p><p class="signature sign-line"><span>ลงชื่อ</span><span class="sign-dots"></span></p><p class="role-line">เจ้าหน้าที่รับฝาก${receivingPostOffice ? ` ${escapeHtml(receivingPostOffice)}` : ""}</p></div></div></section>`;
   }).join("");
   const container = document.createElement("div");
-  container.innerHTML = `<style>${printFontFaceCss()}*{box-sizing:border-box}.pdf-manifest-document{margin:0;color:#111;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif;font-size:13pt}.manifest-page{position:relative;width:210mm;height:297mm;padding:8mm;background:#fff;overflow:hidden}.page-number{position:absolute;top:8mm;right:8mm;font-size:12pt}h1{margin:0 0 2.5mm;text-align:center;font-size:15pt}.manifest-meta{width:max-content;min-width:52.5mm;margin:0 0 2.5mm auto;line-height:1.12;font-size:12.5pt;white-space:nowrap}.manifest-intro{margin:0 0 .8mm 10mm;font-size:12.5pt;line-height:1.08}.manifest-print-table{width:192mm;border-collapse:collapse;table-layout:fixed}.manifest-print-table th,.manifest-print-table td{height:6.25mm;padding:0 1.2mm;border:1px solid #111;vertical-align:middle;line-height:1.04}.manifest-print-table th{text-align:center;font-size:11.5pt;white-space:nowrap}.center{text-align:center}.recipient-cell{overflow:hidden;font-size:12pt;white-space:nowrap}.recipient-cell span{display:block;overflow:hidden}.recipient-cell span.long{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal}.tracking{font-size:12pt;white-space:nowrap}.col-seq{width:9mm}.col-name{width:78mm}.col-dest{width:16mm}.col-registered{width:28mm}.col-ems{width:28mm}.col-fee{width:18mm}.col-note{width:12mm}.manifest-footer{position:relative;height:36mm;margin-top:3mm;line-height:1.18;font-size:14pt}.manifest-footer p{margin:0}.manifest-footer-left{position:absolute;left:9mm;top:1mm;width:82mm}.manifest-footer-left p+p{margin-top:1.6mm}.manifest-footer-right{position:absolute;left:116mm;top:0;width:78mm}.total-line{margin-bottom:1.6mm!important}.sign-line{display:flex;align-items:flex-end}.sign-dots{display:block;width:64mm;height:.9em;border-bottom:1px dotted #111}.role-line{width:64mm;margin-top:.4mm!important;margin-left:10mm;text-align:center}.check-line{margin-top:2.2mm!important}.signature{margin-top:4mm!important}.pdf-page{break-after:page;page-break-after:always}.pdf-page:last-child{break-after:auto;page-break-after:auto}</style><div class="pdf-manifest-document">${pageHtml}</div>`;
+  container.innerHTML = `<style>${printFontFaceCss()}*{box-sizing:border-box}.pdf-manifest-document{margin:0;color:#111;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif;font-size:13pt}.manifest-page{position:relative;width:210mm;height:297mm;padding:8mm;background:#fff;overflow:hidden}.page-number{position:absolute;top:8mm;right:8mm;font-size:12pt}h1{margin:0 0 2.5mm;text-align:center;font-size:15pt}.manifest-meta{width:max-content;min-width:52.5mm;margin:0 0 2.5mm auto;line-height:1.12;font-size:12.5pt;white-space:nowrap}.manifest-intro{margin:0 0 .8mm 10mm;font-size:12.5pt;line-height:1.08}.manifest-print-table{width:192mm;border-collapse:collapse;table-layout:fixed}.manifest-print-table th,.manifest-print-table td{height:6.25mm;padding:0 1.2mm;border:1px solid #111;vertical-align:middle;line-height:1.04}.manifest-print-table th{text-align:center;font-size:11.5pt;white-space:nowrap}.center{text-align:center}.recipient-cell{overflow:hidden;font-size:12pt;white-space:nowrap}.recipient-cell span{display:block;overflow:hidden}.recipient-cell span.long{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal}.tracking{font-size:12pt;white-space:nowrap}.col-seq{width:9mm}.col-name{width:78mm}.col-dest{width:16mm}.col-registered{width:28mm}.col-ems{width:28mm}.col-fee{width:18mm}.col-note{width:12mm}.manifest-footer{position:relative;height:36mm;margin-top:3mm;line-height:1.18;font-size:14pt}.manifest-footer p{margin:0}.manifest-footer-left{position:absolute;left:9mm;top:1mm;width:82mm}.manifest-footer-left p+p{margin-top:1.6mm}.manifest-footer-right{position:absolute;left:116mm;top:0;width:78mm}.total-line{margin-bottom:1.6mm!important}.sign-line{display:flex;align-items:flex-end}.sign-dots{display:block;width:64mm;height:.9em;border-bottom:1px dotted #111}.role-line{width:64mm;margin-top:2.4mm!important;margin-left:10mm;text-align:center}.check-line{margin-top:2.2mm!important}.signature{margin-top:4mm!important}.pdf-page{break-after:page;page-break-after:always}.pdf-page:last-child{break-after:auto;page-break-after:auto}</style><div class="pdf-manifest-document">${pageHtml}</div>`;
   return { container, format: "a4", orientation: "portrait" };
 }
 
@@ -1267,7 +1269,8 @@ function manifestRecipientLabel(item) {
 
 function manifestRecipientFontStyle(name = "") {
   const length = String(name).trim().length;
-  if (length > 80) return ' style="font-size:8pt!important"';
+  if (length > 120) return ' style="font-size:8pt!important"';
+  if (length > 80) return ' style="font-size:9pt!important"';
   if (length > 60) return ' style="font-size:9pt!important"';
   if (length > 50) return ' style="font-size:11pt!important"';
   return "";
@@ -1786,6 +1789,27 @@ function renderRows() {
   });
 }
 
+function layoutMeasurementValue(value) {
+  return Number(value).toLocaleString("th-TH", { maximumFractionDigits: 2 });
+}
+
+function renderPreviewMeasurements() {
+  if (!elements.previewMeasurements) return;
+  elements.previewMeasurements.innerHTML = `
+    <div><strong>ผู้ส่ง</strong><span>ขอบบน ${layoutMeasurementValue(state.settings.senderTopMm)} มม. · ขอบซ้าย ${layoutMeasurementValue(state.settings.senderLeftMm)} มม. · ระยะบรรทัด ${layoutMeasurementValue(state.settings.senderLineHeight)}</span></div>
+    <div><strong>ผู้รับ</strong><span>ขอบบน ${layoutMeasurementValue(state.settings.recipientTopPercent)}% · ขอบซ้าย ${layoutMeasurementValue(state.settings.recipientLeftPercent)}% · ระยะบรรทัด ${layoutMeasurementValue(state.settings.recipientLineHeight)}</span></div>
+    <div><strong>กรอบฝากส่ง</strong><span>ขอบบน ${layoutMeasurementValue(state.settings.postagePermitTopMm)} มม. · ขอบขวา ${layoutMeasurementValue(state.settings.postagePermitRightMm)} มม. · ระยะบรรทัด ${layoutMeasurementValue(state.settings.postagePermitLineHeight)}</span></div>`;
+}
+
+function togglePreviewMeasurements() {
+  const shouldShow = elements.previewMeasurements.hidden;
+  elements.previewMeasurements.hidden = !shouldShow;
+  elements.togglePreviewMeasurements.classList.toggle("is-active", shouldShow);
+  elements.togglePreviewMeasurements.textContent = shouldShow ? "⌗ ซ่อนค่าระยะ" : "⌗ แสดงค่าระยะ";
+  elements.togglePreviewMeasurements.setAttribute("aria-expanded", shouldShow ? "true" : "false");
+  if (shouldShow) renderPreviewMeasurements();
+}
+
 function renderSummary() {
   const selectedCount = state.selected.size;
   const selectedEnvelopeCount = state.recipients
@@ -1821,6 +1845,7 @@ function renderSummary() {
   envelopePreview.style.aspectRatio = `${previewPaperWidth} / ${previewPaperHeight}`;
   envelopePreview.setAttribute("aria-label", `${paperLabels[state.settings.paperSize] || paperLabels.DL} ขนาด ${previewPaperWidth} คูณ ${previewPaperHeight} มิลลิเมตร`);
   $("#previewSizeLabel").textContent = `${paperLabels[state.settings.paperSize] || paperLabels.DL} · ${previewPaperWidth} × ${previewPaperHeight} มม.`;
+  renderPreviewMeasurements();
   const previewScale = (envelopePreview.clientWidth || 480) / previewPaperWidth;
   const ptToPreviewPx = (pt) => pt * (25.4 / 72) * previewScale;
   const senderTop = state.settings.senderTopMm * previewScale;
@@ -2414,7 +2439,7 @@ function openManifestDialog() {
     const emsValue = manifestTrackingEntryValue(savedEms, emsPrefix);
     return `<tr data-recipient-id="${escapeHtml(item.id)}" data-job-key="${escapeHtml(jobKey)}">
       <td>${index + 1}</td>
-      <td><div class="manifest-recipient-name">${escapeHtml(name)}</div></td>
+      <td><div class="manifest-recipient-name" title="${escapeHtml(name)}">${escapeHtml(name)}</div></td>
       <td>${escapeHtml(item.postalCode || "")}</td>
       <td><input name="registered-${index}" class="tracking-input" data-tracking-type="registered" data-locked-prefix="${escapeHtml(registeredUsesPrefix ? registeredPrefix : "")}" type="text" inputmode="numeric" autocomplete="off" maxlength="${registeredUsesPrefix ? 4 : 9}" pattern="[0-9๐-๙]{${registeredUsesPrefix ? 4 : 9}}" title="${registeredUsesPrefix ? `กรอก 4 ตัวท้าย ต่อจาก ${escapeHtml(registeredPrefix)}` : "กรอกตัวเลข 9 หลัก"}" placeholder="${registeredUsesPrefix ? "4 ตัวท้าย" : "ตัวเลข 9 หลัก"}" value="${escapeHtml(registeredValue)}" /></td>
       <td><input name="ems-${index}" class="tracking-input" data-tracking-type="ems" data-locked-prefix="${escapeHtml(emsUsesPrefix ? emsPrefix : "")}" type="text" inputmode="numeric" autocomplete="off" maxlength="${emsUsesPrefix ? 4 : 9}" pattern="[0-9๐-๙]{${emsUsesPrefix ? 4 : 9}}" title="${emsUsesPrefix ? `กรอก 4 ตัวท้าย ต่อจาก ${escapeHtml(emsPrefix)}` : "กรอกตัวเลข 9 หลัก"}" placeholder="${emsUsesPrefix ? "4 ตัวท้าย" : "ตัวเลข 9 หลัก"}" value="${escapeHtml(emsValue)}" /></td>
@@ -2538,7 +2563,7 @@ function printMailingManifest(event) {
     return;
   }
   popup.opener = null;
-  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์ใบนำส่งไปรษณีย์</title><style>${printFontFaceCss()}@page{size:A4 portrait;margin:8mm}*{box-sizing:border-box}body{margin:0;color:#111;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif;font-size:13pt}.manifest-page{position:relative;width:194mm;min-height:281mm;margin:0 auto;page-break-after:always;background:#fff}.manifest-page:last-child{page-break-after:auto}.page-number{position:absolute;top:0;right:0;font-size:12pt}h1{margin:0 0 2.5mm;text-align:center;font-size:15pt;font-weight:700}.manifest-meta{width:52.5mm;margin:0 0 2.5mm auto;line-height:1.12;font-size:12.5pt;text-align:left}.manifest-intro{margin:0 0 .8mm 10mm;font-size:12.5pt;line-height:1.08}.manifest-print-table{width:192mm;max-width:100%;border-collapse:collapse;table-layout:fixed}.manifest-print-table th,.manifest-print-table td{height:6.25mm;padding:0 1.2mm;border:1px solid #111;vertical-align:middle;line-height:1.04}.manifest-print-table th{text-align:center;font-size:11.5pt;font-weight:700;white-space:nowrap}.center{text-align:center}.recipient-cell{font-size:12pt;overflow:hidden}.recipient-name-text{display:block;overflow:hidden;white-space:nowrap}.recipient-name-text-long{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal}.tracking{font-size:12pt;white-space:nowrap}.col-seq{width:9mm}.col-name{width:78mm}.col-dest{width:16mm}.col-registered{width:28mm}.col-ems{width:28mm}.col-fee{width:18mm}.col-note{width:12mm}.manifest-footer{position:relative;height:36mm;margin-top:3mm;line-height:1.18;font-size:14pt}.manifest-footer p{margin:0}.manifest-footer-left{position:absolute;left:9mm;top:1mm;width:82mm}.manifest-footer-left p+p{margin-top:1.6mm}.manifest-footer-right{position:absolute;left:116mm;top:0;width:78mm;margin-left:0}.manifest-footer-right p{margin:0}.total-line{margin-bottom:1.6mm!important;text-align:left}.sign-line{display:flex;align-items:flex-end;text-align:left}.sign-line span:first-child{flex:0 0 auto}.sign-dots{display:block;width:64mm;height:.9em;border-bottom:1px dotted #111}.role-line{width:64mm;margin-top:.4mm!important;margin-left:10mm;text-align:center}.check-line{margin-top:2.2mm!important;text-align:left}.signature{margin-top:4mm!important}@media screen{body{background:#eef2f7;padding:18px}.manifest-page{padding:0;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${manifestPages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
+  popup.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>พิมพ์ใบนำส่งไปรษณีย์</title><style>${printFontFaceCss()}@page{size:A4 portrait;margin:8mm}*{box-sizing:border-box}body{margin:0;color:#111;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif;font-size:13pt}.manifest-page{position:relative;width:194mm;min-height:281mm;margin:0 auto;page-break-after:always;background:#fff}.manifest-page:last-child{page-break-after:auto}.page-number{position:absolute;top:0;right:0;font-size:12pt}h1{margin:0 0 2.5mm;text-align:center;font-size:15pt;font-weight:700}.manifest-meta{width:52.5mm;margin:0 0 2.5mm auto;line-height:1.12;font-size:12.5pt;text-align:left}.manifest-intro{margin:0 0 .8mm 10mm;font-size:12.5pt;line-height:1.08}.manifest-print-table{width:192mm;max-width:100%;border-collapse:collapse;table-layout:fixed}.manifest-print-table th,.manifest-print-table td{height:6.25mm;padding:0 1.2mm;border:1px solid #111;vertical-align:middle;line-height:1.04}.manifest-print-table th{text-align:center;font-size:11.5pt;font-weight:700;white-space:nowrap}.center{text-align:center}.recipient-cell{font-size:12pt;overflow:hidden}.recipient-name-text{display:block;overflow:hidden;white-space:nowrap}.recipient-name-text-long{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal}.tracking{font-size:12pt;white-space:nowrap}.col-seq{width:9mm}.col-name{width:78mm}.col-dest{width:16mm}.col-registered{width:28mm}.col-ems{width:28mm}.col-fee{width:18mm}.col-note{width:12mm}.manifest-footer{position:relative;height:36mm;margin-top:3mm;line-height:1.18;font-size:14pt}.manifest-footer p{margin:0}.manifest-footer-left{position:absolute;left:9mm;top:1mm;width:82mm}.manifest-footer-left p+p{margin-top:1.6mm}.manifest-footer-right{position:absolute;left:116mm;top:0;width:78mm;margin-left:0}.manifest-footer-right p{margin:0}.total-line{margin-bottom:1.6mm!important;text-align:left}.sign-line{display:flex;align-items:flex-end;text-align:left}.sign-line span:first-child{flex:0 0 auto}.sign-dots{display:block;width:64mm;height:.9em;border-bottom:1px dotted #111}.role-line{width:64mm;margin-top:2.4mm!important;margin-left:10mm;text-align:center}.check-line{margin-top:2.2mm!important;text-align:left}.signature{margin-top:4mm!important}@media screen{body{background:#eef2f7;padding:18px}.manifest-page{padding:0;box-shadow:0 12px 36px rgba(15,23,42,.14)}}</style></head><body>${manifestPages}<script>addEventListener('load',()=>setTimeout(()=>print(),250));<\/script></body></html>`);
   popup.document.close();
   saveCurrentPrintJobDraft({ manifestPrintedAt: new Date().toISOString() });
   closeManifestDialog();
@@ -2722,6 +2747,7 @@ $("#cancelRecipientLayout").addEventListener("click", closeRecipientLayoutSettin
 $("#resetRecipientLayout").addEventListener("click", resetRecipientLayout);
 elements.recipientLayoutForm.addEventListener("submit", handleRecipientLayoutSubmit);
 elements.openRecipientLineBreak.addEventListener("click", openRecipientLineBreakDialog);
+elements.togglePreviewMeasurements.addEventListener("click", togglePreviewMeasurements);
 $("#closeRecipientLineBreakDialog").addEventListener("click", closeRecipientLineBreakDialog);
 $("#cancelRecipientLineBreak").addEventListener("click", closeRecipientLineBreakDialog);
 $("#clearRecipientLineBreak").addEventListener("click", clearRecipientLineBreak);

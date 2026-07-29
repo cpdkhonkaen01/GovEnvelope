@@ -101,9 +101,16 @@ body.app-locked .login-screen{display:grid}
 .preview-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 2px 10px}
 .preview-size-heading{display:flex;min-width:0;flex:1;align-items:center;justify-content:space-between;gap:16px;color:#667085;font-size:13px}
 .preview-size-heading strong{color:#263149;font-size:14px}
-.preview-navigation{display:flex;flex:0 0 auto;align-items:center;gap:7px}
+.preview-navigation{display:flex;flex:0 0 auto;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:7px}
 .preview-nav-button{min-height:38px;padding:0 12px;border:1px solid #cfd8eb;border-radius:10px;background:#fff;color:#234ec9;font-size:13px;font-weight:800;box-shadow:0 4px 12px rgba(31,46,79,.06)}
 .preview-nav-button:hover:not(:disabled){border-color:#2856d9;background:#eef3ff}
+.measurement-toggle.is-active{border-color:#2856d9;background:#eef3ff;color:#163aa5}
+.preview-measurements{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:0 2px 10px}
+.preview-measurements[hidden]{display:none}
+.preview-measurements>div{min-width:0;padding:8px 10px;border:1px dashed #b9c8e6;border-radius:10px;background:rgba(255,255,255,.72);color:#536079;line-height:1.35}
+.preview-measurements strong,.preview-measurements span{display:block}
+.preview-measurements strong{margin-bottom:2px;color:#234ec9;font-size:11px}
+.preview-measurements span{font-size:10px}
 .preview-nav-button:disabled{cursor:not-allowed;opacity:.42}
 .line-break-button{border-color:#9fb5f3;background:#eef3ff;white-space:nowrap}
 .preview-counter{min-width:48px;color:#263149;font-size:14px;text-align:center;white-space:nowrap}
@@ -416,6 +423,7 @@ dialog{padding:22px}
 .preview-toolbar{align-items:stretch;flex-direction:column}
 .preview-size-heading{align-items:flex-start;flex-direction:column;gap:2px}
 .preview-navigation{justify-content:center}
+.preview-measurements{grid-template-columns:1fr}
 .filters{grid-template-columns:1fr}
 .section-title{align-items:flex-start}
 th:nth-child(4),th:nth-child(5),th:nth-child(6),td:nth-child(4),td:nth-child(5),td:nth-child(6){display:none}
@@ -534,12 +542,14 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
           <div class="preview-toolbar">
             <div class="preview-size-heading"><span>ตัวอย่างย่อส่วนตามสัดส่วนจริง</span><strong id="previewSizeLabel">ซอง C5 · 229 × 162 มม.</strong></div>
             <div class="preview-navigation" aria-label="เลื่อนดูตัวอย่างผู้รับที่เลือก">
+              <button class="preview-nav-button measurement-toggle" id="togglePreviewMeasurements" type="button" aria-expanded="false" aria-controls="previewMeasurements">⌗ แสดงค่าระยะ</button>
               <button class="preview-nav-button line-break-button" id="openRecipientLineBreak" type="button">↵ ตัดบรรทัดหน้านี้</button>
               <button class="preview-nav-button" id="previewPrevious" type="button" disabled>← ก่อนหน้า</button>
               <strong class="preview-counter" id="previewCounter">ตัวอย่าง</strong>
               <button class="preview-nav-button" id="previewNext" type="button" disabled>ถัดไป →</button>
             </div>
           </div>
+          <div class="preview-measurements" id="previewMeasurements" aria-live="polite" hidden></div>
           <div class="envelope-preview" id="envelopePreview" aria-label="ตัวอย่างซองจดหมายตามสัดส่วนจริง">
             <span class="postage-permit-mini" id="postagePermitPreview"></span>
             <div class="sender-mini-block" id="senderPreviewBlock">
@@ -1058,6 +1068,8 @@ const elements = {
   previewPrevious: $("#previewPrevious"),
   previewNext: $("#previewNext"),
   previewCounter: $("#previewCounter"),
+  togglePreviewMeasurements: $("#togglePreviewMeasurements"),
+  previewMeasurements: $("#previewMeasurements"),
   openRecipientLineBreak: $("#openRecipientLineBreak"),
   showRecipientDepartment: $("#showRecipientDepartment"),
   showRecipientAddress: $("#showRecipientAddress"),
@@ -2672,6 +2684,27 @@ function renderRows() {
   });
 }
 
+function layoutMeasurementValue(value) {
+  return Number(value).toLocaleString("th-TH", { maximumFractionDigits: 2 });
+}
+
+function renderPreviewMeasurements() {
+  if (!elements.previewMeasurements) return;
+  elements.previewMeasurements.innerHTML = `
+    <div><strong>ผู้ส่ง</strong><span>ขอบบน ${layoutMeasurementValue(state.settings.senderTopMm)} มม. · ขอบซ้าย ${layoutMeasurementValue(state.settings.senderLeftMm)} มม. · ระยะบรรทัด ${layoutMeasurementValue(state.settings.senderLineHeight)}</span></div>
+    <div><strong>ผู้รับ</strong><span>ขอบบน ${layoutMeasurementValue(state.settings.recipientTopPercent)}% · ขอบซ้าย ${layoutMeasurementValue(state.settings.recipientLeftPercent)}% · ระยะบรรทัด ${layoutMeasurementValue(state.settings.recipientLineHeight)}</span></div>
+    <div><strong>กรอบฝากส่ง</strong><span>ขอบบน ${layoutMeasurementValue(state.settings.postagePermitTopMm)} มม. · ขอบขวา ${layoutMeasurementValue(state.settings.postagePermitRightMm)} มม. · ระยะบรรทัด ${layoutMeasurementValue(state.settings.postagePermitLineHeight)}</span></div>`;
+}
+
+function togglePreviewMeasurements() {
+  const shouldShow = elements.previewMeasurements.hidden;
+  elements.previewMeasurements.hidden = !shouldShow;
+  elements.togglePreviewMeasurements.classList.toggle("is-active", shouldShow);
+  elements.togglePreviewMeasurements.textContent = shouldShow ? "⌗ ซ่อนค่าระยะ" : "⌗ แสดงค่าระยะ";
+  elements.togglePreviewMeasurements.setAttribute("aria-expanded", shouldShow ? "true" : "false");
+  if (shouldShow) renderPreviewMeasurements();
+}
+
 function renderSummary() {
   const selectedCount = state.selected.size;
   const selectedEnvelopeCount = state.recipients
@@ -2707,6 +2740,7 @@ function renderSummary() {
   envelopePreview.style.aspectRatio = `${previewPaperWidth} / ${previewPaperHeight}`;
   envelopePreview.setAttribute("aria-label", `${paperLabels[state.settings.paperSize] || paperLabels.DL} ขนาด ${previewPaperWidth} คูณ ${previewPaperHeight} มิลลิเมตร`);
   $("#previewSizeLabel").textContent = `${paperLabels[state.settings.paperSize] || paperLabels.DL} · ${previewPaperWidth} × ${previewPaperHeight} มม.`;
+  renderPreviewMeasurements();
   const previewScale = (envelopePreview.clientWidth || 480) / previewPaperWidth;
   const ptToPreviewPx = (pt) => pt * (25.4 / 72) * previewScale;
   const senderTop = state.settings.senderTopMm * previewScale;
@@ -3608,6 +3642,7 @@ $("#cancelRecipientLayout").addEventListener("click", closeRecipientLayoutSettin
 $("#resetRecipientLayout").addEventListener("click", resetRecipientLayout);
 elements.recipientLayoutForm.addEventListener("submit", handleRecipientLayoutSubmit);
 elements.openRecipientLineBreak.addEventListener("click", openRecipientLineBreakDialog);
+elements.togglePreviewMeasurements.addEventListener("click", togglePreviewMeasurements);
 $("#closeRecipientLineBreakDialog").addEventListener("click", closeRecipientLineBreakDialog);
 $("#cancelRecipientLineBreak").addEventListener("click", closeRecipientLineBreakDialog);
 $("#clearRecipientLineBreak").addEventListener("click", clearRecipientLineBreak);

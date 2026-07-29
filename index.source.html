@@ -91,12 +91,14 @@
           <div class="preview-toolbar">
             <div class="preview-size-heading"><span>ตัวอย่างย่อส่วนตามสัดส่วนจริง</span><strong id="previewSizeLabel">ซอง C5 · 229 × 162 มม.</strong></div>
             <div class="preview-navigation" aria-label="เลื่อนดูตัวอย่างผู้รับที่เลือก">
+              <button class="preview-nav-button measurement-toggle" id="togglePreviewMeasurements" type="button" aria-expanded="false" aria-controls="previewMeasurements">⌗ แสดงค่าระยะ</button>
               <button class="preview-nav-button line-break-button" id="openRecipientLineBreak" type="button">↵ ตัดบรรทัดหน้านี้</button>
               <button class="preview-nav-button" id="previewPrevious" type="button" disabled>← ก่อนหน้า</button>
               <strong class="preview-counter" id="previewCounter">ตัวอย่าง</strong>
               <button class="preview-nav-button" id="previewNext" type="button" disabled>ถัดไป →</button>
             </div>
           </div>
+          <div class="preview-measurements" id="previewMeasurements" aria-live="polite" hidden></div>
           <div class="envelope-preview" id="envelopePreview" aria-label="ตัวอย่างซองจดหมายตามสัดส่วนจริง">
             <span class="postage-permit-mini" id="postagePermitPreview"></span>
             <div class="sender-mini-block" id="senderPreviewBlock">
