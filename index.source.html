@@ -99,7 +99,7 @@
             </div>
           </div>
           <div class="preview-measurements" id="previewMeasurements" aria-live="polite" hidden></div>
-          <div class="envelope-preview" id="envelopePreview" aria-label="ตัวอย่างซองจดหมายตามสัดส่วนจริง">
+          <div class="preview-stage" id="previewStage">
             <div class="preview-ruler-layer" id="previewRulerLayer" aria-hidden="true" hidden>
               <div class="preview-grid-lines"></div>
               <div class="preview-ruler preview-ruler-horizontal" id="previewRulerHorizontal"></div>
@@ -111,12 +111,14 @@
               <div class="preview-guide guide-horizontal guide-permit-top"><span>กรอบฝากส่ง · บน</span></div>
               <div class="preview-guide guide-vertical guide-permit-right"><span>กรอบฝากส่ง · ขวา</span></div>
             </div>
-            <span class="postage-permit-mini" id="postagePermitPreview"></span>
-            <div class="sender-mini-block" id="senderPreviewBlock">
-              <img class="garuda-mini" id="garudaPreview" alt="ตราครุฑ" />
-              <div class="sender-mini" id="senderPreview"></div>
+            <div class="envelope-preview" id="envelopePreview" aria-label="ตัวอย่างซองจดหมายตามสัดส่วนจริง">
+              <span class="postage-permit-mini" id="postagePermitPreview"></span>
+              <div class="sender-mini-block" id="senderPreviewBlock">
+                <img class="garuda-mini" id="garudaPreview" alt="ตราครุฑ" />
+                <div class="sender-mini" id="senderPreview"></div>
+              </div>
+              <div class="receiver-mini" id="receiverPreview"></div>
             </div>
-            <div class="receiver-mini" id="receiverPreview"></div>
           </div>
         </div>
       </section>
@@ -216,7 +218,7 @@
         <div class="form-grid three">
           <label class="form-field"><span>ระยะจากขอบบน (%)</span><input name="recipientTopPercent" type="number" min="5" max="85" step="1" /><small>ปรับขึ้น–ลง</small></label>
           <label class="form-field"><span>ระยะจากขอบซ้าย (%)</span><input name="recipientLeftPercent" type="number" min="5" max="80" step="1" /><small>ปรับซ้าย–ขวา</small></label>
-          <label class="form-field"><span>ระยะห่างบรรทัด</span><input name="recipientLineHeight" type="number" min="1" max="2.2" step="0.05" /><small>ค่าแนะนำ 1.5</small></label>
+          <label class="form-field"><span>ระยะห่างบรรทัด</span><input name="recipientLineHeight" type="number" min="1" max="2.2" step="0.05" /><small>ค่าแนะนำ 1.2</small></label>
         </div>
         <div class="dialog-actions"><button class="button secondary" id="resetRecipientLayout" type="button">คืนค่าตำแหน่งแนะนำ</button><button class="button secondary" id="cancelRecipientLayout" type="button">ยกเลิก</button><button class="button primary" type="submit">บันทึกตำแหน่งผู้รับ</button></div>
       </form>
@@ -247,7 +249,7 @@
         </div>
         <div class="form-grid equal">
           <label class="form-field"><span>ขนาดฟอนต์ข้อมูลผู้ส่ง (พอยต์)</span><input name="senderFontPt" type="number" min="7" max="20" step="0.5" /><small>ปรับพร้อมกันทั้งชื่อหน่วยงาน ที่อยู่ และเลขที่หนังสือ</small></label>
-          <label class="form-field"><span>ระยะห่างบรรทัด</span><input name="senderLineHeight" type="number" min="1" max="2.2" step="0.05" /><small>ค่าปกติ 1.45 — ค่าน้อยบรรทัดจะชิดขึ้น ค่ามากบรรทัดจะห่างขึ้น</small></label>
+          <label class="form-field"><span>ระยะห่างบรรทัด</span><input name="senderLineHeight" type="number" min="1" max="2.2" step="0.05" /><small>ค่าแนะนำ 1.2 — ค่าน้อยบรรทัดจะชิดขึ้น ค่ามากบรรทัดจะห่างขึ้น</small></label>
         </div>
         <div class="form-grid three">
           <label class="form-field"><span>ระยะจากขอบบน (มม.)</span><input name="senderTopMm" type="number" min="0" max="40" step="1" /></label>
@@ -269,7 +271,7 @@
         </div>
         <div class="form-grid equal">
           <label class="form-field"><span>ขนาดตัวอักษร (พอยต์)</span><input name="postagePermitFontPt" type="number" min="6" max="14" step="0.5" /></label>
-          <label class="form-field"><span>ระยะห่างบรรทัด</span><input name="postagePermitLineHeight" type="number" min="1" max="2" step="0.05" /><small>ค่าปกติ 1.15 — ค่าน้อยบรรทัดจะชิดขึ้น ค่ามากบรรทัดจะห่างขึ้น</small></label>
+          <label class="form-field"><span>ระยะห่างบรรทัด</span><input name="postagePermitLineHeight" type="number" min="1" max="2" step="0.05" /><small>ค่าแนะนำ 1.2 — ค่าน้อยบรรทัดจะชิดขึ้น ค่ามากบรรทัดจะห่างขึ้น</small></label>
         </div>
         <div class="dialog-actions"><button class="button secondary" id="resetPostagePermit" type="button">คืนค่าแนะนำ</button><button class="button secondary" id="cancelPostagePermit" type="button">ยกเลิก</button><button class="button primary" type="submit">บันทึกกรอบค่าฝากส่ง</button></div>
       </form>

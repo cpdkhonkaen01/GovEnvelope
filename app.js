@@ -175,6 +175,7 @@ const elements = {
   previewCounter: $("#previewCounter"),
   togglePreviewMeasurements: $("#togglePreviewMeasurements"),
   previewMeasurements: $("#previewMeasurements"),
+  previewStage: $("#previewStage"),
   previewRulerLayer: $("#previewRulerLayer"),
   previewRulerHorizontal: $("#previewRulerHorizontal"),
   previewRulerVertical: $("#previewRulerVertical"),
@@ -1820,18 +1821,19 @@ function renderPreviewRulers(widthMm, heightMm, previewScale) {
   elements.previewRulerVertical.innerHTML = makeTicks(heightMm, "top");
   elements.previewRulerLayer.style.setProperty("--grid-x", `${10 * previewScale}px`);
   elements.previewRulerLayer.style.setProperty("--grid-y", `${10 * previewScale}px`);
-  elements.previewRulerLayer.querySelector(".guide-sender-top").style.top = `${(state.settings.senderTopMm / heightMm) * 100}%`;
-  elements.previewRulerLayer.querySelector(".guide-sender-left").style.left = `${(state.settings.senderLeftMm / widthMm) * 100}%`;
-  elements.previewRulerLayer.querySelector(".guide-recipient-top").style.top = `${state.settings.recipientTopPercent}%`;
-  elements.previewRulerLayer.querySelector(".guide-recipient-left").style.left = `${state.settings.recipientLeftPercent}%`;
-  elements.previewRulerLayer.querySelector(".guide-permit-top").style.top = `${(state.settings.postagePermitTopMm / heightMm) * 100}%`;
-  elements.previewRulerLayer.querySelector(".guide-permit-right").style.left = `${((widthMm - state.settings.postagePermitRightMm) / widthMm) * 100}%`;
+  elements.previewRulerLayer.querySelector(".guide-sender-top").style.top = `calc(var(--ruler-top) + ${state.settings.senderTopMm * previewScale}px)`;
+  elements.previewRulerLayer.querySelector(".guide-sender-left").style.left = `calc(var(--ruler-left) + ${state.settings.senderLeftMm * previewScale}px)`;
+  elements.previewRulerLayer.querySelector(".guide-recipient-top").style.top = `calc(var(--ruler-top) + ${(heightMm * state.settings.recipientTopPercent / 100) * previewScale}px)`;
+  elements.previewRulerLayer.querySelector(".guide-recipient-left").style.left = `calc(var(--ruler-left) + ${(widthMm * state.settings.recipientLeftPercent / 100) * previewScale}px)`;
+  elements.previewRulerLayer.querySelector(".guide-permit-top").style.top = `calc(var(--ruler-top) + ${state.settings.postagePermitTopMm * previewScale}px)`;
+  elements.previewRulerLayer.querySelector(".guide-permit-right").style.left = `calc(var(--ruler-left) + ${(widthMm - state.settings.postagePermitRightMm) * previewScale}px)`;
 }
 
 function togglePreviewMeasurements() {
   const shouldShow = elements.previewMeasurements.hidden;
   elements.previewMeasurements.hidden = !shouldShow;
   elements.previewRulerLayer.hidden = !shouldShow;
+  elements.previewStage.classList.toggle("rulers-visible", shouldShow);
   elements.togglePreviewMeasurements.classList.toggle("is-active", shouldShow);
   elements.togglePreviewMeasurements.textContent = shouldShow ? "⌗ ซ่อนไม้บรรทัด" : "⌗ ไม้บรรทัดและเส้นแนว";
   elements.togglePreviewMeasurements.setAttribute("aria-expanded", shouldShow ? "true" : "false");

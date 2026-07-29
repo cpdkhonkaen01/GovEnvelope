@@ -111,12 +111,14 @@ body.app-locked .login-screen{display:grid}
 .preview-measurements strong,.preview-measurements span{display:block}
 .preview-measurements strong{margin-bottom:2px;color:#234ec9;font-size:11px}
 .preview-measurements span{font-size:10px}
+.preview-stage{position:relative;width:100%;--ruler-top:24px;--ruler-left:26px}
+.preview-stage.rulers-visible{width:calc(100% + var(--ruler-left));margin-left:calc(var(--ruler-left) * -1);padding-top:var(--ruler-top);padding-left:var(--ruler-left)}
 .preview-ruler-layer{position:absolute;z-index:20;inset:0;overflow:hidden;pointer-events:none;--grid-x:32px;--grid-y:32px}
 .preview-ruler-layer[hidden]{display:none}
-.preview-grid-lines{position:absolute;inset:0;background-image:repeating-linear-gradient(to right,transparent 0,transparent calc(var(--grid-x) - 1px),rgba(53,94,190,.16) calc(var(--grid-x) - 1px),rgba(53,94,190,.16) var(--grid-x)),repeating-linear-gradient(to bottom,transparent 0,transparent calc(var(--grid-y) - 1px),rgba(53,94,190,.16) calc(var(--grid-y) - 1px),rgba(53,94,190,.16) var(--grid-y))}
+.preview-grid-lines{position:absolute;top:var(--ruler-top);right:0;bottom:0;left:var(--ruler-left);background-image:repeating-linear-gradient(to right,transparent 0,transparent calc(var(--grid-x) - 1px),rgba(53,94,190,.16) calc(var(--grid-x) - 1px),rgba(53,94,190,.16) var(--grid-x)),repeating-linear-gradient(to bottom,transparent 0,transparent calc(var(--grid-y) - 1px),rgba(53,94,190,.16) calc(var(--grid-y) - 1px),rgba(53,94,190,.16) var(--grid-y))}
 .preview-ruler{position:absolute;z-index:3;background:rgba(248,251,255,.92);color:#24499f;font-family:Tahoma,sans-serif;font-size:8px}
-.preview-ruler-horizontal{top:0;right:0;left:0;height:20px;border-bottom:1px solid #91a9d9}
-.preview-ruler-vertical{top:0;bottom:0;left:0;width:22px;border-right:1px solid #91a9d9}
+.preview-ruler-horizontal{top:0;right:0;left:var(--ruler-left);height:var(--ruler-top);border-bottom:1px solid #91a9d9}
+.preview-ruler-vertical{top:var(--ruler-top);bottom:0;left:0;width:var(--ruler-left);border-right:1px solid #91a9d9}
 .ruler-tick{position:absolute;background:#496bb4}
 .preview-ruler-horizontal .ruler-tick{bottom:0;width:1px;height:5px}
 .preview-ruler-horizontal .ruler-tick.is-major{height:10px}
@@ -127,9 +129,9 @@ body.app-locked .login-screen{display:grid}
 .preview-guide{position:absolute;z-index:2;color:#234ec9}
 .preview-guide::before{position:absolute;content:""}
 .preview-guide span{position:absolute;padding:1px 4px;border-radius:4px;background:currentColor;color:#fff;font-family:Tahoma,sans-serif;font-size:8px;font-weight:700;line-height:1.4;white-space:nowrap}
-.guide-horizontal{right:0;left:0;height:0;border-top:1px dashed currentColor}
-.guide-horizontal span{top:2px;left:24px}
-.guide-vertical{top:0;bottom:0;width:0;border-left:1px dashed currentColor}
+.guide-horizontal{right:0;left:var(--ruler-left);height:0;border-top:1px dashed currentColor}
+.guide-horizontal span{top:2px;left:4px}
+.guide-vertical{top:var(--ruler-top);bottom:0;width:0;border-left:1px dashed currentColor}
 .guide-vertical span{top:22px;left:3px;writing-mode:vertical-rl}
 .guide-recipient-top,.guide-recipient-left{color:#15936f}
 .guide-permit-top,.guide-permit-right{color:#d97706}
@@ -572,7 +574,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
             </div>
           </div>
           <div class="preview-measurements" id="previewMeasurements" aria-live="polite" hidden></div>
-          <div class="envelope-preview" id="envelopePreview" aria-label="ตัวอย่างซองจดหมายตามสัดส่วนจริง">
+          <div class="preview-stage" id="previewStage">
             <div class="preview-ruler-layer" id="previewRulerLayer" aria-hidden="true" hidden>
               <div class="preview-grid-lines"></div>
               <div class="preview-ruler preview-ruler-horizontal" id="previewRulerHorizontal"></div>
@@ -584,12 +586,14 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
               <div class="preview-guide guide-horizontal guide-permit-top"><span>กรอบฝากส่ง · บน</span></div>
               <div class="preview-guide guide-vertical guide-permit-right"><span>กรอบฝากส่ง · ขวา</span></div>
             </div>
-            <span class="postage-permit-mini" id="postagePermitPreview"></span>
-            <div class="sender-mini-block" id="senderPreviewBlock">
-              <img class="garuda-mini" id="garudaPreview" alt="ตราครุฑ" />
-              <div class="sender-mini" id="senderPreview"></div>
+            <div class="envelope-preview" id="envelopePreview" aria-label="ตัวอย่างซองจดหมายตามสัดส่วนจริง">
+              <span class="postage-permit-mini" id="postagePermitPreview"></span>
+              <div class="sender-mini-block" id="senderPreviewBlock">
+                <img class="garuda-mini" id="garudaPreview" alt="ตราครุฑ" />
+                <div class="sender-mini" id="senderPreview"></div>
+              </div>
+              <div class="receiver-mini" id="receiverPreview"></div>
             </div>
-            <div class="receiver-mini" id="receiverPreview"></div>
           </div>
         </div>
       </section>
@@ -689,7 +693,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
         <div class="form-grid three">
           <label class="form-field"><span>ระยะจากขอบบน (%)</span><input name="recipientTopPercent" type="number" min="5" max="85" step="1" /><small>ปรับขึ้น–ลง</small></label>
           <label class="form-field"><span>ระยะจากขอบซ้าย (%)</span><input name="recipientLeftPercent" type="number" min="5" max="80" step="1" /><small>ปรับซ้าย–ขวา</small></label>
-          <label class="form-field"><span>ระยะห่างบรรทัด</span><input name="recipientLineHeight" type="number" min="1" max="2.2" step="0.05" /><small>ค่าแนะนำ 1.5</small></label>
+          <label class="form-field"><span>ระยะห่างบรรทัด</span><input name="recipientLineHeight" type="number" min="1" max="2.2" step="0.05" /><small>ค่าแนะนำ 1.2</small></label>
         </div>
         <div class="dialog-actions"><button class="button secondary" id="resetRecipientLayout" type="button">คืนค่าตำแหน่งแนะนำ</button><button class="button secondary" id="cancelRecipientLayout" type="button">ยกเลิก</button><button class="button primary" type="submit">บันทึกตำแหน่งผู้รับ</button></div>
       </form>
@@ -720,7 +724,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
         </div>
         <div class="form-grid equal">
           <label class="form-field"><span>ขนาดฟอนต์ข้อมูลผู้ส่ง (พอยต์)</span><input name="senderFontPt" type="number" min="7" max="20" step="0.5" /><small>ปรับพร้อมกันทั้งชื่อหน่วยงาน ที่อยู่ และเลขที่หนังสือ</small></label>
-          <label class="form-field"><span>ระยะห่างบรรทัด</span><input name="senderLineHeight" type="number" min="1" max="2.2" step="0.05" /><small>ค่าปกติ 1.45 — ค่าน้อยบรรทัดจะชิดขึ้น ค่ามากบรรทัดจะห่างขึ้น</small></label>
+          <label class="form-field"><span>ระยะห่างบรรทัด</span><input name="senderLineHeight" type="number" min="1" max="2.2" step="0.05" /><small>ค่าแนะนำ 1.2 — ค่าน้อยบรรทัดจะชิดขึ้น ค่ามากบรรทัดจะห่างขึ้น</small></label>
         </div>
         <div class="form-grid three">
           <label class="form-field"><span>ระยะจากขอบบน (มม.)</span><input name="senderTopMm" type="number" min="0" max="40" step="1" /></label>
@@ -742,7 +746,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
         </div>
         <div class="form-grid equal">
           <label class="form-field"><span>ขนาดตัวอักษร (พอยต์)</span><input name="postagePermitFontPt" type="number" min="6" max="14" step="0.5" /></label>
-          <label class="form-field"><span>ระยะห่างบรรทัด</span><input name="postagePermitLineHeight" type="number" min="1" max="2" step="0.05" /><small>ค่าปกติ 1.15 — ค่าน้อยบรรทัดจะชิดขึ้น ค่ามากบรรทัดจะห่างขึ้น</small></label>
+          <label class="form-field"><span>ระยะห่างบรรทัด</span><input name="postagePermitLineHeight" type="number" min="1" max="2" step="0.05" /><small>ค่าแนะนำ 1.2 — ค่าน้อยบรรทัดจะชิดขึ้น ค่ามากบรรทัดจะห่างขึ้น</small></label>
         </div>
         <div class="dialog-actions"><button class="button secondary" id="resetPostagePermit" type="button">คืนค่าแนะนำ</button><button class="button secondary" id="cancelPostagePermit" type="button">ยกเลิก</button><button class="button primary" type="submit">บันทึกกรอบค่าฝากส่ง</button></div>
       </form>
@@ -1103,6 +1107,7 @@ const elements = {
   previewCounter: $("#previewCounter"),
   togglePreviewMeasurements: $("#togglePreviewMeasurements"),
   previewMeasurements: $("#previewMeasurements"),
+  previewStage: $("#previewStage"),
   previewRulerLayer: $("#previewRulerLayer"),
   previewRulerHorizontal: $("#previewRulerHorizontal"),
   previewRulerVertical: $("#previewRulerVertical"),
@@ -2748,18 +2753,19 @@ function renderPreviewRulers(widthMm, heightMm, previewScale) {
   elements.previewRulerVertical.innerHTML = makeTicks(heightMm, "top");
   elements.previewRulerLayer.style.setProperty("--grid-x", `${10 * previewScale}px`);
   elements.previewRulerLayer.style.setProperty("--grid-y", `${10 * previewScale}px`);
-  elements.previewRulerLayer.querySelector(".guide-sender-top").style.top = `${(state.settings.senderTopMm / heightMm) * 100}%`;
-  elements.previewRulerLayer.querySelector(".guide-sender-left").style.left = `${(state.settings.senderLeftMm / widthMm) * 100}%`;
-  elements.previewRulerLayer.querySelector(".guide-recipient-top").style.top = `${state.settings.recipientTopPercent}%`;
-  elements.previewRulerLayer.querySelector(".guide-recipient-left").style.left = `${state.settings.recipientLeftPercent}%`;
-  elements.previewRulerLayer.querySelector(".guide-permit-top").style.top = `${(state.settings.postagePermitTopMm / heightMm) * 100}%`;
-  elements.previewRulerLayer.querySelector(".guide-permit-right").style.left = `${((widthMm - state.settings.postagePermitRightMm) / widthMm) * 100}%`;
+  elements.previewRulerLayer.querySelector(".guide-sender-top").style.top = `calc(var(--ruler-top) + ${state.settings.senderTopMm * previewScale}px)`;
+  elements.previewRulerLayer.querySelector(".guide-sender-left").style.left = `calc(var(--ruler-left) + ${state.settings.senderLeftMm * previewScale}px)`;
+  elements.previewRulerLayer.querySelector(".guide-recipient-top").style.top = `calc(var(--ruler-top) + ${(heightMm * state.settings.recipientTopPercent / 100) * previewScale}px)`;
+  elements.previewRulerLayer.querySelector(".guide-recipient-left").style.left = `calc(var(--ruler-left) + ${(widthMm * state.settings.recipientLeftPercent / 100) * previewScale}px)`;
+  elements.previewRulerLayer.querySelector(".guide-permit-top").style.top = `calc(var(--ruler-top) + ${state.settings.postagePermitTopMm * previewScale}px)`;
+  elements.previewRulerLayer.querySelector(".guide-permit-right").style.left = `calc(var(--ruler-left) + ${(widthMm - state.settings.postagePermitRightMm) * previewScale}px)`;
 }
 
 function togglePreviewMeasurements() {
   const shouldShow = elements.previewMeasurements.hidden;
   elements.previewMeasurements.hidden = !shouldShow;
   elements.previewRulerLayer.hidden = !shouldShow;
+  elements.previewStage.classList.toggle("rulers-visible", shouldShow);
   elements.togglePreviewMeasurements.classList.toggle("is-active", shouldShow);
   elements.togglePreviewMeasurements.textContent = shouldShow ? "⌗ ซ่อนไม้บรรทัด" : "⌗ ไม้บรรทัดและเส้นแนว";
   elements.togglePreviewMeasurements.setAttribute("aria-expanded", shouldShow ? "true" : "false");
