@@ -1973,7 +1973,7 @@ function renderCooperativeFilterOptions() {
 function renderRows() {
   const rows = filteredRecipients();
   const canSelectRecipients = Boolean(state.settings.printJobCreator);
-  elements.rows.innerHTML = rows.map((item, index) => {
+  elements.rows.innerHTML = rows.map((item) => {
     const checked = state.selected.has(item.id);
     const classification = [item.responsibleUnit, item.cooperativeType].filter(Boolean).join(" · ");
     const displayName = recipientName(item);
@@ -1984,7 +1984,6 @@ function renderRows() {
     return `<tr class="${checked ? "selected-row" : ""}">
       <td class="check-cell"><input class="recipient-check" data-id="${escapeHtml(item.id)}" type="checkbox" ${checked ? "checked" : ""} ${canSelectRecipients ? "" : "disabled"} aria-label="เลือก ${escapeHtml(recipientName(item))}"></td>
       <td class="copy-cell"><input class="copy-input" data-copy-id="${escapeHtml(item.id)}" type="number" min="1" max="20" step="1" value="${copies}" ${canSelectRecipients ? "" : "disabled"} aria-label="จำนวนซองของ ${escapeHtml(recipientName(item))}"></td>
-      <td class="sequence-cell"><span class="row-sequence">${index + 1}</span></td>
       <td class="recipient-name-cell"><strong>${escapeHtml(displayName)}</strong>${positionLine}</td>
       <td class="type-cell"><span class="category-badge ${categoryClass(item.category)}">${escapeHtml(item.category)}</span>${classification ? `<small class="recipient-classification">${escapeHtml(classification)}</small>` : ""}</td>
       <td class="department-cell"><span class="department-text">${escapeHtml(item.department || (item.category === "บุคคล" ? "บุคคล" : "ไม่ระบุหน่วยงาน"))}</span></td>
