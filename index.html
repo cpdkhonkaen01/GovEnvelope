@@ -739,9 +739,9 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
         <div class="form-grid three">
           <label class="form-field"><span>ระยะจากขอบบน (%)</span><input name="recipientTopPercent" type="number" min="5" max="85" step="1" /><small>ปรับขึ้น–ลง</small></label>
           <label class="form-field"><span>ระยะจากขอบซ้าย (%)</span><input name="recipientLeftPercent" type="number" min="5" max="80" step="1" /><small>ปรับซ้าย–ขวา</small></label>
-          <label class="form-field"><span>ระยะห่างบรรทัด</span><input name="recipientLineHeight" type="number" min="1" max="2.2" step="0.05" /><small>ค่าแนะนำ 1.2</small></label>
+          <label class="form-field"><span>ระยะห่างบรรทัด</span><input name="recipientLineHeight" type="number" min="1" max="2.2" step="0.05" /><small>ระบบใช้ค่าเริ่มต้นส่วนกลางที่ผู้ดูแลบันทึกไว้</small></label>
         </div>
-        <div class="dialog-actions"><button class="button admin-default-button" id="saveRecipientRecommended" type="button" hidden>บันทึกเป็นค่าแนะนำ</button><button class="button secondary" id="resetRecipientLayout" type="button">คืนค่าตำแหน่งแนะนำ</button><button class="button secondary" id="cancelRecipientLayout" type="button">ยกเลิก</button><button class="button primary" type="submit">บันทึกตำแหน่งผู้รับ</button></div>
+        <div class="dialog-actions"><button class="button admin-default-button" id="saveRecipientRecommended" type="button" hidden>บันทึกเป็นค่าเริ่มต้นสำหรับทุกคน</button><button class="button secondary" id="resetRecipientLayout" type="button">คืนค่าเริ่มต้นส่วนกลาง</button><button class="button secondary" id="cancelRecipientLayout" type="button">ยกเลิก</button><button class="button primary" type="submit">บันทึกตำแหน่งผู้รับ</button></div>
       </form>
     </dialog>
 
@@ -758,7 +758,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
     <dialog id="senderDialog">
       <form id="senderForm">
         <div class="dialog-title"><div><span class="eyebrow">ข้อมูลบนซอง</span><h2>แก้ไขหน่วยงานผู้ส่ง</h2></div><button class="close-button" id="closeSenderDialog" type="button" aria-label="ปิด">×</button></div>
-        <p class="dialog-info">ข้อมูลนี้ใช้กับงานบนเครื่องปัจจุบัน ผู้ดูแลสามารถบันทึกตำแหน่งปัจจุบันเป็นค่าแนะนำส่วนกลางสำหรับขนาดซองนี้ได้</p>
+        <p class="dialog-info">ผู้ดูแลสามารถบันทึกข้อมูลและตำแหน่งปัจจุบันเป็นค่าเริ่มต้นส่วนกลาง ผู้ใช้ทุกคนจะได้รับค่านี้อัตโนมัติเมื่อเข้าใช้งาน</p>
         <label class="form-field"><span>1. ชื่อหน่วยงาน *</span><input name="sender" type="text" required /></label>
         <label class="form-field"><span>2. ที่อยู่ผู้ส่ง *</span><textarea name="senderAddress" rows="5" required></textarea><small>สามารถขึ้นบรรทัดใหม่ และใส่หมายเลขโทรศัพท์หรือโทรสารได้</small></label>
         <label class="form-field"><span>3. เลขที่หนังสือ</span><input name="documentNumber" type="text" placeholder="ที่ ขก0010/................................................................." /></label>
@@ -770,14 +770,14 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
         </div>
         <div class="form-grid equal">
           <label class="form-field"><span>ขนาดฟอนต์ข้อมูลผู้ส่ง (พอยต์)</span><input name="senderFontPt" type="number" min="7" max="20" step="0.5" /><small>ปรับพร้อมกันทั้งชื่อหน่วยงาน ที่อยู่ และเลขที่หนังสือ</small></label>
-          <label class="form-field"><span>ระยะห่างบรรทัด</span><input name="senderLineHeight" type="number" min="1" max="2.2" step="0.05" /><small>ค่าแนะนำ 1.2 — ค่าน้อยบรรทัดจะชิดขึ้น ค่ามากบรรทัดจะห่างขึ้น</small></label>
+          <label class="form-field"><span>ระยะห่างบรรทัด</span><input name="senderLineHeight" type="number" min="1" max="2.2" step="0.05" /><small>ระบบใช้ค่าเริ่มต้นส่วนกลาง — ค่าน้อยบรรทัดจะชิดขึ้น ค่ามากบรรทัดจะห่างขึ้น</small></label>
         </div>
         <div class="form-grid three">
           <label class="form-field"><span>ระยะจากขอบบน (มม.)</span><input name="senderTopMm" type="number" min="0" max="40" step="1" /></label>
           <label class="form-field"><span>ระยะจากขอบซ้าย (มม.)</span><input name="senderLeftMm" type="number" min="0" max="60" step="0.1" /></label>
           <label class="form-field"><span>เลื่อนข้อความลง (มม.)</span><input name="senderTextOffsetMm" type="number" min="0" max="30" step="1" /><small>ใช้เมื่อตราครุฑอยู่ด้านซ้าย ปรับให้ชื่อหน่วยงานตรงระดับเท้าครุฑ</small></label>
         </div>
-        <div class="dialog-actions"><button class="button admin-default-button" id="saveSenderRecommended" type="button" hidden>บันทึกเป็นค่าแนะนำ</button><button class="button secondary" id="resetSenderLayout" type="button">คืนค่าตำแหน่งแนะนำ</button><button class="button secondary" id="cancelSenderSettings" type="button">ยกเลิก</button><button class="button primary" type="submit">บันทึกข้อมูลผู้ส่ง</button></div>
+        <div class="dialog-actions"><button class="button admin-default-button" id="saveSenderRecommended" type="button" hidden>บันทึกเป็นค่าเริ่มต้นสำหรับทุกคน</button><button class="button secondary" id="resetSenderLayout" type="button">คืนค่าเริ่มต้นส่วนกลาง</button><button class="button secondary" id="cancelSenderSettings" type="button">ยกเลิก</button><button class="button primary" type="submit">บันทึกข้อมูลผู้ส่ง</button></div>
       </form>
     </dialog>
 
@@ -792,9 +792,9 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
         </div>
         <div class="form-grid equal">
           <label class="form-field"><span>ขนาดตัวอักษร (พอยต์)</span><input name="postagePermitFontPt" type="number" min="6" max="14" step="0.5" /></label>
-          <label class="form-field"><span>ระยะห่างบรรทัด</span><input name="postagePermitLineHeight" type="number" min="1" max="2" step="0.05" /><small>ค่าแนะนำ 1.2 — ค่าน้อยบรรทัดจะชิดขึ้น ค่ามากบรรทัดจะห่างขึ้น</small></label>
+          <label class="form-field"><span>ระยะห่างบรรทัด</span><input name="postagePermitLineHeight" type="number" min="1" max="2" step="0.05" /><small>ระบบใช้ค่าเริ่มต้นส่วนกลาง — ค่าน้อยบรรทัดจะชิดขึ้น ค่ามากบรรทัดจะห่างขึ้น</small></label>
         </div>
-        <div class="dialog-actions"><button class="button admin-default-button" id="savePostagePermitRecommended" type="button" hidden>บันทึกเป็นค่าแนะนำ</button><button class="button secondary" id="resetPostagePermit" type="button">คืนค่าแนะนำ</button><button class="button secondary" id="cancelPostagePermit" type="button">ยกเลิก</button><button class="button primary" type="submit">บันทึกกรอบค่าฝากส่ง</button></div>
+        <div class="dialog-actions"><button class="button admin-default-button" id="savePostagePermitRecommended" type="button" hidden>บันทึกเป็นค่าเริ่มต้นสำหรับทุกคน</button><button class="button secondary" id="resetPostagePermit" type="button">คืนค่าเริ่มต้นส่วนกลาง</button><button class="button secondary" id="cancelPostagePermit" type="button">ยกเลิก</button><button class="button primary" type="submit">บันทึกกรอบค่าฝากส่ง</button></div>
       </form>
     </dialog>
 
@@ -2612,11 +2612,41 @@ async function loadRecommendedSettings({ silent = true } = {}) {
   try {
     const result = await postAppsScript("getRecommendedSettings");
     state.recommendedSettings = normalizeRecommendedSettings(result);
+    applyRecommendedSettingsAsDefaults();
     return state.recommendedSettings;
   } catch (error) {
     if (!silent) throw error;
-    console.warn("ยังโหลดค่าแนะนำส่วนกลางไม่ได้", error);
+    console.warn("ยังโหลดค่าเริ่มต้นส่วนกลางไม่ได้", error);
     return state.recommendedSettings;
+  }
+}
+
+function applyRecommendedSettingsAsDefaults({ persist = true, refresh = true } = {}) {
+  const recommended = normalizeRecommendedSettings(state.recommendedSettings);
+  const paperLayouts = recommended.paperLayouts || {};
+  const shared = recommended.shared || {};
+
+  PAPER_SIZE_KEYS.forEach((paperSize) => {
+    const centralProfile = paperLayouts[paperSize];
+    if (!centralProfile || typeof centralProfile !== "object") return;
+    state.settings.paperLayouts[paperSize] = normalizeLayoutProfile({
+      ...(defaults.paperLayouts?.[paperSize] || {}),
+      ...centralProfile,
+    }, paperSize);
+  });
+
+  ["sender", "senderAddress", "documentNumber", "postagePermitText"].forEach((key) => {
+    if (Object.prototype.hasOwnProperty.call(shared, key)) {
+      state.settings[key] = String(shared[key] ?? "").trim();
+    }
+  });
+
+  applyPaperLayout(state.settings.paperSize);
+  if (persist) persistSettings();
+  if (refresh) {
+    renderSummary();
+    if (elements.senderDialog?.open) fillSenderForm();
+    if (elements.postagePermitDialog?.open) fillPostagePermitForm();
   }
 }
 
@@ -3391,7 +3421,7 @@ function recommendedSharedValue(key, fallback = "") {
 
 async function saveRecommendedSection(section, form, button) {
   if (!isAdminSignedIn()) {
-    setNotice("เฉพาะผู้ดูแลระบบเท่านั้นที่บันทึกค่าแนะนำส่วนกลางได้");
+    setNotice("เฉพาะผู้ดูแลระบบเท่านั้นที่บันทึกค่าเริ่มต้นส่วนกลางได้");
     return;
   }
   if (!form.reportValidity()) return;
@@ -3422,10 +3452,11 @@ async function saveRecommendedSection(section, form, button) {
       shared,
     });
     state.recommendedSettings = normalizeRecommendedSettings(result);
+    applyRecommendedSettingsAsDefaults();
     const paperLabel = elements.paper?.selectedOptions?.[0]?.textContent?.trim() || state.settings.paperSize;
-    setNotice(`บันทึกค่าแนะนำส่วนกลางสำหรับ ${paperLabel} แล้ว`);
+    setNotice(`บันทึกค่าเริ่มต้นส่วนกลางสำหรับ ${paperLabel} แล้ว ทุกคนจะได้รับค่านี้เมื่อเข้าใช้งาน`);
   } catch (error) {
-    setNotice(`บันทึกค่าแนะนำไม่สำเร็จ: ${error.message}`);
+    setNotice(`บันทึกค่าเริ่มต้นส่วนกลางไม่สำเร็จ: ${error.message}`);
   } finally {
     button.disabled = false;
     button.textContent = originalText;

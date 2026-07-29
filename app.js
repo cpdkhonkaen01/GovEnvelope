@@ -1622,11 +1622,41 @@ async function loadRecommendedSettings({ silent = true } = {}) {
   try {
     const result = await postAppsScript("getRecommendedSettings");
     state.recommendedSettings = normalizeRecommendedSettings(result);
+    applyRecommendedSettingsAsDefaults();
     return state.recommendedSettings;
   } catch (error) {
     if (!silent) throw error;
-    console.warn("ยังโหลดค่าแนะนำส่วนกลางไม่ได้", error);
+    console.warn("ยังโหลดค่าเริ่มต้นส่วนกลางไม่ได้", error);
     return state.recommendedSettings;
+  }
+}
+
+function applyRecommendedSettingsAsDefaults({ persist = true, refresh = true } = {}) {
+  const recommended = normalizeRecommendedSettings(state.recommendedSettings);
+  const paperLayouts = recommended.paperLayouts || {};
+  const shared = recommended.shared || {};
+
+  PAPER_SIZE_KEYS.forEach((paperSize) => {
+    const centralProfile = paperLayouts[paperSize];
+    if (!centralProfile || typeof centralProfile !== "object") return;
+    state.settings.paperLayouts[paperSize] = normalizeLayoutProfile({
+      ...(defaults.paperLayouts?.[paperSize] || {}),
+      ...centralProfile,
+    }, paperSize);
+  });
+
+  ["sender", "senderAddress", "documentNumber", "postagePermitText"].forEach((key) => {
+    if (Object.prototype.hasOwnProperty.call(shared, key)) {
+      state.settings[key] = String(shared[key] ?? "").trim();
+    }
+  });
+
+  applyPaperLayout(state.settings.paperSize);
+  if (persist) persistSettings();
+  if (refresh) {
+    renderSummary();
+    if (elements.senderDialog?.open) fillSenderForm();
+    if (elements.postagePermitDialog?.open) fillPostagePermitForm();
   }
 }
 
@@ -2401,7 +2431,7 @@ function recommendedSharedValue(key, fallback = "") {
 
 async function saveRecommendedSection(section, form, button) {
   if (!isAdminSignedIn()) {
-    setNotice("เฉพาะผู้ดูแลระบบเท่านั้นที่บันทึกค่าแนะนำส่วนกลางได้");
+    setNotice("เฉพาะผู้ดูแลระบบเท่านั้นที่บันทึกค่าเริ่มต้นส่วนกลางได้");
     return;
   }
   if (!form.reportValidity()) return;
@@ -2432,10 +2462,11 @@ async function saveRecommendedSection(section, form, button) {
       shared,
     });
     state.recommendedSettings = normalizeRecommendedSettings(result);
+    applyRecommendedSettingsAsDefaults();
     const paperLabel = elements.paper?.selectedOptions?.[0]?.textContent?.trim() || state.settings.paperSize;
-    setNotice(`บันทึกค่าแนะนำส่วนกลางสำหรับ ${paperLabel} แล้ว`);
+    setNotice(`บันทึกค่าเริ่มต้นส่วนกลางสำหรับ ${paperLabel} แล้ว ทุกคนจะได้รับค่านี้เมื่อเข้าใช้งาน`);
   } catch (error) {
-    setNotice(`บันทึกค่าแนะนำไม่สำเร็จ: ${error.message}`);
+    setNotice(`บันทึกค่าเริ่มต้นส่วนกลางไม่สำเร็จ: ${error.message}`);
   } finally {
     button.disabled = false;
     button.textContent = originalText;
