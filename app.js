@@ -175,6 +175,9 @@ const elements = {
   previewCounter: $("#previewCounter"),
   togglePreviewMeasurements: $("#togglePreviewMeasurements"),
   previewMeasurements: $("#previewMeasurements"),
+  previewRulerLayer: $("#previewRulerLayer"),
+  previewRulerHorizontal: $("#previewRulerHorizontal"),
+  previewRulerVertical: $("#previewRulerVertical"),
   openRecipientLineBreak: $("#openRecipientLineBreak"),
   showRecipientDepartment: $("#showRecipientDepartment"),
   showRecipientAddress: $("#showRecipientAddress"),
@@ -1801,11 +1804,36 @@ function renderPreviewMeasurements() {
     <div><strong>กรอบฝากส่ง</strong><span>ขอบบน ${layoutMeasurementValue(state.settings.postagePermitTopMm)} มม. · ขอบขวา ${layoutMeasurementValue(state.settings.postagePermitRightMm)} มม. · ระยะบรรทัด ${layoutMeasurementValue(state.settings.postagePermitLineHeight)}</span></div>`;
 }
 
+function renderPreviewRulers(widthMm, heightMm, previewScale) {
+  if (!elements.previewRulerLayer) return;
+  const makeTicks = (lengthMm, direction) => {
+    const ticks = [];
+    for (let mm = 0; mm <= lengthMm; mm += 5) {
+      const percent = (mm / lengthMm) * 100;
+      const major = mm % 10 === 0;
+      const label = major ? `<span>${mm / 10}</span>` : "";
+      ticks.push(`<i class="ruler-tick${major ? " is-major" : ""}" style="${direction}:${percent}%">${label}</i>`);
+    }
+    return ticks.join("");
+  };
+  elements.previewRulerHorizontal.innerHTML = makeTicks(widthMm, "left");
+  elements.previewRulerVertical.innerHTML = makeTicks(heightMm, "top");
+  elements.previewRulerLayer.style.setProperty("--grid-x", `${10 * previewScale}px`);
+  elements.previewRulerLayer.style.setProperty("--grid-y", `${10 * previewScale}px`);
+  elements.previewRulerLayer.querySelector(".guide-sender-top").style.top = `${(state.settings.senderTopMm / heightMm) * 100}%`;
+  elements.previewRulerLayer.querySelector(".guide-sender-left").style.left = `${(state.settings.senderLeftMm / widthMm) * 100}%`;
+  elements.previewRulerLayer.querySelector(".guide-recipient-top").style.top = `${state.settings.recipientTopPercent}%`;
+  elements.previewRulerLayer.querySelector(".guide-recipient-left").style.left = `${state.settings.recipientLeftPercent}%`;
+  elements.previewRulerLayer.querySelector(".guide-permit-top").style.top = `${(state.settings.postagePermitTopMm / heightMm) * 100}%`;
+  elements.previewRulerLayer.querySelector(".guide-permit-right").style.left = `${((widthMm - state.settings.postagePermitRightMm) / widthMm) * 100}%`;
+}
+
 function togglePreviewMeasurements() {
   const shouldShow = elements.previewMeasurements.hidden;
   elements.previewMeasurements.hidden = !shouldShow;
+  elements.previewRulerLayer.hidden = !shouldShow;
   elements.togglePreviewMeasurements.classList.toggle("is-active", shouldShow);
-  elements.togglePreviewMeasurements.textContent = shouldShow ? "⌗ ซ่อนค่าระยะ" : "⌗ แสดงค่าระยะ";
+  elements.togglePreviewMeasurements.textContent = shouldShow ? "⌗ ซ่อนไม้บรรทัด" : "⌗ ไม้บรรทัดและเส้นแนว";
   elements.togglePreviewMeasurements.setAttribute("aria-expanded", shouldShow ? "true" : "false");
   if (shouldShow) renderPreviewMeasurements();
 }
@@ -1847,6 +1875,7 @@ function renderSummary() {
   $("#previewSizeLabel").textContent = `${paperLabels[state.settings.paperSize] || paperLabels.DL} · ${previewPaperWidth} × ${previewPaperHeight} มม.`;
   renderPreviewMeasurements();
   const previewScale = (envelopePreview.clientWidth || 480) / previewPaperWidth;
+  renderPreviewRulers(previewPaperWidth, previewPaperHeight, previewScale);
   const ptToPreviewPx = (pt) => pt * (25.4 / 72) * previewScale;
   const senderTop = state.settings.senderTopMm * previewScale;
   const senderLeft = state.settings.senderLeftMm * previewScale;

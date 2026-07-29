@@ -102,6 +102,28 @@ body.app-locked .login-screen{display:grid}
 .preview-measurements strong,.preview-measurements span{display:block}
 .preview-measurements strong{margin-bottom:2px;color:#234ec9;font-size:11px}
 .preview-measurements span{font-size:10px}
+.preview-ruler-layer{position:absolute;z-index:20;inset:0;overflow:hidden;pointer-events:none;--grid-x:32px;--grid-y:32px}
+.preview-ruler-layer[hidden]{display:none}
+.preview-grid-lines{position:absolute;inset:0;background-image:repeating-linear-gradient(to right,transparent 0,transparent calc(var(--grid-x) - 1px),rgba(53,94,190,.16) calc(var(--grid-x) - 1px),rgba(53,94,190,.16) var(--grid-x)),repeating-linear-gradient(to bottom,transparent 0,transparent calc(var(--grid-y) - 1px),rgba(53,94,190,.16) calc(var(--grid-y) - 1px),rgba(53,94,190,.16) var(--grid-y))}
+.preview-ruler{position:absolute;z-index:3;background:rgba(248,251,255,.92);color:#24499f;font-family:Tahoma,sans-serif;font-size:8px}
+.preview-ruler-horizontal{top:0;right:0;left:0;height:20px;border-bottom:1px solid #91a9d9}
+.preview-ruler-vertical{top:0;bottom:0;left:0;width:22px;border-right:1px solid #91a9d9}
+.ruler-tick{position:absolute;background:#496bb4}
+.preview-ruler-horizontal .ruler-tick{bottom:0;width:1px;height:5px}
+.preview-ruler-horizontal .ruler-tick.is-major{height:10px}
+.preview-ruler-horizontal .ruler-tick span{position:absolute;top:1px;left:3px;white-space:nowrap}
+.preview-ruler-vertical .ruler-tick{right:0;width:5px;height:1px}
+.preview-ruler-vertical .ruler-tick.is-major{width:10px}
+.preview-ruler-vertical .ruler-tick span{position:absolute;top:2px;left:2px;white-space:nowrap}
+.preview-guide{position:absolute;z-index:2;color:#234ec9}
+.preview-guide::before{position:absolute;content:""}
+.preview-guide span{position:absolute;padding:1px 4px;border-radius:4px;background:currentColor;color:#fff;font-family:Tahoma,sans-serif;font-size:8px;font-weight:700;line-height:1.4;white-space:nowrap}
+.guide-horizontal{right:0;left:0;height:0;border-top:1px dashed currentColor}
+.guide-horizontal span{top:2px;left:24px}
+.guide-vertical{top:0;bottom:0;width:0;border-left:1px dashed currentColor}
+.guide-vertical span{top:22px;left:3px;writing-mode:vertical-rl}
+.guide-recipient-top,.guide-recipient-left{color:#15936f}
+.guide-permit-top,.guide-permit-right{color:#d97706}
 .preview-nav-button:disabled{cursor:not-allowed;opacity:.42}
 .line-break-button{border-color:#9fb5f3;background:#eef3ff;white-space:nowrap}
 .preview-counter{min-width:48px;color:#263149;font-size:14px;text-align:center;white-space:nowrap}
