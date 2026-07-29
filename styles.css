@@ -53,7 +53,7 @@ body.app-locked .login-screen{display:grid}
 .hero-copy{align-self:center;padding:50px 24px 52px 58px}
 .eyebrow{display:block;margin-bottom:8px;color:var(--blue);font-size:10px;font-weight:900;letter-spacing:.13em;text-transform:uppercase}
 .hero h1{margin:0;font-size:clamp(32px,3vw,44px);line-height:1.16;letter-spacing:-.035em}
-.hero h1 em{color:var(--blue);font-style:normal}
+.hero h1 em{display:block;color:var(--blue);font-size:.78em;font-style:normal;letter-spacing:-.02em;white-space:nowrap}
 .hero p{max-width:630px;margin:18px 0 0;color:#5a6579;font-size:15px;line-height:1.85}
 .workflow-panel{max-width:760px;margin-top:22px;padding:14px;border:1px solid #d8e3fb;border-radius:18px;background:rgba(255,255,255,.78);box-shadow:0 10px 24px rgba(40,86,217,.06)}
 .workflow-steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
@@ -385,9 +385,17 @@ input[type=checkbox]{width:20px;height:20px}
 .print-card{position:static;display:grid;grid-template-columns:220px minmax(0,1fr);gap:26px;align-items:center;padding:26px 30px}
 .print-overview{align-self:stretch;padding-right:24px;border-right:1px solid rgba(255,255,255,.2)}
 .print-overview p{margin-bottom:0}
-.print-controls{display:grid;grid-template-columns:2fr 1fr 1.25fr 1fr;gap:12px;align-items:end}
+.print-controls{display:grid;gap:14px;align-items:stretch}
 .print-controls>*{min-width:0;margin:0!important}
-.print-controls .paper-size-option{grid-column:span 2}
+.print-setting-group{display:grid;gap:7px;min-width:0}
+.print-control-heading{display:block;color:#fff;font-size:13px;font-weight:900}
+.print-primary-settings{display:grid;grid-template-columns:minmax(300px,2fr) minmax(150px,.72fr) minmax(235px,1fr);gap:12px;align-items:end}
+.print-primary-settings>*{min-width:0;margin:0!important}
+.print-primary-settings .sender-settings-button{margin:0}
+.print-visibility-options{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.print-visibility-options .garuda-option{margin:0}
+.print-edit-actions{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:10px}
+.print-edit-actions .sender-settings-button{margin:0}
 .paper-profile-hint{display:block;margin-top:8px;color:#dbe5ff;font-size:12px;font-weight:700}
 .print-controls .garuda-option{height:52px}
 .print-card h2{font-size:38px}
@@ -411,12 +419,14 @@ footer{width:min(2000px,96vw);font-size:12px}
 @keyframes pulse{50%{opacity:.35}
 }
 @media(max-width:1080px){.content-grid{grid-template-columns:1fr}
+.hero h1 em{font-size:.84em;white-space:normal}
 .workflow-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
 .manifest-setup-grid{grid-template-columns:1fr 1fr}
 .print-card{grid-template-columns:1fr}
 .print-overview{padding:0;border:0}
-.print-controls{grid-template-columns:repeat(2,minmax(0,1fr))}
-.print-controls .paper-size-option{grid-column:span 2}
+.print-primary-settings{grid-template-columns:repeat(2,minmax(0,1fr))}
+.print-primary-settings .paper-size-option{grid-column:span 2}
+.print-visibility-options{grid-template-columns:repeat(3,minmax(0,1fr))}
 .history-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 .history-reset-filter{width:100%}
 }
@@ -449,8 +459,8 @@ dialog{padding:22px}
 th:nth-child(4),th:nth-child(5),th:nth-child(6),td:nth-child(4),td:nth-child(5),td:nth-child(6){display:none}
 table{min-width:600px}
 .side-panel{grid-template-columns:1fr}
-.print-controls{grid-template-columns:1fr}
-.print-controls .paper-size-option{grid-column:auto}
+.print-primary-settings,.print-visibility-options,.print-edit-actions{grid-template-columns:1fr}
+.print-primary-settings .paper-size-option{grid-column:auto}
 .form-grid{grid-template-columns:1fr}
 .manifest-setup-grid{grid-template-columns:1fr 1fr}
 #mailingManifestDialog{padding:14px}

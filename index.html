@@ -62,7 +62,7 @@ body.app-locked .login-screen{display:grid}
 .hero-copy{align-self:center;padding:50px 24px 52px 58px}
 .eyebrow{display:block;margin-bottom:8px;color:var(--blue);font-size:10px;font-weight:900;letter-spacing:.13em;text-transform:uppercase}
 .hero h1{margin:0;font-size:clamp(32px,3vw,44px);line-height:1.16;letter-spacing:-.035em}
-.hero h1 em{color:var(--blue);font-style:normal}
+.hero h1 em{display:block;color:var(--blue);font-size:.78em;font-style:normal;letter-spacing:-.02em;white-space:nowrap}
 .hero p{max-width:630px;margin:18px 0 0;color:#5a6579;font-size:15px;line-height:1.85}
 .workflow-panel{max-width:760px;margin-top:22px;padding:14px;border:1px solid #d8e3fb;border-radius:18px;background:rgba(255,255,255,.78);box-shadow:0 10px 24px rgba(40,86,217,.06)}
 .workflow-steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
@@ -394,9 +394,17 @@ input[type=checkbox]{width:20px;height:20px}
 .print-card{position:static;display:grid;grid-template-columns:220px minmax(0,1fr);gap:26px;align-items:center;padding:26px 30px}
 .print-overview{align-self:stretch;padding-right:24px;border-right:1px solid rgba(255,255,255,.2)}
 .print-overview p{margin-bottom:0}
-.print-controls{display:grid;grid-template-columns:2fr 1fr 1.25fr 1fr;gap:12px;align-items:end}
+.print-controls{display:grid;gap:14px;align-items:stretch}
 .print-controls>*{min-width:0;margin:0!important}
-.print-controls .paper-size-option{grid-column:span 2}
+.print-setting-group{display:grid;gap:7px;min-width:0}
+.print-control-heading{display:block;color:#fff;font-size:13px;font-weight:900}
+.print-primary-settings{display:grid;grid-template-columns:minmax(300px,2fr) minmax(150px,.72fr) minmax(235px,1fr);gap:12px;align-items:end}
+.print-primary-settings>*{min-width:0;margin:0!important}
+.print-primary-settings .sender-settings-button{margin:0}
+.print-visibility-options{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.print-visibility-options .garuda-option{margin:0}
+.print-edit-actions{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:10px}
+.print-edit-actions .sender-settings-button{margin:0}
 .paper-profile-hint{display:block;margin-top:8px;color:#dbe5ff;font-size:12px;font-weight:700}
 .print-controls .garuda-option{height:52px}
 .print-card h2{font-size:38px}
@@ -420,12 +428,14 @@ footer{width:min(2000px,96vw);font-size:12px}
 @keyframes pulse{50%{opacity:.35}
 }
 @media(max-width:1080px){.content-grid{grid-template-columns:1fr}
+.hero h1 em{font-size:.84em;white-space:normal}
 .workflow-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
 .manifest-setup-grid{grid-template-columns:1fr 1fr}
 .print-card{grid-template-columns:1fr}
 .print-overview{padding:0;border:0}
-.print-controls{grid-template-columns:repeat(2,minmax(0,1fr))}
-.print-controls .paper-size-option{grid-column:span 2}
+.print-primary-settings{grid-template-columns:repeat(2,minmax(0,1fr))}
+.print-primary-settings .paper-size-option{grid-column:span 2}
+.print-visibility-options{grid-template-columns:repeat(3,minmax(0,1fr))}
 .history-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 .history-reset-filter{width:100%}
 }
@@ -458,8 +468,8 @@ dialog{padding:22px}
 th:nth-child(4),th:nth-child(5),th:nth-child(6),td:nth-child(4),td:nth-child(5),td:nth-child(6){display:none}
 table{min-width:600px}
 .side-panel{grid-template-columns:1fr}
-.print-controls{grid-template-columns:1fr}
-.print-controls .paper-size-option{grid-column:auto}
+.print-primary-settings,.print-visibility-options,.print-edit-actions{grid-template-columns:1fr}
+.print-primary-settings .paper-size-option{grid-column:auto}
 .form-grid{grid-template-columns:1fr}
 .manifest-setup-grid{grid-template-columns:1fr 1fr}
 #mailingManifestDialog{padding:14px}
@@ -630,16 +640,31 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
           <section class="print-card">
             <div class="print-overview"><span class="eyebrow light">พร้อมพิมพ์</span><h2><span id="sideSelected">0</span> รายการ</h2><p>ระบบจะสร้างหน้าพิมพ์ตามจำนวนซองที่ตั้งไว้ในแต่ละรายชื่อ</p></div>
             <div class="print-controls">
-              <label class="paper-size-option"><span>ขนาดซอง / กระดาษ</span><select id="paperSize"><option value="DL">ซอง DL · 22 × 11 ซม.</option><option value="C5">ซอง C5 · 22.9 × 16.2 ซม.</option><option value="A4L">กระดาษ A4 แนวนอน · 29.7 × 21 ซม.</option></select><small class="paper-profile-hint">จำฟอนต์และตำแหน่งแยกให้แต่ละขนาดอัตโนมัติ</small></label>
-              <label class="recipient-font-option"><span>ขนาดฟอนต์ข้อมูลผู้รับ (พอยต์)</span><input id="recipientFontPt" type="number" min="8" max="24" step="0.5" /></label>
-              <button class="sender-settings-button" id="openRecipientLayoutSettings" type="button">✎ ปรับตำแหน่งและระยะผู้รับ</button>
-              <label class="garuda-option"><input id="showRecipientDepartment" type="checkbox" checked /><span>แสดงชื่อหน่วยงานผู้รับ</span></label>
-              <label class="garuda-option"><input id="showRecipientAddress" type="checkbox" checked /><span>แสดงที่อยู่ผู้รับ</span></label>
-              <label class="garuda-option"><input id="showSender" type="checkbox" checked /><span>แสดงข้อมูลผู้ส่ง</span></label>
-              <label class="garuda-option"><input id="showGaruda" type="checkbox" checked /><span>แสดงตราครุฑ</span></label>
-              <label class="garuda-option"><input id="showPostagePermit" type="checkbox" checked /><span>แสดงกรอบฝากส่ง</span></label>
-              <button class="sender-settings-button" id="openSenderSettings" type="button">✎ แก้ไขข้อมูลผู้ส่ง</button>
-              <button class="sender-settings-button" id="openPostagePermitSettings" type="button">✎ แก้ไขกรอบค่าฝากส่ง</button>
+              <div class="print-setting-group">
+                <span class="print-control-heading">ตั้งค่าหลัก</span>
+                <div class="print-primary-settings">
+                  <label class="paper-size-option"><span>ขนาดซอง / กระดาษ</span><select id="paperSize"><option value="DL">ซอง DL · 22 × 11 ซม.</option><option value="C5">ซอง C5 · 22.9 × 16.2 ซม.</option><option value="A4L">กระดาษ A4 แนวนอน · 29.7 × 21 ซม.</option></select><small class="paper-profile-hint">ระบบจำฟอนต์และตำแหน่งแยกตามขนาด</small></label>
+                  <label class="recipient-font-option"><span>ฟอนต์ผู้รับ (พอยต์)</span><input id="recipientFontPt" type="number" min="8" max="24" step="0.5" /></label>
+                  <button class="sender-settings-button" id="openRecipientLayoutSettings" type="button">✎ ปรับตำแหน่งและระยะผู้รับ</button>
+                </div>
+              </div>
+              <div class="print-setting-group">
+                <span class="print-control-heading">เลือกข้อมูลที่ต้องการแสดงบนซอง</span>
+                <div class="print-visibility-options">
+                  <label class="garuda-option"><input id="showRecipientDepartment" type="checkbox" checked /><span>ชื่อหน่วยงานผู้รับ</span></label>
+                  <label class="garuda-option"><input id="showRecipientAddress" type="checkbox" checked /><span>ที่อยู่ผู้รับ</span></label>
+                  <label class="garuda-option"><input id="showSender" type="checkbox" checked /><span>ข้อมูลผู้ส่ง</span></label>
+                  <label class="garuda-option"><input id="showGaruda" type="checkbox" checked /><span>ตราครุฑ</span></label>
+                  <label class="garuda-option"><input id="showPostagePermit" type="checkbox" checked /><span>กรอบฝากส่ง</span></label>
+                </div>
+              </div>
+              <div class="print-setting-group">
+                <span class="print-control-heading">แก้ไขรายละเอียด</span>
+                <div class="print-edit-actions">
+                  <button class="sender-settings-button" id="openSenderSettings" type="button">✎ แก้ไขข้อมูลและตำแหน่งผู้ส่ง</button>
+                  <button class="sender-settings-button" id="openPostagePermitSettings" type="button">✎ แก้ไขกรอบและตำแหน่งค่าฝากส่ง</button>
+                </div>
+              </div>
             </div>
           </section>
         </aside>
