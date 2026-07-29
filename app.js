@@ -10,8 +10,8 @@ try {
 }
 
 const GARUDA_STANDARD_VERSION = "15mm-v1";
-const GARUDA_RIGHT_EDGE_VERSION = defaults.garudaRightEdgeVersion || "legacy-garuda-right-edge";
-const shouldRefreshGarudaRightEdge = savedSettings.garudaRightEdgeVersion !== GARUDA_RIGHT_EDGE_VERSION;
+const GARUDA_LEFT_EDGE_VERSION = defaults.garudaLeftEdgeVersion || "legacy-garuda-left-edge";
+const shouldRefreshGarudaLeftEdge = savedSettings.garudaLeftEdgeVersion !== GARUDA_LEFT_EDGE_VERSION;
 const POSTAGE_PERMIT_WIDTH_MM = 30;
 const POSTAGE_PERMIT_HEIGHT_MM = 15;
 const LOCKED_MANIFEST_PERMIT = "ใบอนุญาตเลขที่ 3/2521 ไปรษณีย์เทพารักษ์";
@@ -73,8 +73,8 @@ const initialPaperLayouts = Object.fromEntries(PAPER_SIZE_KEYS.map((paperSize) =
   let source = !shouldRefreshLayoutDefaults && savedPaperLayouts[paperSize]
     ? { ...paperDefaults, ...savedPaperLayouts[paperSize] }
     : (!shouldRefreshLayoutDefaults && paperSize === initialPaperSize ? { ...paperDefaults, ...legacyLayoutSource } : paperDefaults);
-  if (shouldRefreshGarudaRightEdge) {
-    source = { ...source, senderLeftMm: paperDefaults.senderLeftMm ?? defaults.senderLeftMm ?? 17.2 };
+  if (shouldRefreshGarudaLeftEdge) {
+    source = { ...source, senderLeftMm: paperDefaults.senderLeftMm ?? defaults.senderLeftMm ?? 15 };
   }
   return [paperSize, normalizeLayoutProfile(source, paperSize)];
 }));
@@ -120,7 +120,7 @@ const state = {
     manifestEmsPrefix: normalizeManifestPrefix(savedSettings.manifestEmsPrefix || "", "EQ"),
     paperLayouts: initialPaperLayouts,
     layoutDefaultsVersion: LAYOUT_DEFAULTS_VERSION,
-    garudaRightEdgeVersion: GARUDA_RIGHT_EDGE_VERSION,
+    garudaLeftEdgeVersion: GARUDA_LEFT_EDGE_VERSION,
     garudaImage: resolveAssetUrl(defaults.garudaImage),
     showRecipientDepartment: !shouldRefreshLayoutDefaults && savedSettings.showRecipientDepartment !== undefined ? Boolean(savedSettings.showRecipientDepartment) : defaults.showRecipientDepartment !== false,
     showRecipientAddress: savedSettings.showRecipientAddress !== undefined ? Boolean(savedSettings.showRecipientAddress) : defaults.showRecipientAddress !== false,
@@ -1367,7 +1367,7 @@ function setNotice(message) {
 function persistSettings() {
   rememberCurrentPaperLayout();
   const keys = [
-    "layoutDefaultsVersion", "garudaRightEdgeVersion", "sender", "senderAddress", "documentNumber", "paperSize", "paperLayouts", "printJobCreator", "recipientNameBreaksById", "showRecipientDepartment", "showRecipientAddress", "showSender", "showGaruda", "showPostagePermit",
+    "layoutDefaultsVersion", "garudaLeftEdgeVersion", "sender", "senderAddress", "documentNumber", "paperSize", "paperLayouts", "printJobCreator", "recipientNameBreaksById", "showRecipientDepartment", "showRecipientAddress", "showSender", "showGaruda", "showPostagePermit",
     "garudaPlacement", "garudaSizeMm", "garudaStandardVersion", "senderTopMm", "senderLeftMm", "senderTextOffsetMm", "senderFontPt", "senderLineHeight", "recipientFontPt",
     "recipientTopPercent", "recipientLeftPercent", "recipientLineHeight", "manifestRegisteredPrefix", "manifestEmsPrefix",
     "postagePermitText", "postagePermitTopMm", "postagePermitRightMm", "postagePermitFontPt", "postagePermitLineHeight",
