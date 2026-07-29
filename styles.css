@@ -343,11 +343,11 @@ dialog hr{height:1px;margin:20px 0 4px;border:0;background:#edf0f5}
 
 /* โหมดอ่านง่าย เหมาะสำหรับผู้ใช้งานสูงอายุ */
 body{font-size:16px}
-.topbar{min-height:88px;padding:0 2.5vw}
-.brand-mark{width:50px;height:50px;font-size:25px}
-.brand strong{font-size:18px}
-.brand small{font-size:13px}
-.status-pill{padding:11px 16px;font-size:14px}
+.topbar{min-height:68px;padding:0 2.5vw}
+.brand-mark{width:42px;height:42px;font-size:22px}
+.brand strong{font-size:16px}
+.brand small{font-size:11px}
+.status-pill{padding:8px 13px;font-size:13px}
 .workspace{width:min(2000px,96vw);padding:22px 0 44px}
 .hero{min-height:300px;border-radius:24px}
 .hero-copy{padding:36px 48px}
@@ -361,7 +361,7 @@ body{font-size:16px}
 .side-panel{order:-1;display:block}
 .section-title{padding:28px 30px 20px}
 .section-title h2{font-size:25px}
-.small-button{min-height:46px;padding:10px 16px;font-size:14px}
+.small-button{min-height:40px;padding:8px 14px;font-size:13px}
 .filters{gap:14px;padding:8px 30px 24px}
 .search input{height:56px;padding-left:46px;border-radius:14px;font-size:17px}
 .department-filter>span{top:7px;font-size:11px}
@@ -389,14 +389,22 @@ input[type=checkbox]{width:20px;height:20px}
 .print-controls>*{min-width:0;margin:0!important}
 .print-setting-group{display:grid;gap:7px;min-width:0}
 .print-control-heading{display:block;color:#fff;font-size:13px;font-weight:900}
-.print-primary-settings{display:grid;grid-template-columns:minmax(300px,2fr) minmax(150px,.72fr) minmax(235px,1fr);gap:12px;align-items:end}
+.print-primary-settings{display:grid;grid-template-columns:minmax(300px,2fr) minmax(150px,.72fr) minmax(235px,1fr);gap:12px;align-items:start}
 .print-primary-settings>*{min-width:0;margin:0!important}
-.print-primary-settings .sender-settings-button{margin:0}
+.print-primary-settings .sender-settings-button{margin:29px 0 0!important}
 .print-visibility-options{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
 .print-visibility-options .garuda-option{margin:0}
 .print-edit-actions{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:10px}
 .print-edit-actions .sender-settings-button{margin:0}
 .paper-profile-hint{display:block;margin-top:8px;color:#dbe5ff;font-size:12px;font-weight:700}
+.preview-main-settings{margin:0 2px 12px;padding:10px 12px 11px;border:1px solid #d7e2f7;border-radius:15px;background:rgba(255,255,255,.82);box-shadow:0 8px 20px rgba(40,86,217,.06)}
+.preview-settings-heading{display:block;margin-bottom:7px;color:#183b9f;font-size:12px;font-weight:900}
+.preview-main-settings .print-primary-settings{grid-template-columns:minmax(250px,1.7fr) minmax(105px,.55fr) minmax(180px,.85fr);gap:10px}
+.preview-main-settings label>span{display:block;margin-bottom:5px;color:#475467;font-size:11px;font-weight:800}
+.preview-main-settings select,.preview-main-settings input[type=number]{width:100%;height:42px;padding:0 11px;border:1px solid #d6deed;border-radius:10px;background:#fff;color:#17223b;font-size:13px;font-weight:700}
+.preview-main-settings .paper-profile-hint{margin-top:4px;color:#667085;font-size:10px}
+.preview-settings-button{height:42px;margin:23px 0 0;padding:0 12px;border:1px solid #b9ccf7;border-radius:10px;background:#f5f8ff;color:#234ec9;font-size:12px;font-weight:900;cursor:pointer}
+.preview-settings-button:hover{border-color:#2856d9;background:#eaf0ff}
 .print-controls .garuda-option{height:52px}
 .print-card h2{font-size:38px}
 .print-card p{font-size:14px}
@@ -426,6 +434,8 @@ footer{width:min(2000px,96vw);font-size:12px}
 .print-overview{padding:0;border:0}
 .print-primary-settings{grid-template-columns:repeat(2,minmax(0,1fr))}
 .print-primary-settings .paper-size-option{grid-column:span 2}
+.preview-main-settings .print-primary-settings{grid-template-columns:repeat(2,minmax(0,1fr))}
+.preview-main-settings .paper-size-option{grid-column:span 2}
 .print-visibility-options{grid-template-columns:repeat(3,minmax(0,1fr))}
 .history-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 .history-reset-filter{width:100%}
@@ -461,6 +471,10 @@ table{min-width:600px}
 .side-panel{grid-template-columns:1fr}
 .print-primary-settings,.print-visibility-options,.print-edit-actions{grid-template-columns:1fr}
 .print-primary-settings .paper-size-option{grid-column:auto}
+.print-primary-settings .sender-settings-button{margin:0!important}
+.preview-main-settings .print-primary-settings{grid-template-columns:1fr}
+.preview-main-settings .paper-size-option{grid-column:auto}
+.preview-settings-button{margin-top:0}
 .form-grid{grid-template-columns:1fr}
 .manifest-setup-grid{grid-template-columns:1fr 1fr}
 #mailingManifestDialog{padding:14px}

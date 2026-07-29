@@ -97,6 +97,14 @@
               <button class="preview-nav-button" id="previewNext" type="button" disabled>ถัดไป →</button>
             </div>
           </div>
+          <div class="preview-main-settings">
+            <span class="preview-settings-heading">ตั้งค่าหลัก</span>
+            <div class="print-primary-settings">
+              <label class="paper-size-option"><span>ขนาดซอง / กระดาษ</span><select id="paperSize"><option value="DL">ซอง DL · 22 × 11 ซม.</option><option value="C5">ซอง C5 · 22.9 × 16.2 ซม.</option><option value="A4L">กระดาษ A4 แนวนอน · 29.7 × 21 ซม.</option></select><small class="paper-profile-hint">จำค่าตำแหน่งแยกตามขนาด</small></label>
+              <label class="recipient-font-option"><span>ฟอนต์ผู้รับ</span><input id="recipientFontPt" type="number" min="8" max="24" step="0.5" /></label>
+              <button class="preview-settings-button" id="openRecipientLayoutSettings" type="button">✎ ปรับตำแหน่งผู้รับ</button>
+            </div>
+          </div>
           <div class="preview-measurements" id="previewMeasurements" aria-live="polite" hidden></div>
           <div class="preview-stage" id="previewStage">
             <div class="preview-ruler-layer" id="previewRulerLayer" aria-hidden="true" hidden>
@@ -150,14 +158,6 @@
           <section class="print-card">
             <div class="print-overview"><span class="eyebrow light">พร้อมพิมพ์</span><h2><span id="sideSelected">0</span> รายการ</h2><p>ระบบจะสร้างหน้าพิมพ์ตามจำนวนซองที่ตั้งไว้ในแต่ละรายชื่อ</p></div>
             <div class="print-controls">
-              <div class="print-setting-group">
-                <span class="print-control-heading">ตั้งค่าหลัก</span>
-                <div class="print-primary-settings">
-                  <label class="paper-size-option"><span>ขนาดซอง / กระดาษ</span><select id="paperSize"><option value="DL">ซอง DL · 22 × 11 ซม.</option><option value="C5">ซอง C5 · 22.9 × 16.2 ซม.</option><option value="A4L">กระดาษ A4 แนวนอน · 29.7 × 21 ซม.</option></select><small class="paper-profile-hint">ระบบจำฟอนต์และตำแหน่งแยกตามขนาด</small></label>
-                  <label class="recipient-font-option"><span>ฟอนต์ผู้รับ (พอยต์)</span><input id="recipientFontPt" type="number" min="8" max="24" step="0.5" /></label>
-                  <button class="sender-settings-button" id="openRecipientLayoutSettings" type="button">✎ ปรับตำแหน่งและระยะผู้รับ</button>
-                </div>
-              </div>
               <div class="print-setting-group">
                 <span class="print-control-heading">เลือกข้อมูลที่ต้องการแสดงบนซอง</span>
                 <div class="print-visibility-options">
