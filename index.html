@@ -1065,7 +1065,7 @@ const DEFAULT_POSTAGE_PERMIT_TEXT = "ชำระค่าฝากส่งเ�
 const LOCKED_MANIFEST_PERMIT = "ใบอนุญาตเลขที่ 3/2521 ไปรษณีย์เทพารักษ์";
 const MANIFEST_ROWS_PER_PAGE = 30;
 const RECOMMENDED_LAYOUT_SECTIONS = {
-  recipient: ["recipientTopPercent", "recipientLeftPercent", "recipientLineHeight"],
+  recipient: ["recipientFontPt", "recipientTopPercent", "recipientLeftPercent", "recipientLineHeight"],
   sender: ["garudaPlacement", "garudaSizeMm", "senderTopMm", "senderLeftMm", "senderTextOffsetMm", "senderFontPt", "senderLineHeight"],
   postagePermit: ["postagePermitTopMm", "postagePermitRightMm", "postagePermitFontPt", "postagePermitLineHeight"],
 };
@@ -3679,6 +3679,9 @@ async function saveRecommendedSection(section, form, button) {
   if (!form.reportValidity()) return;
 
   const values = Object.fromEntries(new FormData(form).entries());
+  if (section === "recipient") {
+    values.recipientFontPt = state.settings.recipientFontPt;
+  }
   const normalizedProfile = normalizeLayoutProfile({
     ...defaultPaperLayout(),
     ...values,

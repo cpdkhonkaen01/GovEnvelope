@@ -149,3 +149,10 @@ test("แถบควบคุมตัวอย่างอยู่หลั�
   assert.ok(toolbarIndex > settingsIndex);
   assert.ok(stageIndex > toolbarIndex);
 });
+
+test("ผู้ดูแลบันทึกฟอนต์ผู้รับเป็นค่าเริ่มต้นส่วนกลางแยกตามขนาดกระดาษ", () => {
+  assert.match(appSource, /recipient:\s*\["recipientFontPt",\s*"recipientTopPercent"/);
+  assert.match(appSource, /if \(section === "recipient"\) \{\s*values\.recipientFontPt = state\.settings\.recipientFontPt;/);
+  assert.match(appSource, /const paperLayout = Object\.fromEntries\(keys\.map/);
+  assert.match(appSource, /paperSize: state\.settings\.paperSize,[\s\S]*?paperLayout/);
+});
