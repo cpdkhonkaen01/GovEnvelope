@@ -86,3 +86,23 @@ test("ปุ่มจัดการชุดงานเรียงเป็�
   assert.match(cssSource, /\.hero-actions \.history-button\{grid-column:1\/-1\}/);
   assert.ok(htmlSource.indexOf('id="heroPrint"') < htmlSource.indexOf('id="clearPrintJob"'));
 });
+
+test("ตัวกรองและรายการประวัติใช้รูปแบบกะทัดรัดแถวเดียว", () => {
+  assert.match(cssSource, /\.history-filter-grid input,.history-filter-grid select\{height:38px/);
+  assert.match(cssSource, /\.print-history-table td\{height:52px/);
+  assert.match(cssSource, /\.print-history-table \.history-actions\{display:flex;flex-wrap:nowrap/);
+  assert.doesNotMatch(appSource, /<small>แก้ไขล่าสุด/);
+});
+
+test("กรอกเลข 4 ตัวครบแล้วเลื่อนไปช่อง 4 ตัวท้ายของแถวถัดไป", () => {
+  assert.match(appSource, /querySelectorAll\(`\.tracking-input\[data-tracking-type="\$\{type\}"\]`\)/);
+  assert.match(appSource, /const next = inputs\[inputs\.indexOf\(input\) \+ 1\]/);
+});
+
+test("ลำดับผู้รับยึดตามลำดับที่เลือกทั้งในตารางและหน้าพิมพ์", () => {
+  assert.match(appSource, /function selectedRecipients\(\)[\s\S]*?return \[\.\.\.state\.selected\]/);
+  assert.match(appSource, /function recipientSelectionOrder\(id\)/);
+  assert.match(appSource, /class="selection-order-badge"[\s\S]*?ลำดับที่ \$\{selectionOrder\}/);
+  assert.match(appSource, /function selectedEnvelopeJobs\(\)[\s\S]*?return selectedRecipients\(\)/);
+  assert.match(cssSource, /\.selection-order-badge\{/);
+});

@@ -306,8 +306,7 @@ function syncEnvelopeCopyInputs() {
 
 function selectedEnvelopeJobs() {
   syncEnvelopeCopyInputs();
-  return state.recipients
-    .filter((item) => state.selected.has(item.id))
+  return selectedRecipients()
     .flatMap((item) => Array.from({ length: recipientEnvelopeCopies(item.id) }, (_, copyIndex) => ({ item, copyIndex })));
 }
 
@@ -326,7 +325,7 @@ function persistPrintHistory() {
 }
 
 function saveWorkspaceDraft() {
-  const selectedItems = state.recipients.filter((item) => state.selected.has(item.id));
+  const selectedItems = selectedRecipients();
   const draft = {
     creatorGroup: state.settings.printJobCreator || "",
     paperSize: state.settings.paperSize,
@@ -389,8 +388,7 @@ function collectManifestTracking() {
 }
 
 function selectedRecipientSnapshots() {
-  return state.recipients
-    .filter((item) => state.selected.has(item.id))
+  return selectedRecipients()
     .map((item) => ({
       id: item.id,
       name: recipientName(item),
@@ -434,7 +432,7 @@ function createPrintJob() {
 }
 
 function saveCurrentPrintJobDraft(changes = {}, options = {}) {
-  const selectedItems = state.recipients.filter((item) => state.selected.has(item.id));
+  const selectedItems = selectedRecipients();
   let job = currentPrintJob();
   if (job?.completedAt) job = null;
   saveWorkspaceDraft();
@@ -835,8 +833,8 @@ function renderPrintHistory() {
     const { recipientCount, envelopeCount } = printJobCounts(job);
     return `<tr class="history-item ${job.id === state.currentPrintJobId ? "current" : ""}">
       <td class="history-sequence">${index + 1}</td>
-      <td><strong>${escapeHtml(formatPrintJobDate(job.createdAt))}</strong><small>แก้ไขล่าสุด ${escapeHtml(formatPrintJobDate(job.updatedAt))}</small></td>
-      <td><strong>${escapeHtml(job.creatorGroup || "ไม่ระบุกลุ่มงาน")}</strong></td>
+      <td title="แก้ไขล่าสุด ${escapeHtml(formatPrintJobDate(job.updatedAt))}"><strong>${escapeHtml(formatPrintJobDate(job.createdAt))}</strong></td>
+      <td title="${escapeHtml(job.creatorGroup || "ไม่ระบุกลุ่มงาน")}"><strong>${escapeHtml(job.creatorGroup || "ไม่ระบุกลุ่มงาน")}</strong></td>
       <td><div class="history-counts"><b>${recipientCount}</b> รายชื่อ · <b>${envelopeCount}</b> ซอง · ${escapeHtml(job.paperSize || "DL")}</div></td>
       <td><span class="history-status ${status.className}">${status.label}</span></td>
       <td><div class="history-actions">
@@ -1266,7 +1264,7 @@ function recipientEnvelopeBlockHtml(item, options = {}) {
 }
 
 function previewRecipientItems() {
-  const selected = state.recipients.filter((item) => state.selected.has(item.id));
+  const selected = selectedRecipients();
   return selected.length ? selected : state.recipients.slice(0, 1);
 }
 
@@ -1288,7 +1286,15 @@ function recipientFullAddress(item) {
 }
 
 function selectedRecipients() {
-  return state.recipients.filter((item) => state.selected.has(item.id));
+  const recipientsById = new Map(state.recipients.map((item) => [item.id, item]));
+  return [...state.selected]
+    .map((id) => recipientsById.get(id))
+    .filter(Boolean);
+}
+
+function recipientSelectionOrder(id) {
+  const index = [...state.selected].indexOf(id);
+  return index >= 0 ? index + 1 : 0;
 }
 
 function localIsoDate(date = new Date()) {
@@ -1426,8 +1432,8 @@ function updateManifestRowTrackingState(row, activeInput = null) {
 function focusNextManifestTrackingInput(input) {
   if (!input || input.maxLength !== 4 || normalizeTrackingDigits(input.value).length !== 4) return;
   const type = input.dataset.trackingType;
-  const inputs = [...elements.manifestRows.querySelectorAll(`[data-tracking-type="${type}"]`)];
-  const next = inputs.slice(inputs.indexOf(input) + 1).find((candidate) => !candidate.disabled);
+  const inputs = [...elements.manifestRows.querySelectorAll(`.tracking-input[data-tracking-type="${type}"]`)];
+  const next = inputs[inputs.indexOf(input) + 1];
   if (next) {
     next.focus();
     next.select();
@@ -2138,6 +2144,7 @@ function renderRows() {
   const canSelectRecipients = Boolean(state.settings.printJobCreator);
   elements.rows.innerHTML = rows.map((item) => {
     const checked = state.selected.has(item.id);
+    const selectionOrder = recipientSelectionOrder(item.id);
     const classification = [item.responsibleUnit, item.cooperativeType].filter(Boolean).join(" · ");
     const displayName = recipientName(item);
     const positionLine = item.position && item.position !== displayName
@@ -2147,7 +2154,7 @@ function renderRows() {
     return `<tr class="${checked ? "selected-row" : ""}">
       <td class="check-cell"><input class="recipient-check" data-id="${escapeHtml(item.id)}" type="checkbox" ${checked ? "checked" : ""} ${canSelectRecipients ? "" : "disabled"} aria-label="เลือก ${escapeHtml(recipientName(item))}"></td>
       <td class="copy-cell"><input class="copy-input" data-copy-id="${escapeHtml(item.id)}" type="number" min="1" max="20" step="1" value="${copies}" ${canSelectRecipients ? "" : "disabled"} aria-label="จำนวนซองของ ${escapeHtml(recipientName(item))}"></td>
-      <td class="recipient-name-cell"><strong>${escapeHtml(displayName)}</strong>${positionLine}</td>
+      <td class="recipient-name-cell">${selectionOrder ? `<span class="selection-order-badge" aria-label="ลำดับการเลือกที่ ${selectionOrder}">ลำดับที่ ${selectionOrder}</span>` : ""}<strong>${escapeHtml(displayName)}</strong>${positionLine}</td>
       <td class="type-cell"><span class="category-badge ${categoryClass(item.category)}">${escapeHtml(item.category)}</span>${classification ? `<small class="recipient-classification">${escapeHtml(classification)}</small>` : ""}</td>
       <td class="department-cell"><span class="department-text">${escapeHtml(item.department || (item.category === "บุคคล" ? "บุคคล" : "ไม่ระบุหน่วยงาน"))}</span></td>
       <td class="address-cell"><span class="address-text">${escapeHtml(recipientFullAddress(item))}</span></td>
@@ -2228,8 +2235,7 @@ function togglePreviewMeasurements() {
 
 function renderSummary() {
   const selectedCount = state.selected.size;
-  const selectedEnvelopeCount = state.recipients
-    .filter((item) => state.selected.has(item.id))
+  const selectedEnvelopeCount = selectedRecipients()
     .reduce((total, item) => total + recipientEnvelopeCopies(item.id), 0);
   elements.heroSelected.textContent = selectedCount;
   elements.sideSelected.textContent = selectedEnvelopeCount;
@@ -2298,7 +2304,7 @@ function renderSummary() {
   postagePermitPreview.style.fontSize = `${ptToPreviewPx(state.settings.postagePermitFontPt)}px`;
   postagePermitPreview.style.lineHeight = state.settings.postagePermitLineHeight;
   const receiverPreview = $("#receiverPreview");
-  const selectedPreviewRecipients = state.recipients.filter((item) => state.selected.has(item.id));
+  const selectedPreviewRecipients = selectedRecipients();
   const previewRecipients = previewRecipientItems();
   if (state.previewRecipientIndex >= previewRecipients.length) state.previewRecipientIndex = 0;
   if (state.previewRecipientIndex < 0) state.previewRecipientIndex = Math.max(0, previewRecipients.length - 1);
@@ -3326,13 +3332,13 @@ $("#closeAdminAuth").addEventListener("click", closeAdminAuthDialog);
 $("#cancelAdminAuth").addEventListener("click", closeAdminAuthDialog);
 $("#heroPrint").addEventListener("click", printEnvelopes);
 elements.previewPrevious.addEventListener("click", () => {
-  const count = state.recipients.filter((item) => state.selected.has(item.id)).length;
+  const count = selectedRecipients().length;
   if (count <= 1) return;
   state.previewRecipientIndex = (state.previewRecipientIndex - 1 + count) % count;
   renderSummary();
 });
 elements.previewNext.addEventListener("click", () => {
-  const count = state.recipients.filter((item) => state.selected.has(item.id)).length;
+  const count = selectedRecipients().length;
   if (count <= 1) return;
   state.previewRecipientIndex = (state.previewRecipientIndex + 1) % count;
   renderSummary();
