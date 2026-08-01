@@ -64,7 +64,9 @@ body.app-locked .login-screen{display:grid}
 .workflow-step.is-done{border-color:#c7ebde;background:#f0fbf7;color:#127454}
 .workflow-step.is-done b{background:#20a276;color:#fff}
 .workflow-panel p{margin:10px 2px 0;color:#475467;font-size:13px;font-weight:800;line-height:1.55}
-.hero-actions{display:flex;flex-wrap:wrap;gap:11px;margin-top:28px}
+.hero-actions{display:grid;max-width:650px;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin-top:28px}
+.hero-actions .button{width:100%;min-width:0}
+.hero-actions .history-button{grid-column:1/-1}
 .job-creator-control{display:block;max-width:650px;margin-top:18px}
 .job-creator-control.is-hidden{display:none}
 .job-creator-control.is-active{padding:14px;border:1px solid #bdd0ff;border-radius:18px;background:rgba(255,255,255,.68);box-shadow:0 10px 24px rgba(40,86,217,.08)}
@@ -294,20 +296,21 @@ dialog hr{height:1px;margin:20px 0 4px;border:0;background:#edf0f5}
 #mailingManifestDialog .manifest-setup-grid .form-field input{height:42px;padding:0 12px;border-radius:10px;font-size:14px}
 #mailingManifestDialog .manifest-setup-grid .form-field small{min-height:15px;margin-top:3px;font-size:10px;line-height:1.25}
 #mailingManifestDialog .manifest-table-wrap{min-height:0;max-height:none;flex:1 1 auto;margin-top:8px;border-radius:12px}
-.manifest-entry-table{min-width:860px}
-.manifest-entry-table th{position:sticky;top:0;z-index:1;background:#f7f9fd}
+.manifest-entry-table{min-width:1120px;table-layout:fixed}
+.manifest-entry-table th{position:sticky;top:0;z-index:1;border-bottom:1px solid #9aa6b8;background:#f7f9fd}
 .manifest-entry-table th,.manifest-entry-table td{height:42px;padding:5px 9px;font-size:13px;line-height:1.2}
+.manifest-entry-table tbody td{border-top:1px solid #aeb8c7}
 .manifest-entry-table th:first-child,.manifest-entry-table td:first-child{width:54px;text-align:center}
-.manifest-entry-table th:nth-child(3),.manifest-entry-table td:nth-child(3){width:90px;text-align:center}
-.manifest-entry-table th:nth-child(4),.manifest-entry-table th:nth-child(5){width:245px}
+.manifest-entry-table th:nth-child(2),.manifest-entry-table td:nth-child(2){width:40%}
+.manifest-entry-table th:nth-child(3),.manifest-entry-table td:nth-child(3){width:88px;text-align:left}
+.manifest-entry-table th:nth-child(4),.manifest-entry-table td:nth-child(4),.manifest-entry-table th:nth-child(5),.manifest-entry-table td:nth-child(5){width:285px}
 .manifest-entry-table input{width:100%;height:32px;padding:0 10px;border:1px solid #dfe4ed;border-radius:8px;background:#fff;color:var(--ink);font:inherit}
 .manifest-entry-table input:disabled{border-color:#edf0f5;background:#f3f5f8;color:#98a2b3}
-.manifest-entry-table td.tracking-locked::after{display:block;color:#98a2b3;font-size:9px;line-height:1;text-align:center;content:"ปิดใช้งาน"}
-.tracking-code-editor{display:grid;grid-template-columns:62px 72px minmax(54px,1fr) 20px;align-items:center;gap:4px;white-space:nowrap}
-.tracking-code-editor .tracking-prefix-mode{width:62px;height:32px;padding:0 4px;border:1px solid #dfe4ed;border-radius:8px;background:#f7f9fd;color:#53627a;font-size:10px;font-weight:700}
-.tracking-code-editor .row-prefix-input{width:72px;padding:0 5px;background:#f3f6fb;color:#53627a;font-size:11px;font-weight:800;text-align:center}
+.tracking-code-editor{display:grid;grid-template-columns:68px 80px minmax(78px,1fr) 22px;align-items:center;gap:5px;white-space:nowrap}
+.tracking-code-editor .tracking-prefix-mode{width:68px;height:32px;padding:0 5px;border:1px solid #dfe4ed;border-radius:8px;background:#f7f9fd;color:#53627a;font-size:10px;font-weight:700}
+.tracking-code-editor .row-prefix-input{width:80px;padding:0 6px;background:#f3f6fb;color:#53627a;font-size:11px;font-weight:800;text-align:center}
 .tracking-code-editor .row-prefix-input.is-custom{border-color:#94adee;background:#fff;color:#173f9f}
-.tracking-code-editor .tracking-input{min-width:54px;padding:0 5px;text-align:center}
+.tracking-code-editor .tracking-input{min-width:78px;padding:0 8px;text-align:center}
 .tracking-country-suffix{color:#53627a;font-size:11px;font-weight:800;text-align:center}
 .tracking-code-editor select:disabled,.tracking-code-editor input:disabled{opacity:.55}
 .manifest-prefix-fields{margin-top:2px}

@@ -1410,21 +1410,17 @@ function updateManifestRowTrackingState(row, activeInput = null) {
   if (activeInput && activeInput.value.trim()) {
     const other = activeInput === registered ? ems : registered;
     other.value = "";
+    other.setCustomValidity("");
   }
-  const hasRegistered = Boolean(registered.value.trim());
-  const hasEms = Boolean(ems.value.trim());
-  registered.disabled = hasEms;
-  ems.disabled = hasRegistered;
   [registered, ems].forEach((input) => {
-    const locked = input === registered ? hasEms : hasRegistered;
     const cell = input.closest("td");
     const mode = cell?.querySelector(".tracking-prefix-mode");
     const prefix = cell?.querySelector(".row-prefix-input");
-    if (mode) mode.disabled = locked;
-    if (prefix) prefix.disabled = locked;
+    input.disabled = false;
+    if (mode) mode.disabled = false;
+    if (prefix) prefix.disabled = false;
+    cell?.classList.remove("tracking-locked");
   });
-  registered.closest("td")?.classList.toggle("tracking-locked", hasEms);
-  ems.closest("td")?.classList.toggle("tracking-locked", hasRegistered);
 }
 
 function focusNextManifestTrackingInput(input) {
@@ -1522,7 +1518,7 @@ function manifestTrackingCell(type, index, sharedPrefix, savedValue = "") {
   const label = type === "ems" ? "EMS" : "ลงทะเบียน";
   return `<div class="tracking-code-editor">
     <select class="tracking-prefix-mode" data-tracking-type="${type}" aria-label="เลือกเลขนำหน้า${label} แถว ${index + 1}">
-      <option value="shared" ${custom ? "" : "selected"}>เลขกลาง</option>
+      <option value="shared" ${custom ? "" : "selected"}>ค่าหลัก</option>
       <option value="custom" ${custom ? "selected" : ""}>แก้เอง</option>
     </select>
     <input class="row-prefix-input${custom ? " is-custom" : ""}" data-tracking-type="${type}" type="text" inputmode="text" autocomplete="off" maxlength="7" pattern="[A-Za-z]{2}[0-9๐-๙]{5}" value="${escapeHtml(rowPrefix)}" ${custom ? "" : "readonly"} aria-label="เลขนำหน้า${label} แถว ${index + 1}" />
@@ -2947,6 +2943,45 @@ function closeManifestDialog() {
   if (elements.mailingManifestDialog.open) elements.mailingManifestDialog.close();
 }
 
+function validateManifestTrackingInputs() {
+  const invalidTrackingInput = [...elements.manifestRows.querySelectorAll(".tracking-input")]
+    .find((input) => input.value.trim() && normalizeTrackingDigits(fullManifestTrackingValue(input)).length !== 9);
+  if (!invalidTrackingInput) return true;
+  const expected = manifestPrefixForInput(invalidTrackingInput) ? "4 ตัวท้าย" : "ตัวเลข 9 หลัก";
+  invalidTrackingInput.setCustomValidity(`กรุณากรอก${expected}ให้ครบ`);
+  invalidTrackingInput.reportValidity();
+  return false;
+}
+
+async function downloadCurrentManifestPdf() {
+  const button = $("#downloadCurrentManifestPdf");
+  const jobs = selectedEnvelopeJobs();
+  if (!jobs.length) {
+    setNotice("โปรดเลือกรายชื่อผู้รับอย่างน้อย 1 รายการก่อนดาวน์โหลดใบนำส่ง");
+    return;
+  }
+  if (!validateManifestTrackingInputs()) return;
+
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = "กำลังสร้าง PDF…";
+  try {
+    const job = saveCurrentPrintJobDraft({}, { force: true });
+    if (!job) throw new Error("ไม่พบชุดงานที่ต้องการดาวน์โหลด");
+    const documentData = buildHistoryManifestPdf(job);
+    const dateKey = job.manifestDate || localIsoDate();
+    const filename = `${safePdfFilename("ใบนำส่งไปรษณีย์")}-${safePdfFilename(dateKey)}-${safePdfFilename(job.creatorGroup || job.id)}.pdf`;
+    await saveHtmlAsPdf(documentData.container, filename, documentData.format, documentData.orientation);
+    setNotice(`ดาวน์โหลด PDF ใบนำส่ง ${jobs.length} รายการเรียบร้อยแล้ว`);
+  } catch (error) {
+    console.error(error);
+    setNotice(`สร้าง PDF ไม่สำเร็จ: ${error.message}`);
+  } finally {
+    button.disabled = false;
+    button.textContent = originalText;
+  }
+}
+
 function printMailingManifest(event) {
   event.preventDefault();
   const jobs = selectedEnvelopeJobs();
@@ -2958,14 +2993,7 @@ function printMailingManifest(event) {
   }
 
   const form = new FormData(elements.mailingManifestForm);
-  const invalidTrackingInput = [...elements.manifestRows.querySelectorAll(".tracking-input")]
-    .find((input) => input.value.trim() && normalizeTrackingDigits(fullManifestTrackingValue(input)).length !== 9);
-  if (invalidTrackingInput) {
-    const expected = manifestPrefixForInput(invalidTrackingInput) ? "4 ตัวท้าย" : "ตัวเลข 9 หลัก";
-    invalidTrackingInput.setCustomValidity(`กรุณากรอก${expected}ให้ครบ`);
-    invalidTrackingInput.reportValidity();
-    return;
-  }
+  if (!validateManifestTrackingInputs()) return;
   const manifestDate = formatThaiLongDate(form.get("manifestDate"));
   const permit = LOCKED_MANIFEST_PERMIT;
   const receivingPostOffice = extractReceivingPostOffice(permit);
@@ -3261,6 +3289,7 @@ elements.manifestRegisteredPrefix.addEventListener("input", limitManifestPrefixI
 elements.manifestRegisteredPrefix.addEventListener("input", () => applyManifestPrefixMode("registered"));
 elements.manifestEmsPrefix.addEventListener("input", limitManifestPrefixInput);
 elements.manifestEmsPrefix.addEventListener("input", () => applyManifestPrefixMode("ems"));
+$("#downloadCurrentManifestPdf").addEventListener("click", downloadCurrentManifestPdf);
 elements.mailingManifestForm.addEventListener("submit", printMailingManifest);
 $("#openPrintHistory").addEventListener("click", openPrintHistory);
 $("#closePrintHistory").addEventListener("click", closePrintHistory);

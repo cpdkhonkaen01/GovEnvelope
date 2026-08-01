@@ -64,9 +64,25 @@ test("สถานะค่าเริ่มต้นส่วนกลาง�
 
 test("ใบนำส่งแสดงเลขนำหน้ารายแถวและเลือกแก้เองได้", () => {
   assert.match(appSource, /class=\"tracking-prefix-mode\"/);
-  assert.match(appSource, />เลขกลาง<\/option>/);
+  assert.match(appSource, />ค่าหลัก<\/option>/);
   assert.match(appSource, />แก้เอง<\/option>/);
   assert.match(appSource, /class=\"row-prefix-input/);
   assert.match(appSource, /class=\"tracking-country-suffix\">TH/);
   assert.match(appSource, /function savedManifestRowPrefix/);
+  assert.doesNotMatch(cssSource, /content:"ปิดใช้งาน"/);
+  assert.match(appSource, /other\.value = ""/);
+  assert.match(appSource, /input\.disabled = false/);
+});
+
+test("ดาวน์โหลด PDF ใบนำส่งจากหน้ากรอกข้อมูลปัจจุบันได้", () => {
+  assert.match(htmlSource, /id="downloadCurrentManifestPdf"/);
+  assert.match(appSource, /async function downloadCurrentManifestPdf/);
+  assert.match(appSource, /buildHistoryManifestPdf\(job\)/);
+  assert.match(appSource, /saveHtmlAsPdf\(documentData\.container/);
+});
+
+test("ปุ่มจัดการชุดงานเรียงเป็นตารางสองคอลัมน์และประวัติเต็มแถว", () => {
+  assert.match(cssSource, /\.hero-actions\{display:grid;max-width:650px;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(cssSource, /\.hero-actions \.history-button\{grid-column:1\/-1\}/);
+  assert.ok(htmlSource.indexOf('id="heroPrint"') < htmlSource.indexOf('id="clearPrintJob"'));
 });
