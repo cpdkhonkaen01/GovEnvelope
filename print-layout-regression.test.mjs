@@ -106,3 +106,26 @@ test("ลำดับผู้รับยึดตามลำดับที�
   assert.match(appSource, /function selectedEnvelopeJobs\(\)[\s\S]*?return selectedRecipients\(\)/);
   assert.match(cssSource, /\.selection-order-badge\{/);
 });
+
+test("โหลดรายชื่อพร้อมการตรวจสิทธิ์และไม่แสดงว่าไม่พบระหว่างกำลังโหลด", () => {
+  assert.match(appSource, /loadingRecipients: true/);
+  assert.match(appSource, /กำลังโหลดรายชื่อจาก Google Sheets/);
+  assert.match(appSource, /connectToDatabase\(\)\.catch/);
+  assert.match(appSource, /initializeAdminAuth\(\)\.catch/);
+  assert.doesNotMatch(appSource, /initializeAdminAuth\(\)[\s\S]{0,180}\.finally\(connectToDatabase\)/);
+});
+
+test("completed tracking inputs use a bold highlighted state", () => {
+  assert.match(appSource, /function updateManifestTrackingInputAppearance\(input\)/);
+  assert.match(appSource, /classList\.toggle\("is-complete", complete\)/);
+  assert.match(cssSource, /\.tracking-code-editor \.tracking-input\.is-complete\{/);
+  assert.match(cssSource, /font-weight:900/);
+});
+
+test("PDF staging stays measurable instead of rendering far outside the viewport", () => {
+  assert.match(appSource, /function pdfStageDimensions\(format, orientation/);
+  assert.match(appSource, /container\.style\.left = "0"/);
+  assert.doesNotMatch(appSource, /container\.style\.left = "-10000px"/);
+  assert.match(appSource, /await waitForPdfLayout\(\)/);
+  assert.match(appSource, /\.from\(renderTarget\)\.save\(\)/);
+});

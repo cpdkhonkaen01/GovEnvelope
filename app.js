@@ -111,6 +111,8 @@ const state = {
   responsibleUnit: "ทั้งหมด",
   cooperativeType: "ทั้งหมด",
   connected: false,
+  loadingRecipients: true,
+  recipientLoadError: "",
   editingRecipientId: null,
   previewRecipientIndex: 0,
   printJobs: savedPrintJobs,
@@ -692,23 +694,64 @@ async function waitForPdfAssets(container) {
   }));
 }
 
+function pdfStageDimensions(format, orientation = "portrait") {
+  let width = 210;
+  let height = 297;
+  if (Array.isArray(format) && format.length >= 2) {
+    width = Number(format[0]) || width;
+    height = Number(format[1]) || height;
+  } else if (String(format).toLowerCase() === "a4") {
+    width = 210;
+    height = 297;
+  }
+  if (orientation === "landscape" && height > width) [width, height] = [height, width];
+  if (orientation === "portrait" && width > height) [width, height] = [height, width];
+  return { width, height };
+}
+
+function waitForPdfLayout() {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  });
+}
+
 async function saveHtmlAsPdf(container, filename, format, orientation) {
   if (typeof window.html2pdf !== "function") throw new Error("โหลดระบบสร้าง PDF ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วรีเฟรชหน้าเว็บ");
+  const dimensions = pdfStageDimensions(format, orientation);
   container.style.position = "fixed";
-  container.style.left = "-10000px";
+  container.style.left = "0";
   container.style.top = "0";
-  container.style.zIndex = "-1";
+  container.style.width = `${dimensions.width}mm`;
+  container.style.minHeight = `${dimensions.height}mm`;
+  container.style.zIndex = "2147483646";
+  container.style.background = "#ffffff";
+  container.style.pointerEvents = "none";
+  container.setAttribute("aria-hidden", "true");
   document.body.appendChild(container);
   try {
     await waitForPdfAssets(container);
+    await waitForPdfLayout();
+    const renderTarget = container.querySelector(".pdf-manifest-document, .pdf-envelope-document") || container;
+    const bounds = renderTarget.getBoundingClientRect();
+    if (!bounds.width || !bounds.height) throw new Error("ไม่สามารถจัดวางเนื้อหา PDF ได้ กรุณาลองใหม่อีกครั้ง");
     await window.html2pdf().set({
       margin: 0,
       filename,
       image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 1.6, useCORS: true, allowTaint: false, backgroundColor: "#ffffff", logging: false },
+      html2canvas: {
+        scale: 1.6,
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: "#ffffff",
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: Math.ceil(bounds.width),
+        windowHeight: Math.ceil(bounds.height),
+      },
       jsPDF: { unit: "mm", format, orientation, compress: true },
       pagebreak: { mode: ["css", "legacy"] },
-    }).from(container).save();
+    }).from(renderTarget).save();
   } finally {
     container.remove();
   }
@@ -1402,6 +1445,14 @@ function fullManifestTrackingValue(input) {
   return prefix && value ? `${prefix}${value.slice(0, 4)}` : value;
 }
 
+function updateManifestTrackingInputAppearance(input) {
+  if (!input?.classList?.contains("tracking-input")) return;
+  const expectedLength = input.maxLength > 0 ? input.maxLength : 4;
+  const complete = normalizeTrackingDigits(input.value).length === expectedLength;
+  input.classList.toggle("is-complete", complete);
+  input.dataset.entryStatus = complete ? "complete" : "empty";
+}
+
 function manifestTrackingEntryValue(savedValue = "", prefix = "") {
   const digits = normalizeTrackingDigits(savedValue);
   const lockedDigits = normalizeTrackingDigits(prefix).slice(0, 5);
@@ -1410,13 +1461,14 @@ function manifestTrackingEntryValue(savedValue = "", prefix = "") {
 
 function updateManifestRowTrackingState(row, activeInput = null) {
   if (!row) return;
-  const registered = row.querySelector('[data-tracking-type="registered"]');
-  const ems = row.querySelector('[data-tracking-type="ems"]');
+  const registered = row.querySelector('.tracking-input[data-tracking-type="registered"]');
+  const ems = row.querySelector('.tracking-input[data-tracking-type="ems"]');
   if (!registered || !ems) return;
   if (activeInput && activeInput.value.trim()) {
     const other = activeInput === registered ? ems : registered;
     other.value = "";
     other.setCustomValidity("");
+    updateManifestTrackingInputAppearance(other);
   }
   [registered, ems].forEach((input) => {
     const cell = input.closest("td");
@@ -1472,6 +1524,7 @@ function applyManifestPrefixMode(type) {
     input.value = value.slice(0, input.maxLength);
     input.dataset.lockedPrefix = prefix;
     rowPrefix.value = prefix;
+    updateManifestTrackingInputAppearance(input);
     updateManifestRowTrackingState(input.closest("tr"));
   });
   persistSettings();
@@ -2161,6 +2214,13 @@ function renderRows() {
       <td class="action-cell"><div class="row-actions">${isUserSignedIn() ? `<button class="row-button edit" data-edit-id="${escapeHtml(item.id)}" type="button">แก้ไข</button>` : ""}</div></td>
     </tr>`;
   }).join("");
+  elements.empty.textContent = state.loadingRecipients
+    ? "กำลังโหลดรายชื่อจาก Google Sheets…"
+    : (state.recipientLoadError
+      ? `โหลดรายชื่อไม่สำเร็จ: ${state.recipientLoadError}`
+      : "ไม่พบรายชื่อที่ตรงกับคำค้นหา");
+  elements.empty.classList.toggle("is-loading", state.loadingRecipients);
+  elements.empty.classList.toggle("is-error", Boolean(state.recipientLoadError));
   elements.empty.hidden = rows.length > 0;
   elements.selectAll.checked = rows.length > 0 && rows.every((item) => state.selected.has(item.id));
   document.querySelectorAll(".recipient-check").forEach((input) => {
@@ -2396,12 +2456,17 @@ async function connectToDatabase() {
 
   elements.status.className = "status-pill loading";
   elements.status.querySelector("span").textContent = "กำลังเชื่อมฐานข้อมูล";
+  state.loadingRecipients = true;
+  state.recipientLoadError = "";
+  renderRows();
   setNotice("กำลังดึงข้อมูลจาก Google Sheets…");
   try {
     const rows = await requestRecipients();
     state.recipients = rows.map(normalizeRecipient);
     state.selected = new Set([...state.selected].filter((id) => state.recipients.some((item) => item.id === id)));
     state.connected = true;
+    state.loadingRecipients = false;
+    state.recipientLoadError = "";
     elements.status.className = "status-pill connected";
     elements.status.querySelector("span").textContent = "เชื่อม Google Sheets แล้ว";
     const restoredJob = restoreSavedPrintJobOnLoad();
@@ -2415,9 +2480,12 @@ async function connectToDatabase() {
   } catch (error) {
     console.error(error);
     state.connected = false;
+    state.loadingRecipients = false;
+    state.recipientLoadError = error.message || "กรุณาลองโหลดหน้าเว็บใหม่";
     elements.status.className = "status-pill error";
     elements.status.querySelector("span").textContent = "เชื่อมต่อไม่สำเร็จ";
     setNotice(`เชื่อมต่อไม่สำเร็จ: ${error.message}`);
+    renderRows();
   }
 }
 
@@ -2933,8 +3001,10 @@ function openManifestDialog() {
     input.addEventListener("change", () => saveCurrentPrintJobDraft());
   });
   elements.manifestRows.querySelectorAll(".tracking-input").forEach((input) => {
+    updateManifestTrackingInputAppearance(input);
     input.addEventListener("input", limitTrackingInput);
     input.addEventListener("input", () => {
+      updateManifestTrackingInputAppearance(input);
       updateManifestRowTrackingState(input.closest("tr"), input);
       saveCurrentPrintJobDraft();
       focusNextManifestTrackingInput(input);
@@ -3350,6 +3420,5 @@ window.addEventListener("resize", () => {
 });
 
 render();
-initializeAdminAuth()
-  .catch((error) => console.warn("ตรวจสอบสถานะผู้ดูแลไม่สำเร็จ", error))
-  .finally(connectToDatabase);
+connectToDatabase().catch((error) => console.warn("โหลดรายชื่อผู้รับไม่สำเร็จ", error));
+initializeAdminAuth().catch((error) => console.warn("ตรวจสอบสถานะผู้ดูแลไม่สำเร็จ", error));
