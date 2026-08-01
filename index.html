@@ -952,6 +952,8 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
       </form>
     </dialog>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script id="app-config">
 // ฐานข้อมูล Google Sheets ผ่าน Google Apps Script Web App
@@ -1758,6 +1760,58 @@ function waitForPdfLayout() {
   });
 }
 
+async function saveManifestPagesAsPdf(renderTarget, filename, format, orientation) {
+  const html2canvas = window.html2canvas;
+  const JsPdf = window.jspdf?.jsPDF || window.jsPDF;
+  if (typeof html2canvas !== "function" || typeof JsPdf !== "function") return false;
+
+  const dimensions = pdfStageDimensions(format, orientation);
+  const pages = [...renderTarget.querySelectorAll(":scope > .manifest-page")];
+  if (!pages.length) return false;
+
+  let pdf;
+  for (let index = 0; index < pages.length; index += 1) {
+    const page = pages[index];
+    const bounds = page.getBoundingClientRect();
+    const canvas = await html2canvas(page, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: false,
+      backgroundColor: "#ffffff",
+      logging: false,
+      scrollX: 0,
+      scrollY: 0,
+      width: Math.round(bounds.width),
+      height: Math.round(bounds.height),
+      windowWidth: Math.round(bounds.width),
+      windowHeight: Math.round(bounds.height),
+    });
+
+    if (!pdf) {
+      pdf = new JsPdf({
+        unit: "mm",
+        format,
+        orientation,
+        compress: true,
+      });
+    } else {
+      pdf.addPage(format, orientation);
+    }
+    pdf.addImage(
+      canvas.toDataURL("image/jpeg", 0.98),
+      "JPEG",
+      0,
+      0,
+      dimensions.width,
+      dimensions.height,
+      undefined,
+      "FAST",
+    );
+  }
+  pdf.save(filename);
+  return true;
+}
+
 async function saveHtmlAsPdf(container, filename, format, orientation) {
   if (typeof window.html2pdf !== "function") throw new Error("โหลดระบบสร้าง PDF ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วรีเฟรชหน้าเว็บ");
   const dimensions = pdfStageDimensions(format, orientation);
@@ -1783,6 +1837,10 @@ async function saveHtmlAsPdf(container, filename, format, orientation) {
     renderTarget.style.transform = "none";
     const bounds = renderTarget.getBoundingClientRect();
     if (!bounds.width || !bounds.height) throw new Error("ไม่สามารถจัดวางเนื้อหา PDF ได้ กรุณาลองใหม่อีกครั้ง");
+    if (renderTarget.classList.contains("pdf-manifest-document")) {
+      const saved = await saveManifestPagesAsPdf(renderTarget, filename, format, orientation);
+      if (saved) return;
+    }
     await window.html2pdf().set({
       margin: 0,
       filename,

@@ -81,6 +81,16 @@ test("ดาวน์โหลด PDF ใบนำส่งจากหน้า
   assert.match(appSource, /saveHtmlAsPdf\(documentData\.container/);
 });
 
+test("PDF ใบนำส่งเรนเดอร์ทีละหน้า A4 เพื่อไม่ให้ตารางด้านขวาถูกตัด", () => {
+  assert.match(htmlSource, /jspdf\/2\.5\.1\/jspdf\.umd\.min\.js/);
+  assert.match(htmlSource, /html2canvas\/1\.4\.1\/html2canvas\.min\.js/);
+  assert.match(appSource, /async function saveManifestPagesAsPdf/);
+  assert.match(appSource, /querySelectorAll\(":scope > \.manifest-page"\)/);
+  assert.match(appSource, /windowWidth: Math\.round\(bounds\.width\)/);
+  assert.match(appSource, /dimensions\.width,\s*dimensions\.height/);
+  assert.match(appSource, /renderTarget\.classList\.contains\("pdf-manifest-document"\)/);
+});
+
 test("ปุ่มจัดการชุดงานเรียงเป็นตารางสองคอลัมน์และประวัติเต็มแถว", () => {
   assert.match(cssSource, /\.hero-actions\{display:grid;max-width:650px;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
   assert.match(cssSource, /\.hero-actions \.history-button\{grid-column:1\/-1\}/);
