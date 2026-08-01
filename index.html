@@ -193,6 +193,13 @@ body.app-locked .login-screen{display:grid}
 .table-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:11px}
 .recipient-table{min-width:1390px;table-layout:fixed}
+.central-defaults-status{display:flex;align-items:center;gap:7px;margin:10px 0 0;padding:8px 10px;border:1px solid #dce5f7;border-radius:10px;background:#f7f9fd;color:#53627a;font-size:11px;line-height:1.45}
+.central-defaults-status::before{content:"";width:8px;height:8px;flex:0 0 auto;border-radius:50%;background:#8da2c9}
+.central-defaults-status.is-loading::before{background:#6d8de1;animation:pulse 1.2s ease-in-out infinite}
+.central-defaults-status.is-success{border-color:#bfe8d8;background:#f0fbf6;color:#146c52}
+.central-defaults-status.is-success::before{background:#1da77a}
+.central-defaults-status.is-warning{border-color:#f1d29f;background:#fff9ec;color:#8a5a12}
+.central-defaults-status.is-warning::before{background:#e59b23}
 thead{background:#f8f9fc}
 th{padding:12px 13px;color:#7c8698;font-size:8px;letter-spacing:.04em;text-align:left;text-transform:uppercase}
 td{padding:13px;border-top:1px solid #edf0f5}
@@ -438,6 +445,30 @@ footer{width:min(2000px,96vw);font-size:12px}
 
 @keyframes pulse{50%{opacity:.35}
 }
+@media(max-width:1100px){
+.table-wrap{overflow-x:visible}
+.recipient-table{display:block;width:100%;min-width:0;table-layout:auto}
+.recipient-table thead{display:none}
+.recipient-table tbody{display:grid;gap:12px;padding:12px;background:#f5f7fb}
+.recipient-table tbody tr{display:grid;grid-template-columns:48px minmax(150px,1fr) auto;grid-template-areas:"check copies action" "name name name" "type type type" "department department department";gap:10px 12px;padding:14px;border:1px solid #dfe6f2;border-radius:16px;background:#fff;box-shadow:0 6px 18px rgba(31,46,79,.05)}
+.recipient-table tbody tr:hover{background:#fff}
+.recipient-table tbody tr.selected-row{border-color:#adc2f6;background:#f5f8ff;box-shadow:inset 4px 0 0 var(--blue),0 6px 18px rgba(31,46,79,.05)}
+.recipient-table td{display:block;width:auto;min-width:0;max-width:none;padding:0;border:0}
+.recipient-table .check-cell{grid-area:check;display:flex;align-items:center;justify-content:center;width:48px}
+.recipient-table .copy-cell{grid-area:copies;display:flex;align-items:center;gap:10px;text-align:left}
+.recipient-table .copy-cell::before{content:"จำนวนซอง";color:#667085;font-size:11px;font-weight:700}
+.recipient-table .copy-input{width:66px;height:38px}
+.recipient-table .recipient-name-cell{grid-area:name;width:auto;min-width:0;max-width:none;padding-top:10px;border-top:1px solid #e8edf5}
+.recipient-table .recipient-name-cell strong{font-size:15px;line-height:1.45}
+.recipient-table .recipient-position-line{font-size:12px}
+.recipient-table .type-cell{grid-area:type;width:auto;min-width:0}
+.recipient-table .department-cell{grid-area:department;width:auto;min-width:0;padding-top:9px;border-top:1px solid #e8edf5}
+.recipient-table .department-text{font-size:12px;line-height:1.45}
+.recipient-table .address-cell{display:none}
+.recipient-table .action-cell{grid-area:action;width:auto;align-self:center;text-align:right}
+.recipient-table .row-actions{justify-content:flex-end}
+.recipient-table .row-button{min-width:72px;min-height:38px;font-size:11px}
+}
 @media(max-width:1080px){.content-grid{grid-template-columns:1fr}
 .hero h1 em{font-size:.84em;white-space:normal}
 .workflow-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -478,8 +509,8 @@ dialog{padding:22px}
 .preview-measurements{grid-template-columns:1fr}
 .filters{grid-template-columns:1fr}
 .section-title{align-items:flex-start}
-th:nth-child(4),th:nth-child(5),th:nth-child(6),td:nth-child(4),td:nth-child(5),td:nth-child(6){display:none}
-table{min-width:600px}
+table:not(.recipient-table) th:nth-child(4),table:not(.recipient-table) th:nth-child(5),table:not(.recipient-table) th:nth-child(6),table:not(.recipient-table) td:nth-child(4),table:not(.recipient-table) td:nth-child(5),table:not(.recipient-table) td:nth-child(6){display:none}
+table:not(.recipient-table){min-width:600px}
 .side-panel{grid-template-columns:1fr}
 .print-primary-settings,.print-visibility-options,.print-edit-actions{grid-template-columns:1fr}
 .print-primary-settings .paper-size-option{grid-column:auto}
@@ -496,6 +527,14 @@ table{min-width:600px}
 .history-filter-grid,.history-summary-grid{grid-template-columns:1fr 1fr}
 .print-history-table th,.print-history-table td{display:table-cell!important}
 footer{width:min(100% - 28px,680px);flex-direction:column}
+}
+@media(max-width:620px){
+.recipient-table tbody{padding:9px}
+.recipient-table tbody tr{grid-template-columns:42px minmax(120px,1fr) auto;padding:12px;gap:9px}
+.recipient-table .type-cell{grid-area:type}
+.recipient-table .department-cell{grid-area:department}
+.recipient-table .recipient-name-cell strong{font-size:14px}
+.central-defaults-status{font-size:10px}
 }
 @media(max-width:460px){.brand strong{font-size:16px}
 .manifest-setup-grid{grid-template-columns:1fr}
@@ -611,6 +650,7 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
               <label class="recipient-font-option"><span>ฟอนต์ผู้รับ</span><input id="recipientFontPt" type="number" min="8" max="24" step="0.5" /></label>
               <button class="preview-settings-button" id="openRecipientLayoutSettings" type="button">✎ ปรับตำแหน่งผู้รับ</button>
             </div>
+            <p class="central-defaults-status" id="centralDefaultsStatus" role="status" aria-live="polite" hidden></p>
           </div>
           <div class="preview-measurements" id="previewMeasurements" aria-live="polite" hidden></div>
           <div class="preview-stage" id="previewStage">
@@ -1008,6 +1048,7 @@ const POSTAGE_PERMIT_WIDTH_MM = 42;
 const POSTAGE_PERMIT_HEIGHT_MM = 20;
 const DEFAULT_POSTAGE_PERMIT_TEXT = "ชำระค่าฝากส่งเป็นรายเดือน\nใบอนุญาตเลขที่ 3/2521\nไปรษณีย์เทพารักษ์";
 const LOCKED_MANIFEST_PERMIT = "ใบอนุญาตเลขที่ 3/2521 ไปรษณีย์เทพารักษ์";
+const MANIFEST_ROWS_PER_PAGE = 30;
 const RECOMMENDED_LAYOUT_SECTIONS = {
   recipient: ["recipientTopPercent", "recipientLeftPercent", "recipientLineHeight"],
   sender: ["garudaPlacement", "garudaSizeMm", "senderTopMm", "senderLeftMm", "senderTextOffsetMm", "senderFontPt", "senderLineHeight"],
@@ -1182,6 +1223,7 @@ const elements = {
   empty: $("#emptyState"),
   paper: $("#paperSize"),
   recipientFont: $("#recipientFontPt"),
+  centralDefaultsStatus: $("#centralDefaultsStatus"),
   previewPrevious: $("#previewPrevious"),
   previewNext: $("#previewNext"),
   previewCounter: $("#previewCounter"),
@@ -2459,6 +2501,28 @@ function manifestRecipientFontStyle(name = "") {
   return "";
 }
 
+function paginateManifestRows(rows = [], pageSize = MANIFEST_ROWS_PER_PAGE) {
+  const safePageSize = Math.max(1, Math.floor(Number(pageSize) || MANIFEST_ROWS_PER_PAGE));
+  const pages = [];
+  for (let start = 0; start < rows.length; start += safePageSize) {
+    pages.push(rows.slice(start, start + safePageSize));
+  }
+  return pages;
+}
+
+window.__ENVELOPE_PRINT_TEST__ = Object.freeze({
+  manifestRowsPerPage: MANIFEST_ROWS_PER_PAGE,
+  manifestRecipientFontStyle,
+  paginateManifestRows,
+  cases: Object.freeze({
+    shortRecipient: "ประธานกรรมการสหกรณ์",
+    longRecipient: "ประธานกรรมการดำเนินการสหกรณ์ออมทรัพย์พนักงาน บริษัท พานาโซนิค แมนูแฟคเจอริ่ง (ประเทศไทย) จำกัด สาขาขอนแก่น",
+    addressLines: Object.freeze(["192 หมู่ 1 ถนนเหล่านาดี", "ตำบลเมืองเก่า อำเภอเมืองขอนแก่น", "จังหวัดขอนแก่น", "40000"]),
+    visibilitySettings: Object.freeze(["showGaruda", "showSender", "showPostagePermit"]),
+    manifestCounts: Object.freeze([1, 29, 30, 31]),
+  }),
+});
+
 function envelopeRecipientHeadingFontPt(name = "", fallbackPt = 12) {
   return fallbackPt;
 }
@@ -2607,16 +2671,56 @@ function normalizeRecommendedSettings(value) {
   };
 }
 
+function formatCentralDefaultsDateTime(value) {
+  const date = new Date(value);
+  if (!value || Number.isNaN(date.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("th-TH-u-ca-buddhist", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "Asia/Bangkok",
+  }).formatToParts(date);
+  const part = (type) => parts.find((item) => item.type === type)?.value || "";
+  return `${part("day")} ${part("month")} ${part("year")} เวลา ${part("hour")}:${part("minute")} น.`;
+}
+
+function setCentralDefaultsStatus(message = "", type = "") {
+  if (!elements.centralDefaultsStatus) return;
+  elements.centralDefaultsStatus.textContent = message;
+  elements.centralDefaultsStatus.className = `central-defaults-status${type ? ` is-${type}` : ""}`;
+  elements.centralDefaultsStatus.hidden = !message;
+}
+
+function recommendedSettingsHaveValues(settings) {
+  return Object.keys(settings?.paperLayouts || {}).length > 0 || Object.keys(settings?.shared || {}).length > 0;
+}
+
 async function loadRecommendedSettings({ silent = true } = {}) {
   if (!isUserSignedIn()) return state.recommendedSettings;
+  setCentralDefaultsStatus("กำลังโหลดค่าเริ่มต้นส่วนกลาง…", "loading");
   try {
     const result = await postAppsScript("getRecommendedSettings");
     state.recommendedSettings = normalizeRecommendedSettings(result);
     applyRecommendedSettingsAsDefaults();
+    const updatedLabel = formatCentralDefaultsDateTime(state.recommendedSettings.updatedAt);
+    if (recommendedSettingsHaveValues(state.recommendedSettings)) {
+      setCentralDefaultsStatus(
+        updatedLabel
+          ? `ใช้ค่าเริ่มต้นส่วนกลาง อัปเดตโดยผู้ดูแลเมื่อ ${updatedLabel}`
+          : "ใช้ค่าเริ่มต้นส่วนกลางที่ผู้ดูแลกำหนด",
+        "success",
+      );
+    } else {
+      setCentralDefaultsStatus("ยังไม่มีค่าเริ่มต้นส่วนกลาง จึงใช้ค่ามาตรฐานของระบบ", "neutral");
+    }
     return state.recommendedSettings;
   } catch (error) {
     if (!silent) throw error;
     console.warn("ยังโหลดค่าเริ่มต้นส่วนกลางไม่ได้", error);
+    setCentralDefaultsStatus("โหลดค่าเริ่มต้นส่วนกลางไม่สำเร็จ — ขณะนี้ใช้ค่าที่บันทึกไว้ในเครื่องนี้", "warning");
     return state.recommendedSettings;
   }
 }
@@ -3453,6 +3557,13 @@ async function saveRecommendedSection(section, form, button) {
     });
     state.recommendedSettings = normalizeRecommendedSettings(result);
     applyRecommendedSettingsAsDefaults();
+    const updatedLabel = formatCentralDefaultsDateTime(state.recommendedSettings.updatedAt);
+    setCentralDefaultsStatus(
+      updatedLabel
+        ? `ใช้ค่าเริ่มต้นส่วนกลาง อัปเดตโดยผู้ดูแลเมื่อ ${updatedLabel}`
+        : "ใช้ค่าเริ่มต้นส่วนกลางที่ผู้ดูแลกำหนด",
+      "success",
+    );
     const paperLabel = elements.paper?.selectedOptions?.[0]?.textContent?.trim() || state.settings.paperSize;
     setNotice(`บันทึกค่าเริ่มต้นส่วนกลางสำหรับ ${paperLabel} แล้ว ทุกคนจะได้รับค่านี้เมื่อเข้าใช้งาน`);
   } catch (error) {
@@ -3823,11 +3934,8 @@ function printMailingManifest(event) {
       ems: formatTrackingCode(fullManifestTrackingValue(emsInput), "EQ"),
     };
   });
-  const pageSize = 30;
-  const pages = [];
-  for (let start = 0; start < rows.length; start += pageSize) {
-    pages.push(rows.slice(start, start + pageSize));
-  }
+  const pageSize = MANIFEST_ROWS_PER_PAGE;
+  const pages = paginateManifestRows(rows, pageSize);
 
   const sender = state.settings.sender || "สำนักงานสหกรณ์จังหวัดขอนแก่น";
   const manifestPages = pages.map((pageRows, pageIndex) => {

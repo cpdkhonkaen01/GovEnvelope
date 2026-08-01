@@ -18,6 +18,7 @@ const POSTAGE_PERMIT_WIDTH_MM = 42;
 const POSTAGE_PERMIT_HEIGHT_MM = 20;
 const DEFAULT_POSTAGE_PERMIT_TEXT = "ชำระค่าฝากส่งเป็นรายเดือน\nใบอนุญาตเลขที่ 3/2521\nไปรษณีย์เทพารักษ์";
 const LOCKED_MANIFEST_PERMIT = "ใบอนุญาตเลขที่ 3/2521 ไปรษณีย์เทพารักษ์";
+const MANIFEST_ROWS_PER_PAGE = 30;
 const RECOMMENDED_LAYOUT_SECTIONS = {
   recipient: ["recipientTopPercent", "recipientLeftPercent", "recipientLineHeight"],
   sender: ["garudaPlacement", "garudaSizeMm", "senderTopMm", "senderLeftMm", "senderTextOffsetMm", "senderFontPt", "senderLineHeight"],
@@ -192,6 +193,7 @@ const elements = {
   empty: $("#emptyState"),
   paper: $("#paperSize"),
   recipientFont: $("#recipientFontPt"),
+  centralDefaultsStatus: $("#centralDefaultsStatus"),
   previewPrevious: $("#previewPrevious"),
   previewNext: $("#previewNext"),
   previewCounter: $("#previewCounter"),
@@ -1469,6 +1471,28 @@ function manifestRecipientFontStyle(name = "") {
   return "";
 }
 
+function paginateManifestRows(rows = [], pageSize = MANIFEST_ROWS_PER_PAGE) {
+  const safePageSize = Math.max(1, Math.floor(Number(pageSize) || MANIFEST_ROWS_PER_PAGE));
+  const pages = [];
+  for (let start = 0; start < rows.length; start += safePageSize) {
+    pages.push(rows.slice(start, start + safePageSize));
+  }
+  return pages;
+}
+
+window.__ENVELOPE_PRINT_TEST__ = Object.freeze({
+  manifestRowsPerPage: MANIFEST_ROWS_PER_PAGE,
+  manifestRecipientFontStyle,
+  paginateManifestRows,
+  cases: Object.freeze({
+    shortRecipient: "ประธานกรรมการสหกรณ์",
+    longRecipient: "ประธานกรรมการดำเนินการสหกรณ์ออมทรัพย์พนักงาน บริษัท พานาโซนิค แมนูแฟคเจอริ่ง (ประเทศไทย) จำกัด สาขาขอนแก่น",
+    addressLines: Object.freeze(["192 หมู่ 1 ถนนเหล่านาดี", "ตำบลเมืองเก่า อำเภอเมืองขอนแก่น", "จังหวัดขอนแก่น", "40000"]),
+    visibilitySettings: Object.freeze(["showGaruda", "showSender", "showPostagePermit"]),
+    manifestCounts: Object.freeze([1, 29, 30, 31]),
+  }),
+});
+
 function envelopeRecipientHeadingFontPt(name = "", fallbackPt = 12) {
   return fallbackPt;
 }
@@ -1617,16 +1641,56 @@ function normalizeRecommendedSettings(value) {
   };
 }
 
+function formatCentralDefaultsDateTime(value) {
+  const date = new Date(value);
+  if (!value || Number.isNaN(date.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("th-TH-u-ca-buddhist", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "Asia/Bangkok",
+  }).formatToParts(date);
+  const part = (type) => parts.find((item) => item.type === type)?.value || "";
+  return `${part("day")} ${part("month")} ${part("year")} เวลา ${part("hour")}:${part("minute")} น.`;
+}
+
+function setCentralDefaultsStatus(message = "", type = "") {
+  if (!elements.centralDefaultsStatus) return;
+  elements.centralDefaultsStatus.textContent = message;
+  elements.centralDefaultsStatus.className = `central-defaults-status${type ? ` is-${type}` : ""}`;
+  elements.centralDefaultsStatus.hidden = !message;
+}
+
+function recommendedSettingsHaveValues(settings) {
+  return Object.keys(settings?.paperLayouts || {}).length > 0 || Object.keys(settings?.shared || {}).length > 0;
+}
+
 async function loadRecommendedSettings({ silent = true } = {}) {
   if (!isUserSignedIn()) return state.recommendedSettings;
+  setCentralDefaultsStatus("กำลังโหลดค่าเริ่มต้นส่วนกลาง…", "loading");
   try {
     const result = await postAppsScript("getRecommendedSettings");
     state.recommendedSettings = normalizeRecommendedSettings(result);
     applyRecommendedSettingsAsDefaults();
+    const updatedLabel = formatCentralDefaultsDateTime(state.recommendedSettings.updatedAt);
+    if (recommendedSettingsHaveValues(state.recommendedSettings)) {
+      setCentralDefaultsStatus(
+        updatedLabel
+          ? `ใช้ค่าเริ่มต้นส่วนกลาง อัปเดตโดยผู้ดูแลเมื่อ ${updatedLabel}`
+          : "ใช้ค่าเริ่มต้นส่วนกลางที่ผู้ดูแลกำหนด",
+        "success",
+      );
+    } else {
+      setCentralDefaultsStatus("ยังไม่มีค่าเริ่มต้นส่วนกลาง จึงใช้ค่ามาตรฐานของระบบ", "neutral");
+    }
     return state.recommendedSettings;
   } catch (error) {
     if (!silent) throw error;
     console.warn("ยังโหลดค่าเริ่มต้นส่วนกลางไม่ได้", error);
+    setCentralDefaultsStatus("โหลดค่าเริ่มต้นส่วนกลางไม่สำเร็จ — ขณะนี้ใช้ค่าที่บันทึกไว้ในเครื่องนี้", "warning");
     return state.recommendedSettings;
   }
 }
@@ -2463,6 +2527,13 @@ async function saveRecommendedSection(section, form, button) {
     });
     state.recommendedSettings = normalizeRecommendedSettings(result);
     applyRecommendedSettingsAsDefaults();
+    const updatedLabel = formatCentralDefaultsDateTime(state.recommendedSettings.updatedAt);
+    setCentralDefaultsStatus(
+      updatedLabel
+        ? `ใช้ค่าเริ่มต้นส่วนกลาง อัปเดตโดยผู้ดูแลเมื่อ ${updatedLabel}`
+        : "ใช้ค่าเริ่มต้นส่วนกลางที่ผู้ดูแลกำหนด",
+      "success",
+    );
     const paperLabel = elements.paper?.selectedOptions?.[0]?.textContent?.trim() || state.settings.paperSize;
     setNotice(`บันทึกค่าเริ่มต้นส่วนกลางสำหรับ ${paperLabel} แล้ว ทุกคนจะได้รับค่านี้เมื่อเข้าใช้งาน`);
   } catch (error) {
@@ -2833,11 +2904,8 @@ function printMailingManifest(event) {
       ems: formatTrackingCode(fullManifestTrackingValue(emsInput), "EQ"),
     };
   });
-  const pageSize = 30;
-  const pages = [];
-  for (let start = 0; start < rows.length; start += pageSize) {
-    pages.push(rows.slice(start, start + pageSize));
-  }
+  const pageSize = MANIFEST_ROWS_PER_PAGE;
+  const pages = paginateManifestRows(rows, pageSize);
 
   const sender = state.settings.sender || "สำนักงานสหกรณ์จังหวัดขอนแก่น";
   const manifestPages = pages.map((pageRows, pageIndex) => {
