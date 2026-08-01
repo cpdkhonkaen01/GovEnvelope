@@ -128,4 +128,15 @@ test("PDF staging stays measurable instead of rendering far outside the viewport
   assert.doesNotMatch(appSource, /container\.style\.left = "-10000px"/);
   assert.match(appSource, /await waitForPdfLayout\(\)/);
   assert.match(appSource, /\.from\(renderTarget\)\.save\(\)/);
+  assert.match(appSource, /renderTarget\.style\.width = `\$\{dimensions\.width\}mm`/);
+  assert.doesNotMatch(appSource, /windowWidth: Math\.ceil\(bounds\.width\)/);
+});
+
+test("admin deletion uses the signed-in session without asking for the password again", () => {
+  assert.doesNotMatch(htmlSource, /id="deleteRecipientPassword"/);
+  assert.doesNotMatch(htmlSource, /id="deletePrintJobPassword"/);
+  assert.doesNotMatch(appSource, /elements\.deleteRecipientPassword/);
+  assert.doesNotMatch(appSource, /elements\.deletePrintJobPassword/);
+  assert.match(appSource, /async function handleDeletePrintJobSubmit[\s\S]*?requireAdminSession\(\)/);
+  assert.match(appSource, /async function handleDeleteRecipientSubmit[\s\S]*?requireAdminSession\(\)/);
 });

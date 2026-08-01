@@ -219,7 +219,6 @@ const elements = {
   deleteRecipientDialog: $("#deleteRecipientDialog"),
   deleteRecipientForm: $("#deleteRecipientForm"),
   deleteRecipientName: $("#deleteRecipientName"),
-  deleteRecipientPassword: $("#deleteRecipientPassword"),
   deleteRecipientMessage: $("#deleteRecipientMessage"),
   confirmDeleteRecipient: $("#confirmDeleteRecipient"),
   recipientLayoutDialog: $("#recipientLayoutDialog"),
@@ -255,7 +254,6 @@ const elements = {
   deletePrintJobDialog: $("#deletePrintJobDialog"),
   deletePrintJobForm: $("#deletePrintJobForm"),
   deletePrintJobName: $("#deletePrintJobName"),
-  deletePrintJobPassword: $("#deletePrintJobPassword"),
   deletePrintJobMessage: $("#deletePrintJobMessage"),
   confirmDeletePrintJob: $("#confirmDeletePrintJob"),
   finishPrintJobDialog: $("#finishPrintJobDialog"),
@@ -732,6 +730,12 @@ async function saveHtmlAsPdf(container, filename, format, orientation) {
     await waitForPdfAssets(container);
     await waitForPdfLayout();
     const renderTarget = container.querySelector(".pdf-manifest-document, .pdf-envelope-document") || container;
+    renderTarget.style.position = "relative";
+    renderTarget.style.left = "0";
+    renderTarget.style.top = "0";
+    renderTarget.style.width = `${dimensions.width}mm`;
+    renderTarget.style.margin = "0";
+    renderTarget.style.transform = "none";
     const bounds = renderTarget.getBoundingClientRect();
     if (!bounds.width || !bounds.height) throw new Error("ไม่สามารถจัดวางเนื้อหา PDF ได้ กรุณาลองใหม่อีกครั้ง");
     await window.html2pdf().set({
@@ -744,10 +748,6 @@ async function saveHtmlAsPdf(container, filename, format, orientation) {
         allowTaint: false,
         backgroundColor: "#ffffff",
         logging: false,
-        scrollX: 0,
-        scrollY: 0,
-        windowWidth: Math.ceil(bounds.width),
-        windowHeight: Math.ceil(bounds.height),
       },
       jsPDF: { unit: "mm", format, orientation, compress: true },
       pagebreak: { mode: ["css", "legacy"] },
@@ -965,12 +965,11 @@ async function requestDeletePrintJob(button) {
   elements.deletePrintJobForm.reset();
   elements.deletePrintJobDialog.dataset.printJobId = id;
   elements.deletePrintJobDialog.showModal();
-  elements.deletePrintJobPassword.focus();
 }
 
 async function handleDeletePrintJobSubmit(event) {
   event.preventDefault();
-  if (!elements.deletePrintJobForm.reportValidity()) return;
+  if (!(await requireAdminSession())) return;
   const id = elements.deletePrintJobDialog.dataset.printJobId || "";
   if (!state.printJobs.some((job) => job.id === id)) {
     elements.deletePrintJobMessage.textContent = "ไม่พบประวัติชุดงานที่ต้องการลบ";
@@ -978,19 +977,10 @@ async function handleDeletePrintJobSubmit(event) {
     return;
   }
   elements.confirmDeletePrintJob.disabled = true;
-  elements.confirmDeletePrintJob.textContent = "กำลังตรวจสอบ…";
-  elements.deletePrintJobMessage.textContent = "กำลังตรวจสอบรหัสยืนยันการลบ…";
+  elements.confirmDeletePrintJob.textContent = "กำลังลบ…";
+  elements.deletePrintJobMessage.textContent = "กำลังลบประวัติชุดงาน…";
   elements.deletePrintJobMessage.className = "form-message";
   try {
-    try {
-      await signInAdminWithPassword(elements.deletePrintJobPassword.value);
-    } catch (error) {
-      elements.deletePrintJobMessage.textContent = "รหัสยืนยันการลบไม่ถูกต้อง กรุณาตรวจสอบแล้วลองใหม่";
-      elements.deletePrintJobMessage.className = "form-message error";
-      elements.deletePrintJobPassword.select();
-      return;
-    }
-    elements.confirmDeletePrintJob.textContent = "กำลังลบ…";
     await postAppsScript("deletePrintJob", { id });
     deletePrintJobLocally(id);
     closeDeletePrintJobDialog();
@@ -2900,12 +2890,11 @@ async function deleteRecipient(id) {
   elements.deleteRecipientForm.reset();
   elements.deleteRecipientDialog.dataset.recipientId = id;
   elements.deleteRecipientDialog.showModal();
-  elements.deleteRecipientPassword?.focus();
 }
 
 async function handleDeleteRecipientSubmit(event) {
   event.preventDefault();
-  if (!elements.deleteRecipientForm.reportValidity()) return;
+  if (!(await requireAdminSession())) return;
 
   const id = elements.deleteRecipientDialog.dataset.recipientId || "";
   const recipient = state.recipients.find((item) => item.id === id);
@@ -2916,26 +2905,13 @@ async function handleDeleteRecipientSubmit(event) {
   }
 
   const name = recipientName(recipient);
-  const deletePassword = elements.deleteRecipientPassword.value;
   elements.confirmDeleteRecipient.disabled = true;
-  elements.confirmDeleteRecipient.textContent = "กำลังตรวจสอบ…";
-  elements.deleteRecipientMessage.textContent = "กำลังตรวจสอบรหัสยืนยันการลบ…";
+  elements.confirmDeleteRecipient.textContent = "กำลังลบ…";
+  elements.deleteRecipientMessage.textContent = `กำลังลบ ${name} จาก Google Sheets…`;
   elements.deleteRecipientMessage.className = "form-message";
-  setNotice("กำลังตรวจสอบรหัสยืนยันการลบ…");
+  setNotice(`กำลังลบ ${name} จาก Google Sheets…`);
 
   try {
-    try {
-      await signInAdminWithPassword(deletePassword);
-    } catch (error) {
-      elements.deleteRecipientMessage.textContent = "รหัสยืนยันการลบไม่ถูกต้อง กรุณาตรวจสอบแล้วลองใหม่";
-      elements.deleteRecipientMessage.className = "form-message error";
-      elements.deleteRecipientPassword.select();
-      setNotice("รหัสยืนยันการลบไม่ถูกต้อง");
-      return;
-    }
-    elements.confirmDeleteRecipient.textContent = "กำลังลบ…";
-    elements.deleteRecipientMessage.textContent = `กำลังลบ ${name} จาก Google Sheets…`;
-    setNotice(`กำลังลบ ${name} จาก Google Sheets…`);
     await postAppsScript("deleteRecipient", { id });
     const rows = await requestRecipients();
     state.recipients = rows.map(normalizeRecipient);
