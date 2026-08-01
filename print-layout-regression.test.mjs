@@ -62,3 +62,11 @@ test("สถานะค่าเริ่มต้นส่วนกลาง�
   assert.match(appSource, /ใช้ค่าที่บันทึกไว้ในเครื่องนี้/);
 });
 
+test("ใบนำส่งแสดงเลขนำหน้ารายแถวและเลือกแก้เองได้", () => {
+  assert.match(appSource, /class=\"tracking-prefix-mode\"/);
+  assert.match(appSource, />เลขกลาง<\/option>/);
+  assert.match(appSource, />แก้เอง<\/option>/);
+  assert.match(appSource, /class=\"row-prefix-input/);
+  assert.match(appSource, /class=\"tracking-country-suffix\">TH/);
+  assert.match(appSource, /function savedManifestRowPrefix/);
+});

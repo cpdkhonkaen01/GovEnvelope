@@ -1376,12 +1376,16 @@ function limitTrackingInput(event) {
   event.target.setCustomValidity("");
 }
 
-function manifestPrefixForInput(input) {
-  const prefixInput = input?.dataset.trackingType === "ems"
-    ? elements.manifestEmsPrefix
-    : elements.manifestRegisteredPrefix;
-  const type = input?.dataset.trackingType || "";
+function sharedManifestPrefix(type = "") {
+  const prefixInput = type === "ems" ? elements.manifestEmsPrefix : elements.manifestRegisteredPrefix;
   const prefix = normalizeManifestPrefix(prefixInput?.value || "", manifestPrefixLetters(type));
+  return /^[A-Z]{2}[0-9๐-๙]{5}$/.test(prefix) ? prefix : "";
+}
+
+function manifestPrefixForInput(input) {
+  const type = input?.dataset.trackingType || "";
+  const rowPrefixInput = input?.closest("td")?.querySelector(".row-prefix-input");
+  const prefix = normalizeManifestPrefix(rowPrefixInput?.value || sharedManifestPrefix(type), manifestPrefixLetters(type));
   return /^[A-Z]{2}[0-9๐-๙]{5}$/.test(prefix) ? prefix : "";
 }
 
@@ -1411,6 +1415,14 @@ function updateManifestRowTrackingState(row, activeInput = null) {
   const hasEms = Boolean(ems.value.trim());
   registered.disabled = hasEms;
   ems.disabled = hasRegistered;
+  [registered, ems].forEach((input) => {
+    const locked = input === registered ? hasEms : hasRegistered;
+    const cell = input.closest("td");
+    const mode = cell?.querySelector(".tracking-prefix-mode");
+    const prefix = cell?.querySelector(".row-prefix-input");
+    if (mode) mode.disabled = locked;
+    if (prefix) prefix.disabled = locked;
+  });
   registered.closest("td")?.classList.toggle("tracking-locked", hasEms);
   ems.closest("td")?.classList.toggle("tracking-locked", hasRegistered);
 }
@@ -1431,7 +1443,12 @@ function applyManifestPrefixMode(type) {
   const prefix = normalizeManifestPrefix(prefixInput.value, manifestPrefixLetters(type));
   prefixInput.value = prefix;
   state.settings[type === "ems" ? "manifestEmsPrefix" : "manifestRegisteredPrefix"] = prefix;
-  elements.manifestRows.querySelectorAll(`[data-tracking-type="${type}"]`).forEach((input) => {
+  elements.manifestRows.querySelectorAll(`.tracking-prefix-mode[data-tracking-type="${type}"]`).forEach((mode) => {
+    if (mode.value !== "shared") return;
+    const cell = mode.closest("td");
+    const input = cell?.querySelector(".tracking-input");
+    const rowPrefix = cell?.querySelector(".row-prefix-input");
+    if (!input || !rowPrefix) return;
     const previousPrefix = input.dataset.lockedPrefix || "";
     let value = normalizeTrackingDigits(input.value);
     const prefixDigits = normalizeTrackingDigits(prefix).slice(0, 5);
@@ -1452,10 +1469,66 @@ function applyManifestPrefixMode(type) {
     }
     input.value = value.slice(0, input.maxLength);
     input.dataset.lockedPrefix = prefix;
+    rowPrefix.value = prefix;
     updateManifestRowTrackingState(input.closest("tr"));
   });
   persistSettings();
   saveCurrentPrintJobDraft();
+}
+
+function limitManifestRowPrefixInput(event) {
+  const input = event.target;
+  const type = input.dataset.trackingType || "";
+  const cleaned = normalizeManifestPrefix(input.value, manifestPrefixLetters(type));
+  if (input.value !== cleaned) input.value = cleaned;
+  input.setCustomValidity("");
+  const trackingInput = input.closest("td")?.querySelector(".tracking-input");
+  if (trackingInput) {
+    trackingInput.dataset.lockedPrefix = cleaned;
+    trackingInput.title = cleaned ? `กรอก 4 ตัวท้าย ต่อจาก ${cleaned}` : "กรอกเลขนำหน้าให้ครบก่อน";
+  }
+  saveCurrentPrintJobDraft();
+}
+
+function applyManifestRowPrefixMode(mode, save = true) {
+  const type = mode.dataset.trackingType || "";
+  const cell = mode.closest("td");
+  const rowPrefix = cell?.querySelector(".row-prefix-input");
+  const trackingInput = cell?.querySelector(".tracking-input");
+  if (!rowPrefix || !trackingInput) return;
+  if (mode.value === "shared") rowPrefix.value = sharedManifestPrefix(type);
+  else if (!rowPrefix.value) rowPrefix.value = sharedManifestPrefix(type);
+  rowPrefix.readOnly = mode.value === "shared";
+  rowPrefix.classList.toggle("is-custom", mode.value === "custom");
+  trackingInput.dataset.lockedPrefix = rowPrefix.value;
+  trackingInput.title = rowPrefix.value
+    ? `กรอก 4 ตัวท้าย ต่อจาก ${rowPrefix.value}`
+    : "กรอกเลขนำหน้าให้ครบก่อน";
+  if (mode.value === "custom") rowPrefix.focus();
+  if (save) saveCurrentPrintJobDraft();
+}
+
+function savedManifestRowPrefix(savedValue = "", sharedPrefix = "", type = "") {
+  const compact = String(savedValue || "").trim().toUpperCase().replace(/[\s-]/g, "");
+  const matched = compact.match(/^([A-Z]{2}[0-9๐-๙]{5})/);
+  if (matched) return normalizeManifestPrefix(matched[1], manifestPrefixLetters(type));
+  return sharedPrefix;
+}
+
+function manifestTrackingCell(type, index, sharedPrefix, savedValue = "") {
+  const rowPrefix = savedManifestRowPrefix(savedValue, sharedPrefix, type);
+  const custom = Boolean(rowPrefix && rowPrefix !== sharedPrefix);
+  const entryValue = manifestTrackingEntryValue(savedValue, rowPrefix);
+  const label = type === "ems" ? "EMS" : "ลงทะเบียน";
+  return `<div class="tracking-code-editor">
+    <select class="tracking-prefix-mode" data-tracking-type="${type}" aria-label="เลือกเลขนำหน้า${label} แถว ${index + 1}">
+      <option value="shared" ${custom ? "" : "selected"}>เลขกลาง</option>
+      <option value="custom" ${custom ? "selected" : ""}>แก้เอง</option>
+    </select>
+    <input class="row-prefix-input${custom ? " is-custom" : ""}" data-tracking-type="${type}" type="text" inputmode="text" autocomplete="off" maxlength="7" pattern="[A-Za-z]{2}[0-9๐-๙]{5}" value="${escapeHtml(rowPrefix)}" ${custom ? "" : "readonly"} aria-label="เลขนำหน้า${label} แถว ${index + 1}" />
+    <input name="${type}-${index}" class="tracking-input" data-tracking-type="${type}" data-locked-prefix="${escapeHtml(rowPrefix)}" type="text" inputmode="numeric" autocomplete="off" maxlength="4" pattern="[0-9๐-๙]{4}" title="${rowPrefix ? `กรอก 4 ตัวท้าย ต่อจาก ${escapeHtml(rowPrefix)}` : "กรอกเลขนำหน้าให้ครบก่อน"}" placeholder="4 ตัวท้าย" value="${escapeHtml(entryValue)}" aria-label="เลข 4 ตัวท้าย${label} แถว ${index + 1}" />
+    <span class="tracking-country-suffix">TH</span>
+  </div>`;
 }
 
 function manifestRecipientLabel(item) {
@@ -2835,25 +2908,28 @@ function openManifestDialog() {
   const emsPrefix = normalizeManifestPrefix(elements.manifestEmsPrefix.value, "EQ");
   elements.manifestRegisteredPrefix.value = registeredPrefix;
   elements.manifestEmsPrefix.value = emsPrefix;
-  const registeredUsesPrefix = /^[A-Z]{2}[0-9๐-๙]{5}$/.test(registeredPrefix);
-  const emsUsesPrefix = /^[A-Z]{2}[0-9๐-๙]{5}$/.test(emsPrefix);
   elements.manifestRows.dataset.printJobId = job?.id || "";
   elements.manifestRows.innerHTML = jobs.map(({ item, copyIndex }, index) => {
     const name = manifestRecipientLabel(item);
     const jobKey = printJobTrackingKey(item.id, copyIndex);
     const savedTracking = job?.tracking?.[jobKey] || {};
-    const savedRegistered = normalizeTrackingDigits(savedTracking.registered || "");
-    const savedEms = savedRegistered ? "" : normalizeTrackingDigits(savedTracking.ems || "");
-    const registeredValue = manifestTrackingEntryValue(savedRegistered, registeredPrefix);
-    const emsValue = manifestTrackingEntryValue(savedEms, emsPrefix);
+    const savedRegistered = String(savedTracking.registered || "");
+    const savedEms = savedRegistered ? "" : String(savedTracking.ems || "");
     return `<tr data-recipient-id="${escapeHtml(item.id)}" data-job-key="${escapeHtml(jobKey)}">
       <td>${index + 1}</td>
       <td><div class="manifest-recipient-name" title="${escapeHtml(name)}">${escapeHtml(name)}</div></td>
       <td>${escapeHtml(item.postalCode || "")}</td>
-      <td><input name="registered-${index}" class="tracking-input" data-tracking-type="registered" data-locked-prefix="${escapeHtml(registeredUsesPrefix ? registeredPrefix : "")}" type="text" inputmode="numeric" autocomplete="off" maxlength="${registeredUsesPrefix ? 4 : 9}" pattern="[0-9๐-๙]{${registeredUsesPrefix ? 4 : 9}}" title="${registeredUsesPrefix ? `กรอก 4 ตัวท้าย ต่อจาก ${escapeHtml(registeredPrefix)}` : "กรอกตัวเลข 9 หลัก"}" placeholder="${registeredUsesPrefix ? "4 ตัวท้าย" : "ตัวเลข 9 หลัก"}" value="${escapeHtml(registeredValue)}" /></td>
-      <td><input name="ems-${index}" class="tracking-input" data-tracking-type="ems" data-locked-prefix="${escapeHtml(emsUsesPrefix ? emsPrefix : "")}" type="text" inputmode="numeric" autocomplete="off" maxlength="${emsUsesPrefix ? 4 : 9}" pattern="[0-9๐-๙]{${emsUsesPrefix ? 4 : 9}}" title="${emsUsesPrefix ? `กรอก 4 ตัวท้าย ต่อจาก ${escapeHtml(emsPrefix)}` : "กรอกตัวเลข 9 หลัก"}" placeholder="${emsUsesPrefix ? "4 ตัวท้าย" : "ตัวเลข 9 หลัก"}" value="${escapeHtml(emsValue)}" /></td>
+      <td>${manifestTrackingCell("registered", index, registeredPrefix, savedRegistered)}</td>
+      <td>${manifestTrackingCell("ems", index, emsPrefix, savedEms)}</td>
     </tr>`;
   }).join("");
+  elements.manifestRows.querySelectorAll(".tracking-prefix-mode").forEach((mode) => {
+    mode.addEventListener("change", () => applyManifestRowPrefixMode(mode));
+  });
+  elements.manifestRows.querySelectorAll(".row-prefix-input").forEach((input) => {
+    input.addEventListener("input", limitManifestRowPrefixInput);
+    input.addEventListener("change", () => saveCurrentPrintJobDraft());
+  });
   elements.manifestRows.querySelectorAll(".tracking-input").forEach((input) => {
     input.addEventListener("input", limitTrackingInput);
     input.addEventListener("input", () => {
