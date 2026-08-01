@@ -20,7 +20,7 @@ const DEFAULT_POSTAGE_PERMIT_TEXT = "ชำระค่าฝากส่งเ�
 const LOCKED_MANIFEST_PERMIT = "ใบอนุญาตเลขที่ 3/2521 ไปรษณีย์เทพารักษ์";
 const MANIFEST_ROWS_PER_PAGE = 30;
 const RECOMMENDED_LAYOUT_SECTIONS = {
-  recipient: ["recipientTopPercent", "recipientLeftPercent", "recipientLineHeight"],
+  recipient: ["recipientFontPt", "recipientTopPercent", "recipientLeftPercent", "recipientLineHeight"],
   sender: ["garudaPlacement", "garudaSizeMm", "senderTopMm", "senderLeftMm", "senderTextOffsetMm", "senderFontPt", "senderLineHeight"],
   postagePermit: ["postagePermitTopMm", "postagePermitRightMm", "postagePermitFontPt", "postagePermitLineHeight"],
 };
@@ -713,6 +713,58 @@ function waitForPdfLayout() {
   });
 }
 
+async function saveManifestPagesAsPdf(renderTarget, filename, format, orientation) {
+  const html2canvas = window.html2canvas;
+  const JsPdf = window.jspdf?.jsPDF || window.jsPDF;
+  if (typeof html2canvas !== "function" || typeof JsPdf !== "function") return false;
+
+  const dimensions = pdfStageDimensions(format, orientation);
+  const pages = [...renderTarget.querySelectorAll(":scope > .manifest-page")];
+  if (!pages.length) return false;
+
+  let pdf;
+  for (let index = 0; index < pages.length; index += 1) {
+    const page = pages[index];
+    const bounds = page.getBoundingClientRect();
+    const canvas = await html2canvas(page, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: false,
+      backgroundColor: "#ffffff",
+      logging: false,
+      scrollX: 0,
+      scrollY: 0,
+      width: Math.round(bounds.width),
+      height: Math.round(bounds.height),
+      windowWidth: Math.round(bounds.width),
+      windowHeight: Math.round(bounds.height),
+    });
+
+    if (!pdf) {
+      pdf = new JsPdf({
+        unit: "mm",
+        format,
+        orientation,
+        compress: true,
+      });
+    } else {
+      pdf.addPage(format, orientation);
+    }
+    pdf.addImage(
+      canvas.toDataURL("image/jpeg", 0.98),
+      "JPEG",
+      0,
+      0,
+      dimensions.width,
+      dimensions.height,
+      undefined,
+      "FAST",
+    );
+  }
+  pdf.save(filename);
+  return true;
+}
+
 async function saveHtmlAsPdf(container, filename, format, orientation) {
   if (typeof window.html2pdf !== "function") throw new Error("โหลดระบบสร้าง PDF ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วรีเฟรชหน้าเว็บ");
   const dimensions = pdfStageDimensions(format, orientation);
@@ -738,6 +790,10 @@ async function saveHtmlAsPdf(container, filename, format, orientation) {
     renderTarget.style.transform = "none";
     const bounds = renderTarget.getBoundingClientRect();
     if (!bounds.width || !bounds.height) throw new Error("ไม่สามารถจัดวางเนื้อหา PDF ได้ กรุณาลองใหม่อีกครั้ง");
+    if (renderTarget.classList.contains("pdf-manifest-document")) {
+      const saved = await saveManifestPagesAsPdf(renderTarget, filename, format, orientation);
+      if (saved) return;
+    }
     await window.html2pdf().set({
       margin: 0,
       filename,
@@ -816,7 +872,7 @@ function buildHistoryManifestPdf(job) {
     return `<section class="manifest-page pdf-page">${pages.length > 1 ? `<div class="page-number">-${pageIndex + 1}-</div>` : ""}<h1>ใบนำส่งของทางไปรษณีย์โดยชำระค่าบริการเป็นสินเชื่อ</h1><div class="manifest-meta"><div>วัน/เดือน/ปี…${escapeHtml(manifestDate)}.......</div><div>ชื่อหน่วยงาน ${escapeHtml(state.settings.sender || "สำนักงานสหกรณ์จังหวัดขอนแก่น")}</div><div>${escapeHtml(permit)}</div></div><p class="manifest-intro">ได้ฝากส่งสิ่งของของทางไปรษณีย์โดยชำระค่าบริการเป็นเงินเชื่อดังรายการต่อไปนี้</p><table class="manifest-print-table"><colgroup><col class="col-seq"><col class="col-name"><col class="col-dest"><col class="col-registered"><col class="col-ems"><col class="col-fee"><col class="col-note"></colgroup><thead><tr><th>ลำดับ</th><th>ผู้รับ</th><th>ปลายทาง</th><th>ลงทะเบียน</th><th>EMS</th><th>ค่าบริการ</th><th>หมายเหตุ</th></tr></thead><tbody>${bodyRows}</tbody></table><div class="manifest-footer"><div class="manifest-footer-left"><p>รวม&nbsp;&nbsp; จำนวน ......................${pageRows.length}...................... ฉบับ</p><p>ธรรมดา จำนวน....................-...................... ฉบับ</p></div><div class="manifest-footer-right"><p class="total-line">รวมทั้งสิ้น....................${pageRows.length}....................ฉบับ</p><p class="sign-line"><span>ลงชื่อ</span><span class="sign-dots"></span></p><p class="role-line">ผู้รับผิดชอบในการฝากส่ง</p><p class="check-line">ได้ตรวจสอบและรับฝากไว้ถูกต้องแล้ว</p><p class="signature sign-line"><span>ลงชื่อ</span><span class="sign-dots"></span></p><p class="role-line">เจ้าหน้าที่รับฝาก${receivingPostOffice ? ` ${escapeHtml(receivingPostOffice)}` : ""}</p></div></div></section>`;
   }).join("");
   const container = document.createElement("div");
-  container.innerHTML = `<style>${printFontFaceCss()}*{box-sizing:border-box}.pdf-manifest-document{margin:0;color:#111;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif;font-size:13pt}.manifest-page{position:relative;width:210mm;height:297mm;padding:8mm;background:#fff;overflow:hidden}.page-number{position:absolute;top:8mm;right:8mm;font-size:12pt}h1{margin:0 0 2.5mm;text-align:center;font-size:15pt}.manifest-meta{width:max-content;min-width:52.5mm;margin:0 0 2.5mm auto;line-height:1.12;font-size:12.5pt;white-space:nowrap}.manifest-intro{margin:0 0 .8mm 10mm;font-size:12.5pt;line-height:1.08}.manifest-print-table{width:192mm;border-collapse:collapse;table-layout:fixed}.manifest-print-table th,.manifest-print-table td{height:6.25mm;padding:0 1.2mm;border:1px solid #111;vertical-align:middle;line-height:1.04}.manifest-print-table th{text-align:center;font-size:11.5pt;white-space:nowrap}.center{text-align:center}.recipient-cell{overflow:hidden;font-size:12pt;white-space:nowrap}.recipient-cell span{display:block;overflow:hidden}.recipient-cell span.long{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal}.tracking{font-size:12pt;white-space:nowrap}.col-seq{width:9mm}.col-name{width:78mm}.col-dest{width:16mm}.col-registered{width:28mm}.col-ems{width:28mm}.col-fee{width:18mm}.col-note{width:12mm}.manifest-footer{position:relative;height:36mm;margin-top:3mm;line-height:1.18;font-size:14pt}.manifest-footer p{margin:0}.manifest-footer-left{position:absolute;left:9mm;top:1mm;width:82mm}.manifest-footer-left p+p{margin-top:1.6mm}.manifest-footer-right{position:absolute;left:116mm;top:0;width:78mm}.total-line{margin-bottom:1.6mm!important}.sign-line{display:flex;align-items:flex-end}.sign-dots{display:block;width:64mm;height:.9em;border-bottom:1px dotted #111}.role-line{width:64mm;margin-top:2.4mm!important;margin-left:10mm;text-align:center}.check-line{margin-top:2.2mm!important}.signature{margin-top:4mm!important}.pdf-page{break-after:page;page-break-after:always}.pdf-page:last-child{break-after:auto;page-break-after:auto}</style><div class="pdf-manifest-document">${pageHtml}</div>`;
+  container.innerHTML = `<style>${printFontFaceCss()}.pdf-manifest-document,.pdf-manifest-document *{box-sizing:border-box}.pdf-manifest-document{width:210mm!important;min-width:210mm!important;max-width:210mm!important;margin:0;color:#111;font-family:"TH Sarabun New","Noto Sans Thai",Tahoma,sans-serif;font-size:13pt}.pdf-manifest-document>.manifest-page{position:relative;display:block!important;width:210mm!important;min-width:210mm!important;max-width:210mm!important;height:297mm!important;padding:8mm;background:#fff;overflow:hidden}.pdf-manifest-document .page-number{position:absolute;top:8mm;right:8mm;font-size:12pt}.pdf-manifest-document h1{margin:0 0 2.5mm;text-align:center;font-size:15pt}.pdf-manifest-document .manifest-meta{width:max-content;min-width:52.5mm;margin:0 0 2.5mm auto;line-height:1.12;font-size:12.5pt;white-space:nowrap}.pdf-manifest-document .manifest-intro{margin:0 0 .8mm 10mm;font-size:12.5pt;line-height:1.08}.pdf-manifest-document .manifest-print-table{display:table!important;width:192mm!important;min-width:192mm!important;max-width:192mm!important;border-collapse:collapse!important;table-layout:fixed!important}.pdf-manifest-document .manifest-print-table thead{display:table-header-group!important}.pdf-manifest-document .manifest-print-table tbody{display:table-row-group!important}.pdf-manifest-document .manifest-print-table tr{display:table-row!important}.pdf-manifest-document .manifest-print-table th,.pdf-manifest-document .manifest-print-table td{display:table-cell!important;height:6.25mm;padding:0 1.2mm;border:1px solid #111;vertical-align:middle;line-height:1.04}.pdf-manifest-document .manifest-print-table th{text-align:center;font-size:11.5pt;white-space:nowrap}.pdf-manifest-document .center{text-align:center}.pdf-manifest-document .recipient-cell{overflow:hidden;font-size:12pt;white-space:nowrap}.pdf-manifest-document .recipient-cell span{display:block;overflow:hidden}.pdf-manifest-document .recipient-cell span.long{display:-webkit-box!important;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal}.pdf-manifest-document .tracking{font-size:12pt;white-space:nowrap}.pdf-manifest-document .col-seq{width:9mm!important}.pdf-manifest-document .col-name{width:78mm!important}.pdf-manifest-document .col-dest{width:16mm!important}.pdf-manifest-document .col-registered{width:28mm!important}.pdf-manifest-document .col-ems{width:28mm!important}.pdf-manifest-document .col-fee{width:18mm!important}.pdf-manifest-document .col-note{width:12mm!important}.pdf-manifest-document .manifest-footer{position:relative;height:36mm;margin-top:3mm;line-height:1.18;font-size:14pt}.pdf-manifest-document .manifest-footer p{margin:0}.pdf-manifest-document .manifest-footer-left{position:absolute;left:9mm;top:1mm;width:82mm}.pdf-manifest-document .manifest-footer-left p+p{margin-top:1.6mm}.pdf-manifest-document .manifest-footer-right{position:absolute;left:116mm;top:0;width:78mm}.pdf-manifest-document .total-line{margin-bottom:1.6mm!important}.pdf-manifest-document .sign-line{display:flex;align-items:flex-end}.pdf-manifest-document .sign-dots{display:block;width:64mm;height:.9em;border-bottom:1px dotted #111}.pdf-manifest-document .role-line{width:64mm;margin-top:2.4mm!important;margin-left:10mm;text-align:center}.pdf-manifest-document .check-line{margin-top:2.2mm!important}.pdf-manifest-document .signature{margin-top:4mm!important}.pdf-manifest-document .pdf-page{break-after:page;page-break-after:always}.pdf-manifest-document .pdf-page:last-child{break-after:auto;page-break-after:auto}</style><div class="pdf-manifest-document">${pageHtml}</div>`;
   return { container, format: "a4", orientation: "portrait" };
 }
 
@@ -2634,6 +2690,9 @@ async function saveRecommendedSection(section, form, button) {
   if (!form.reportValidity()) return;
 
   const values = Object.fromEntries(new FormData(form).entries());
+  if (section === "recipient") {
+    values.recipientFontPt = state.settings.recipientFontPt;
+  }
   const normalizedProfile = normalizeLayoutProfile({
     ...defaultPaperLayout(),
     ...values,

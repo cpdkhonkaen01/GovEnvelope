@@ -89,6 +89,8 @@ test("PDF ใบนำส่งเรนเดอร์ทีละหน้า 
   assert.match(appSource, /windowWidth: Math\.round\(bounds\.width\)/);
   assert.match(appSource, /dimensions\.width,\s*dimensions\.height/);
   assert.match(appSource, /renderTarget\.classList\.contains\("pdf-manifest-document"\)/);
+  assert.match(appSource, /\.pdf-manifest-document \.manifest-print-table\{display:table!important;width:192mm!important;min-width:192mm!important;max-width:192mm!important/);
+  assert.match(appSource, /\.pdf-manifest-document \.manifest-print-table th,\.pdf-manifest-document \.manifest-print-table td\{display:table-cell!important/);
 });
 
 test("ปุ่มจัดการชุดงานเรียงเป็นตารางสองคอลัมน์และประวัติเต็มแถว", () => {
