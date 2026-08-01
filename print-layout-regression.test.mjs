@@ -140,3 +140,12 @@ test("admin deletion uses the signed-in session without asking for the password 
   assert.match(appSource, /async function handleDeletePrintJobSubmit[\s\S]*?requireAdminSession\(\)/);
   assert.match(appSource, /async function handleDeleteRecipientSubmit[\s\S]*?requireAdminSession\(\)/);
 });
+
+test("แถบควบคุมตัวอย่างอยู่หลังตั้งค่าหลักและติดเหนือกระดาษตัวอย่าง", () => {
+  const settingsIndex = htmlSource.indexOf('class="preview-main-settings"');
+  const toolbarIndex = htmlSource.indexOf('class="preview-toolbar"');
+  const stageIndex = htmlSource.indexOf('class="preview-stage"');
+  assert.ok(settingsIndex >= 0);
+  assert.ok(toolbarIndex > settingsIndex);
+  assert.ok(stageIndex > toolbarIndex);
+});

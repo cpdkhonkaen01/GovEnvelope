@@ -108,7 +108,7 @@ body.app-locked .login-screen{display:grid}
 .button.history-button{border:1px solid #d5d9e2;background:#f5f6f8;color:#475467;box-shadow:none}
 .button.history-button:hover{border-color:#aeb5c2;background:#e9ebef;color:#344054}
 .preview-panel{align-self:center;justify-self:center;width:min(720px,94%)}
-.preview-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 2px 10px}
+.preview-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 2px 8px;padding-top:2px}
 .preview-size-heading{display:flex;min-width:0;flex:1;align-items:center;justify-content:space-between;gap:16px;color:#667085;font-size:13px}
 .preview-size-heading strong{color:#263149;font-size:14px}
 .preview-navigation{display:flex;flex:0 0 auto;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:7px}
@@ -649,16 +649,6 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
           </div>
         </div>
         <div class="preview-panel">
-          <div class="preview-toolbar">
-            <div class="preview-size-heading"><span>ตัวอย่างย่อส่วนตามสัดส่วนจริง</span><strong id="previewSizeLabel">ซอง C5 · 229 × 162 มม.</strong></div>
-            <div class="preview-navigation" aria-label="เลื่อนดูตัวอย่างผู้รับที่เลือก">
-              <button class="preview-nav-button measurement-toggle" id="togglePreviewMeasurements" type="button" aria-expanded="false" aria-controls="previewMeasurements previewRulerLayer">⌗ ไม้บรรทัดและเส้นแนว</button>
-              <button class="preview-nav-button line-break-button" id="openRecipientLineBreak" type="button">↵ ตัดบรรทัดหน้านี้</button>
-              <button class="preview-nav-button" id="previewPrevious" type="button" disabled>← ก่อนหน้า</button>
-              <strong class="preview-counter" id="previewCounter">ตัวอย่าง</strong>
-              <button class="preview-nav-button" id="previewNext" type="button" disabled>ถัดไป →</button>
-            </div>
-          </div>
           <div class="preview-main-settings">
             <span class="preview-settings-heading">ตั้งค่าหลัก</span>
             <div class="print-primary-settings">
@@ -669,6 +659,16 @@ footer{width:min(100% - 28px,680px);flex-direction:column}
             <p class="central-defaults-status" id="centralDefaultsStatus" role="status" aria-live="polite" hidden></p>
           </div>
           <div class="preview-measurements" id="previewMeasurements" aria-live="polite" hidden></div>
+          <div class="preview-toolbar">
+            <div class="preview-size-heading"><span>ตัวอย่างย่อส่วนตามสัดส่วนจริง</span><strong id="previewSizeLabel">ซอง C5 · 229 × 162 มม.</strong></div>
+            <div class="preview-navigation" aria-label="เลื่อนดูตัวอย่างผู้รับที่เลือก">
+              <button class="preview-nav-button measurement-toggle" id="togglePreviewMeasurements" type="button" aria-expanded="false" aria-controls="previewMeasurements previewRulerLayer">⌗ ไม้บรรทัดและเส้นแนว</button>
+              <button class="preview-nav-button line-break-button" id="openRecipientLineBreak" type="button">↵ ตัดบรรทัดหน้านี้</button>
+              <button class="preview-nav-button" id="previewPrevious" type="button" disabled>← ก่อนหน้า</button>
+              <strong class="preview-counter" id="previewCounter">ตัวอย่าง</strong>
+              <button class="preview-nav-button" id="previewNext" type="button" disabled>ถัดไป →</button>
+            </div>
+          </div>
           <div class="preview-stage" id="previewStage">
             <div class="preview-ruler-layer" id="previewRulerLayer" aria-hidden="true" hidden>
               <div class="preview-grid-lines"></div>
